@@ -15,7 +15,10 @@ import MainLayout from './layouts/MainLayout';
 const queryClient = new QueryClient();
 
 // In a real app, this would come from process.env or a config file
-const GOOGLE_CLIENT_ID = "368665393053-s4c9jnlqi3pbjeejiqorpqrd7hoa0ako.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "311534268252-fjpb2dvc8kpne0hrca4fr9pb5k9sspeh.apps.googleusercontent.com".trim();
+
+console.log('Using Google Client ID:', GOOGLE_CLIENT_ID);
+console.log('Current Origin:', window.location.origin);
 
 const ProtectedRoute = ({ children, module }: { children: React.ReactElement, module?: string }) => {
   const userJson = localStorage.getItem('user');
