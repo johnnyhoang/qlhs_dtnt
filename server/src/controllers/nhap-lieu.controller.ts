@@ -23,21 +23,33 @@ export const nhapTuExcel = async (req: Request, res: Response) => {
         for (const item of data) {
             try {
                 // Mapping thong tin tu Excel sang entity HocSinh
+                const ma_hoc_sinh = String(item['Mã học sinh'] || item['ma_hoc_sinh'] || '').trim();
+                const ho_ten = String(item['Họ tên'] || item['ho_ten'] || '').trim();
+
+                if (!ma_hoc_sinh || !ho_ten) {
+                    throw new Error("Thiếu thông tin bắt buộc (Mã học sinh hoặc Họ tên)");
+                }
+
                 const thong_tin_hoc_sinh: Partial<HocSinh> = {
-                    ma_hoc_sinh: String(item['Mã học sinh'] || item['ma_hoc_sinh'] || ''),
-                    ma_moet: String(item['Mã MOET'] || item['ma_moet'] || ''),
-                    ho_ten: String(item['Họ tên'] || item['ho_ten'] || ''),
-                    lop: String(item['Lớp'] || item['lop'] || ''),
-                    gioi_tinh: item['Giới tính'] === 'Nữ' ? GioiTinh.NU : GioiTinh.NAM,
-                    // Them cac truong khac neu can
+                    ma_hoc_sinh,
+                    ho_ten,
+                    ma_moet: item['Mã MOET'] || item['ma_moet'] ? String(item['Mã MOET'] || item['ma_moet']).trim() : undefined,
+                    lop: item['Lớp'] || item['lop'] ? String(item['Lớp'] || item['lop']).trim() : undefined,
+                    cccd: item['CCCD'] || item['cccd'] ? String(item['CCCD'] || item['cccd']).trim() : undefined,
+                    gioi_tinh: String(item['Giới tính'] || item['gioi_tinh'] || '').toLowerCase() === 'nữ' ? GioiTinh.NU : GioiTinh.NAM,
                 };
 
-                if (thong_tin_hoc_sinh.ma_hoc_sinh && thong_tin_hoc_sinh.ho_ten) {
-                    await HocSinhService.create(thong_tin_hoc_sinh);
-                    ket_qua.thanh_cong++;
-                } else {
-                    throw new Error("Thieu thong tin bat buoc (Ma hoc sinh hoặc Họ tên)");
+                // Xu ly ngay sinh (neu co)
+                const raw_ngay_sinh = item['Ngày sinh'] || item['ngay_sinh'];
+                if (raw_ngay_sinh) {
+                    const date = new Date(raw_ngay_sinh);
+                    if (!isNaN(date.getTime())) {
+                        thong_tin_hoc_sinh.ngay_sinh = date;
+                    }
                 }
+
+                await HocSinhService.upsertByMaHocSinh(thong_tin_hoc_sinh);
+                ket_qua.thanh_cong++;
             } catch (err: any) {
                 ket_qua.loi++;
                 ket_qua.chi_tiet_loi.push({ item, error: err.message });
@@ -45,10 +57,10 @@ export const nhapTuExcel = async (req: Request, res: Response) => {
         }
 
         res.json({
-            message: `Da nhap xong: ${ket_qua.thanh_cong} thanh cong, ${ket_qua.loi} loi`,
+            message: `Đã nhập xong: ${ket_qua.thanh_cong} thành công, ${ket_qua.loi} lỗi`,
             data: ket_qua
         });
     } catch (error) {
-        res.status(500).json({ message: "Loi khi nhap du lieu tu Excel", error });
+        res.status(500).json({ message: "Lỗi khi nhập dữ liệu từ Excel", error });
     }
 };

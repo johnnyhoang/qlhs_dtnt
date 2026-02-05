@@ -51,5 +51,18 @@ export const HocSinhService = {
 
     delete: async (id: string) => {
         return await hocSinhRepository.delete(id);
+    },
+
+    upsertByMaHocSinh: async (data: Partial<HocSinh>) => {
+        if (!data.ma_hoc_sinh) throw new Error("Mã học sinh là bắt buộc");
+        
+        const existing = await hocSinhRepository.findOneBy({ ma_hoc_sinh: data.ma_hoc_sinh });
+        if (existing) {
+            hocSinhRepository.merge(existing, data);
+            return await hocSinhRepository.save(existing);
+        } else {
+            const hoc_sinh = hocSinhRepository.create(data);
+            return await hocSinhRepository.save(hoc_sinh);
+        }
     }
 };

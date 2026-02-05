@@ -20,8 +20,8 @@ cd server
 npm install
 npm run dev
 ```
-Server runs on port 3000.
-API: `http://localhost:3000/api`
+Server runs on port 3500.
+API: `http://localhost:3500/api`
 
 ### 3. Frontend (Web)
 ```bash

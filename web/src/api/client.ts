@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3500/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://qlhs-server-311534268252.asia-southeast1.run.app/api';
 
 const client = axios.create({
     baseURL: API_URL,
