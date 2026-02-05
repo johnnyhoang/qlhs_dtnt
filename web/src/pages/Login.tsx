@@ -8,10 +8,8 @@ const { Title, Text } = Typography;
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = React.useState(false);
 
     const handleGoogleSuccess = async (credentialResponse: any) => {
-        setLoading(true);
         try {
             const { token, user } = await googleLogin(credentialResponse.credential);
             localStorage.setItem('token', token);
@@ -21,8 +19,6 @@ const Login: React.FC = () => {
         } catch (error: any) {
             console.error('Login error:', error);
             message.error(error.response?.data?.message || 'Đăng nhập thất bại');
-        } finally {
-            setLoading(false);
         }
     };
 

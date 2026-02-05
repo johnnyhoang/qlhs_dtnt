@@ -1,5 +1,5 @@
 import client from './client';
-import { NguoiDung, PhanQuyen } from './auth';
+import type { NguoiDung, PhanQuyen } from './auth';
 
 export const layDanhSachNguoiDung = async (): Promise<NguoiDung[]> => {
     const response = await client.get('/nguoi-dung');

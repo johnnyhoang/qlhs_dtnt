@@ -15,19 +15,29 @@ import MainLayout from './layouts/MainLayout';
 const queryClient = new QueryClient();
 
 // In a real app, this would come from process.env or a config file
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "368665393053-s4c9jnlqi3pbjeejiqorpqrd7hoa0ako.apps.googleusercontent.com";
 
 const ProtectedRoute = ({ children, module }: { children: React.ReactElement, module?: string }) => {
   const userJson = localStorage.getItem('user');
   if (!userJson) return <Navigate to="/login" replace />;
 
-  const user = JSON.parse(userJson);
+  try {
+    const user = JSON.parse(userJson);
+    if (!user || typeof user !== 'object') {
+      throw new Error('Dữ liệu người dùng không hợp lệ');
+    }
 
-  if (user.vai_tro === 'ADMIN') return children;
+    if (user.vai_tro === 'ADMIN') return children;
 
-  if (module) {
-    const hasAccess = user.quyen?.some((p: any) => p.ma_module === module && p.co_quyen_xem);
-    if (!hasAccess) return <Navigate to="/" replace />;
+    if (module) {
+      const hasAccess = user.quyen?.some((p: any) => p.ma_module === module && p.co_quyen_xem);
+      if (!hasAccess) return <Navigate to="/" replace />;
+    }
+  } catch (error) {
+    console.error('Lỗi xác thực:', error);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    return <Navigate to="/login" replace />;
   }
 
   return children;
@@ -37,8 +47,15 @@ const AdminRoute = ({ children }: { children: React.ReactElement }) => {
   const userJson = localStorage.getItem('user');
   if (!userJson) return <Navigate to="/login" replace />;
 
-  const user = JSON.parse(userJson);
-  if (user.vai_tro !== 'ADMIN') return <Navigate to="/" replace />;
+  try {
+    const user = JSON.parse(userJson);
+    if (user?.vai_tro !== 'ADMIN') return <Navigate to="/" replace />;
+  } catch (error) {
+    console.error('Lỗi quản trị:', error);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    return <Navigate to="/login" replace />;
+  }
 
   return children;
 };

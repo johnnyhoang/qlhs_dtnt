@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Upload, Button, message, List, Typography, Statistic, Space, Table, Divider } from 'antd';
-import { InboxOutlined, InfoCircleOutlined, DownloadOutlined } from '@ant-design/icons';
+import { InboxOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import client from '../api/client';
 
