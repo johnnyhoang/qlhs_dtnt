@@ -30,7 +30,7 @@ const MainLayout: React.FC = () => {
 
     const hasAccess = (moduleName: string) => {
         if (user?.vai_tro === 'ADMIN') return true;
-        return user?.quyen?.some((p: any) => p.ma_module === moduleName && p.co_quyen_xem);
+        return user?.danh_sach_quyen?.some((p: any) => p.ma_module === moduleName && p.co_quyen_xem);
     };
 
     const menuItems = [

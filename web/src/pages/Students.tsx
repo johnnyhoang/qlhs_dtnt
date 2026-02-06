@@ -71,6 +71,11 @@ const Students: React.FC = () => {
         }
     };
 
+    const userJson = localStorage.getItem('user');
+    const user = userJson ? JSON.parse(userJson) : null;
+    const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'hoc-sinh' && p.co_quyen_sua);
+    const canImport = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'nhap-lieu' && p.co_quyen_sua);
+
     const columns = [
         {
             title: 'Mã HS',
@@ -125,7 +130,10 @@ const Students: React.FC = () => {
             key: 'updatedBy',
             render: (text: string) => text || '-',
         },
-        {
+    ];
+
+    if (canEdit) {
+        columns.push({
             title: 'Thao tác',
             key: 'action',
             render: (_: any, record: HocSinh) => (
@@ -149,18 +157,22 @@ const Students: React.FC = () => {
                     </Popconfirm>
                 </Space>
             ),
-        },
-    ];
+        } as any);
+    }
 
     return (
         <Card title="Quản lý học sinh" extra={
             <Space>
-                <Button icon={<FileExcelOutlined />} onClick={() => setIsImportModalVisible(true)}>
-                    Import CSV
-                </Button>
-                <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-                    Thêm học sinh
-                </Button>
+                {canImport && (
+                    <Button icon={<FileExcelOutlined />} onClick={() => setIsImportModalVisible(true)}>
+                        Import CSV
+                    </Button>
+                )}
+                {canEdit && (
+                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                        Thêm học sinh
+                    </Button>
+                )}
             </Space>
         }>
             <Space direction="vertical" style={{ width: '100%' }} size="middle">

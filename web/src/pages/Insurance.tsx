@@ -27,6 +27,11 @@ const Insurance: React.FC = () => {
         queryFn: layDanhSachBaoHiem,
     });
 
+    const userJson = localStorage.getItem('user');
+    const user = userJson ? JSON.parse(userJson) : null;
+    const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'bao-hiem' && p.co_quyen_sua);
+    const canImport = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'nhap-lieu' && p.co_quyen_sua);
+
     const upsertMutation = useMutation({
         mutationFn: luuHoSoBaoHiem,
         onSuccess: () => {
@@ -126,7 +131,7 @@ const Insurance: React.FC = () => {
                     icon={<EditOutlined />}
                     onClick={() => handleEdit(record, profileMap.get(record.id))}
                 >
-                    Thông tin BHYT
+                    {canEdit ? 'Thông tin BHYT' : 'Xem thông tin BHYT'}
                 </Button>
             ),
         },
@@ -138,12 +143,14 @@ const Insurance: React.FC = () => {
         <Card
             title="Quản lý Bảo hiểm y tế"
             extra={
-                <Button
-                    icon={<FileExcelOutlined />}
-                    onClick={() => setIsImportModalVisible(true)}
-                >
-                    Import CSV
-                </Button>
+                canImport && (
+                    <Button
+                        icon={<FileExcelOutlined />}
+                        onClick={() => setIsImportModalVisible(true)}
+                    >
+                        Import CSV
+                    </Button>
+                )
             }
         >
             <Table
@@ -154,14 +161,16 @@ const Insurance: React.FC = () => {
             />
 
             <Modal
-                title={`Thông tin BHYT: ${editingStudent?.ho_ten}`}
+                title={`${canEdit ? 'Thông tin BHYT' : 'Xem thông tin BHYT'}: ${editingStudent?.ho_ten}`}
                 open={isModalVisible}
-                onOk={handleSave}
+                onOk={canEdit ? handleSave : () => setIsModalVisible(false)}
+                okText={canEdit ? 'Lưu' : 'Đóng'}
                 onCancel={() => setIsModalVisible(false)}
                 confirmLoading={upsertMutation.isPending}
                 width={800}
+                footer={canEdit ? undefined : <Button onClick={() => setIsModalVisible(false)}>Đóng</Button>}
             >
-                <Form form={form} layout="vertical">
+                <Form form={form} layout="vertical" disabled={!canEdit}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <Form.Item name="ma_doi_tuong" label="Mã đối tượng">
                             <Input placeholder="Ví dụ: DT" />

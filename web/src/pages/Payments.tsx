@@ -25,6 +25,11 @@ const Payments: React.FC = () => {
         enabled: !!detailsBatchId,
     });
 
+    const userJson = localStorage.getItem('user');
+    const user = userJson ? JSON.parse(userJson) : null;
+    const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'thanh-toan' && p.co_quyen_sua);
+    const canImport = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'nhap-lieu' && p.co_quyen_sua);
+
     const createMutation = useMutation({
         mutationFn: taoDotThanhToanMoi,
         onSuccess: () => {
@@ -120,9 +125,11 @@ const Payments: React.FC = () => {
 
     return (
         <Card title="Quản lý chi trả hỗ trợ" extra={
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsCreateModalVisible(true)}>
-                Tạo đợt mới
-            </Button>
+            canEdit && (
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsCreateModalVisible(true)}>
+                    Tạo đợt mới
+                </Button>
+            )
         }>
             <Table
                 columns={columns}
@@ -161,12 +168,14 @@ const Payments: React.FC = () => {
                 title={
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 32 }}>
                         <span>Chi tiết đợt chi trả: Tháng {batchDetails?.thang}/{batchDetails?.nam}</span>
-                        <Button
-                            icon={<FileExcelOutlined />}
-                            onClick={() => setIsImportModalVisible(true)}
-                        >
-                            Import CSV
-                        </Button>
+                        {canImport && (
+                            <Button
+                                icon={<FileExcelOutlined />}
+                                onClick={() => setIsImportModalVisible(true)}
+                            >
+                                Import CSV
+                            </Button>
+                        )}
                     </div>
                 }
                 open={!!detailsBatchId}

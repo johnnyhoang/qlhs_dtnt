@@ -30,12 +30,19 @@ const Meals: React.FC = () => {
         }
     });
 
-    const handleToggle = (hoc_sinh_id: string, loai_suat_an: LoaiSuatAn, bao_cat: boolean) => {
+    const userJson = localStorage.getItem('user');
+    const user = userJson ? JSON.parse(userJson) : null;
+    const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'suat-an' && p.co_quyen_sua);
+    const canImport = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'nhap-lieu' && p.co_quyen_sua);
+
+    const handleToggle = (hoc_sinh_id: string, loai_suat_an: LoaiSuatAn, bao_cat: boolean, ghi_chu?: string) => {
+        if (!canEdit) return;
         toggleMutation.mutate({
             hoc_sinh_id,
             ngay,
             loai_suat_an,
-            bao_cat
+            bao_cat,
+            ghi_chu
         });
     };
 
@@ -63,7 +70,8 @@ const Meals: React.FC = () => {
             render: (_: any, record: HocSinhSuatAnStatus) => (
                 <Checkbox
                     checked={record.suat_an.SANG}
-                    onChange={(e) => handleToggle(record.id, LoaiSuatAn.SANG, e.target.checked)}
+                    disabled={!canEdit}
+                    onChange={(e) => handleToggle(record.id, LoaiSuatAn.SANG, e.target.checked, record.suat_an.ghi_chu)}
                 />
             ),
             align: 'center' as const,
@@ -74,7 +82,8 @@ const Meals: React.FC = () => {
             render: (_: any, record: HocSinhSuatAnStatus) => (
                 <Checkbox
                     checked={record.suat_an.TRUA}
-                    onChange={(e) => handleToggle(record.id, LoaiSuatAn.TRUA, e.target.checked)}
+                    disabled={!canEdit}
+                    onChange={(e) => handleToggle(record.id, LoaiSuatAn.TRUA, e.target.checked, record.suat_an.ghi_chu)}
                 />
             ),
             align: 'center' as const,
@@ -85,7 +94,8 @@ const Meals: React.FC = () => {
             render: (_: any, record: HocSinhSuatAnStatus) => (
                 <Checkbox
                     checked={record.suat_an.TOI}
-                    onChange={(e) => handleToggle(record.id, LoaiSuatAn.TOI, e.target.checked)}
+                    disabled={!canEdit}
+                    onChange={(e) => handleToggle(record.id, LoaiSuatAn.TOI, e.target.checked, record.suat_an.ghi_chu)}
                 />
             ),
             align: 'center' as const,
@@ -96,15 +106,10 @@ const Meals: React.FC = () => {
             render: (_: any, record: HocSinhSuatAnStatus) => (
                 <Input
                     defaultValue={record.suat_an.ghi_chu}
+                    disabled={!canEdit}
                     onBlur={(e) => {
                         if (e.target.value !== record.suat_an.ghi_chu) {
-                            toggleMutation.mutate({
-                                hoc_sinh_id: record.id,
-                                ngay,
-                                loai_suat_an: LoaiSuatAn.SANG,
-                                bao_cat: record.suat_an.SANG,
-                                ghi_chu: e.target.value
-                            });
+                            handleToggle(record.id, LoaiSuatAn.SANG, record.suat_an.SANG, e.target.value);
                         }
                     }}
                 />
@@ -130,12 +135,14 @@ const Meals: React.FC = () => {
         <Card
             title="Quản lý báo cắt cơm"
             extra={
-                <Button
-                    icon={<FileExcelOutlined />}
-                    onClick={() => setIsImportModalVisible(true)}
-                >
-                    Import CSV
-                </Button>
+                canImport && (
+                    <Button
+                        icon={<FileExcelOutlined />}
+                        onClick={() => setIsImportModalVisible(true)}
+                    >
+                        Import CSV
+                    </Button>
+                )
             }
         >
             <Space direction="vertical" style={{ width: '100%' }} size="middle">

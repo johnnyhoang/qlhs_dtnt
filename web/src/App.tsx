@@ -33,7 +33,7 @@ const ProtectedRoute = ({ children, module }: { children: React.ReactElement, mo
     if (user.vai_tro === 'ADMIN') return children;
 
     if (module) {
-      const hasAccess = user.quyen?.some((p: any) => p.ma_module === module && p.co_quyen_xem);
+      const hasAccess = user.danh_sach_quyen?.some((p: any) => p.ma_module === module && p.co_quyen_xem);
       if (!hasAccess) return <Navigate to="/" replace />;
     }
   } catch (error) {

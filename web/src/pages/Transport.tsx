@@ -36,6 +36,11 @@ const Transport: React.FC = () => {
         },
     });
 
+    const userJson = localStorage.getItem('user');
+    const user = userJson ? JSON.parse(userJson) : null;
+    const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'dinh-muc-xe' && p.co_quyen_sua);
+    const canImport = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'nhap-lieu' && p.co_quyen_sua);
+
     const handleEdit = (student: HocSinh, profile?: DinhMucXe) => {
         setEditingStudent(student);
         form.setFieldsValue(profile || { hoc_sinh_id: student.id });
@@ -111,7 +116,7 @@ const Transport: React.FC = () => {
                     icon={<EditOutlined />}
                     onClick={() => handleEdit(record, profileMap.get(record.id))}
                 >
-                    Hồ sơ hỗ trợ
+                    {canEdit ? 'Hồ sơ hỗ trợ' : 'Xem hồ sơ'}
                 </Button>
             ),
         },
@@ -123,12 +128,14 @@ const Transport: React.FC = () => {
         <Card
             title="Quản lý hỗ trợ chi phí vận chuyển"
             extra={
-                <Button
-                    icon={<FileExcelOutlined />}
-                    onClick={() => setIsImportModalVisible(true)}
-                >
-                    Import CSV
-                </Button>
+                canImport && (
+                    <Button
+                        icon={<FileExcelOutlined />}
+                        onClick={() => setIsImportModalVisible(true)}
+                    >
+                        Import CSV
+                    </Button>
+                )
             }
         >
             <Table
@@ -139,14 +146,16 @@ const Transport: React.FC = () => {
             />
 
             <Modal
-                title={`Hồ sơ hỗ trợ: ${editingStudent?.ho_ten}`}
+                title={`${canEdit ? 'Hồ sơ hỗ trợ' : 'Xem hồ sơ'}: ${editingStudent?.ho_ten}`}
                 open={isModalVisible}
-                onOk={handleSave}
+                onOk={canEdit ? handleSave : () => setIsModalVisible(false)}
+                okText={canEdit ? 'Lưu' : 'Đóng'}
                 onCancel={() => setIsModalVisible(false)}
                 confirmLoading={upsertMutation.isPending}
                 width={700}
+                footer={canEdit ? undefined : <Button onClick={() => setIsModalVisible(false)}>Đóng</Button>}
             >
-                <Form form={form} layout="vertical">
+                <Form form={form} layout="vertical" disabled={!canEdit}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <Form.Item name="ngan_hang" label="Tên ngân hàng">
                             <Input placeholder="Ví dụ: Agribank" />
