@@ -18,6 +18,7 @@ export const AppDataSource = new DataSource({
     username: CONFIG.DB.USERNAME,
     password: CONFIG.DB.PASSWORD,
     database: CONFIG.DB.NAME,
+    socketPath: CONFIG.DB.SOCKET_PATH,
     synchronize: true, // Auto create tables for dev
     logging: false,
     entities: [

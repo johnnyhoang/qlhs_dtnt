@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Input, DatePicker, Checkbox, Tag, message } from 'antd';
-import { EditOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Table, Card, Button, Modal, Form, Input, DatePicker, Checkbox, Tag, message, Tooltip, Select, Space } from 'antd';
+import { EditOutlined, CheckCircleOutlined, CloseCircleOutlined, FileExcelOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { layDanhSachBaoHiem, luuHoSoBaoHiem } from '../api/bao-hiem';
 import { layDanhSachHocSinh } from '../api/hoc-sinh';
 import type { HocSinh } from '../types/hoc-sinh';
 import type { BaoHiem } from '../types/bao-hiem';
+import ImportModal from '../components/ImportModal';
+import AuditFooter from '../components/AuditFooter';
 
 const Insurance: React.FC = () => {
+    const [searchText, setSearchText] = useState('');
+    const [selectedClass, setSelectedClass] = useState<string | null>(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingStudent, setEditingStudent] = useState<HocSinh | null>(null);
     const [form] = Form.useForm();
@@ -24,6 +28,11 @@ const Insurance: React.FC = () => {
         queryKey: ['bao-hiem-profiles'],
         queryFn: layDanhSachBaoHiem,
     });
+
+    const userJson = localStorage.getItem('user');
+    const user = userJson ? JSON.parse(userJson) : null;
+    const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'bao-hiem' && p.co_quyen_sua);
+    const canImport = canEdit;
 
     const upsertMutation = useMutation({
         mutationFn: luuHoSoBaoHiem,
@@ -62,21 +71,33 @@ const Insurance: React.FC = () => {
     const profileMap = new Map();
     profiles?.forEach(p => profileMap.set(p.hoc_sinh_id, p));
 
+    const classes = Array.from(new Set(students?.data?.map((s: any) => s.lop))).filter(Boolean).sort();
+
+    const filteredData = students?.data?.filter((s: any) => {
+        const matchesSearch = s.ho_ten.toLowerCase().includes(searchText.toLowerCase()) ||
+            s.ma_hoc_sinh.toLowerCase().includes(searchText.toLowerCase());
+        const matchesClass = !selectedClass || s.lop === selectedClass;
+        return matchesSearch && matchesClass;
+    });
+
     const columns = [
         {
             title: 'Mã HS',
             dataIndex: 'ma_hoc_sinh',
             key: 'ma_hoc_sinh',
+            sorter: (a: any, b: any) => a.ma_hoc_sinh.localeCompare(b.ma_hoc_sinh),
         },
         {
             title: 'Họ và tên',
             dataIndex: 'ho_ten',
             key: 'ho_ten',
+            sorter: (a: any, b: any) => a.ho_ten.localeCompare(b.ho_ten),
         },
         {
             title: 'Lớp',
             dataIndex: 'lop',
             key: 'lop',
+            sorter: (a: any, b: any) => a.lop.localeCompare(b.lop),
         },
         {
             title: 'Số thẻ BHYT',
@@ -86,6 +107,13 @@ const Insurance: React.FC = () => {
         {
             title: 'Hạn dùng',
             key: 'han_su_dung',
+            sorter: (a: any, b: any) => {
+                const dA = profileMap.get(a.id)?.han_su_dung;
+                const dB = profileMap.get(b.id)?.han_su_dung;
+                if (!dA) return 1;
+                if (!dB) return -1;
+                return dayjs(dA).unix() - dayjs(dB).unix();
+            },
             render: (_: any, record: HocSinh) => {
                 const date = profileMap.get(record.id)?.han_su_dung;
                 return date ? dayjs(date).format('DD/MM/YYYY') : '-';
@@ -100,6 +128,22 @@ const Insurance: React.FC = () => {
             },
         },
         {
+            title: 'Ngày cập nhật',
+            key: 'updatedAt',
+            render: (_: any, record: HocSinh) => {
+                const p = profileMap.get(record.id);
+                return p?.updatedAt ? dayjs(p.updatedAt).format('DD/MM/YYYY HH:mm') : '-';
+            },
+        },
+        {
+            title: 'Người cập nhật',
+            key: 'updatedBy',
+            render: (_: any, record: HocSinh) => {
+                const p = profileMap.get(record.id);
+                return p?.nguoi_cap_nhat?.ho_ten || '-';
+            },
+        },
+        {
             title: 'Thao tác',
             key: 'action',
             render: (_: any, record: HocSinh) => (
@@ -108,30 +152,67 @@ const Insurance: React.FC = () => {
                     icon={<EditOutlined />}
                     onClick={() => handleEdit(record, profileMap.get(record.id))}
                 >
-                    Thông tin BHYT
+                    {canEdit ? 'Thông tin BHYT' : 'Xem thông tin BHYT'}
                 </Button>
             ),
         },
     ];
 
+    const [isImportModalVisible, setIsImportModalVisible] = useState(false);
+
     return (
-        <Card title="Quản lý Bảo hiểm y tế">
-            <Table
-                columns={columns}
-                dataSource={students?.data}
-                rowKey="id"
-                loading={isLoadingStudents || isLoadingProfiles}
-            />
+        <Card
+            title="Quản lý hồ sơ bảo hiểm y tế"
+            extra={
+                <Space>
+                    {canImport && (
+                        <Tooltip title="Import từ CSV">
+                            <Button
+                                icon={<FileExcelOutlined />}
+                                onClick={() => setIsImportModalVisible(true)}
+                            />
+                        </Tooltip>
+                    )}
+                </Space>
+            }
+        >
+            <Space orientation="vertical" style={{ width: '100%' }} size="middle">
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <Input
+                        placeholder="Tìm theo tên hoặc mã HS..."
+                        prefix={<SearchOutlined />}
+                        onChange={e => setSearchText(e.target.value)}
+                        style={{ width: 300 }}
+                        allowClear
+                    />
+                    <Select
+                        placeholder="Lọc theo lớp"
+                        style={{ width: 150 }}
+                        allowClear
+                        onChange={value => setSelectedClass(value)}
+                        options={classes.map(c => ({ label: c, value: c }))}
+                    />
+                </div>
+                <Table
+                    columns={columns}
+                    dataSource={filteredData}
+                    rowKey="id"
+                    loading={isLoadingStudents || isLoadingProfiles}
+                    scroll={{ x: 'max-content' }}
+                />
+            </Space>
 
             <Modal
-                title={`Thông tin BHYT: ${editingStudent?.ho_ten}`}
+                title={`${canEdit ? 'Thông tin BHYT' : 'Xem thông tin BHYT'}: ${editingStudent?.ho_ten}`}
                 open={isModalVisible}
-                onOk={handleSave}
+                onOk={canEdit ? handleSave : () => setIsModalVisible(false)}
+                okText={canEdit ? 'Lưu' : 'Đóng'}
                 onCancel={() => setIsModalVisible(false)}
                 confirmLoading={upsertMutation.isPending}
                 width={800}
+                footer={canEdit ? undefined : <Button onClick={() => setIsModalVisible(false)}>Đóng</Button>}
             >
-                <Form form={form} layout="vertical">
+                <Form form={form} layout="vertical" disabled={!canEdit}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <Form.Item name="ma_doi_tuong" label="Mã đối tượng">
                             <Input placeholder="Ví dụ: DT" />
@@ -184,8 +265,26 @@ const Insurance: React.FC = () => {
                     <Form.Item name="ghi_chu" label="Ghi chú thêm">
                         <Input />
                     </Form.Item>
+
+                    <AuditFooter
+                        createdAt={profileMap.get(editingStudent?.id || '')?.createdAt}
+                        updatedAt={profileMap.get(editingStudent?.id || '')?.updatedAt}
+                        updatedBy={profileMap.get(editingStudent?.id || '')?.nguoi_cap_nhat?.ho_ten}
+                    />
                 </Form>
             </Modal>
+
+            <ImportModal
+                visible={isImportModalVisible}
+                onCancel={() => setIsImportModalVisible(false)}
+                onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ['bao-hiem-profiles'] });
+                    setIsImportModalVisible(false);
+                }}
+                title="Import hồ sơ Bảo hiểm y tế"
+                endpoint="/nhap-lieu/bao-hiem-csv"
+                description="Hệ thống cập nhật thông tin thẻ BHYT. Cột cần có: 'ma_hoc_sinh', 'so_the', 'han_dung' (dd/mm/yyyy), 'noi_dk'."
+            />
         </Card>
     );
 };

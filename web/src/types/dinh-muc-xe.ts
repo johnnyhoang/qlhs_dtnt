@@ -11,6 +11,11 @@ export interface DinhMucXe {
     khoang_cach?: number;
     ten_diem_dung?: string;
     phuong_tien?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    nguoi_cap_nhat?: {
+        ho_ten: string;
+    };
 }
 
 export interface UpsertDinhMucXeRequest extends Partial<Omit<DinhMucXe, 'id' | 'hoc_sinh'>> {

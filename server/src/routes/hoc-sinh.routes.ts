@@ -6,16 +6,16 @@ import {
     capNhatHocSinh, 
     xoaHocSinh 
 } from '../controllers/hoc-sinh.controller';
-import { authMiddleware } from '../middlewares/auth.middleware';
+import { authMiddleware, checkModuleAccess } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 router.use(authMiddleware);
 
-router.get('/', layDanhSachHocSinh);
-router.get('/:id', layHocSinhTheoId);
-router.post('/', taoHocSinh);
-router.put('/:id', capNhatHocSinh);
-router.delete('/:id', xoaHocSinh);
+router.get('/', checkModuleAccess('hoc-sinh'), layDanhSachHocSinh);
+router.get('/:id', checkModuleAccess('hoc-sinh'), layHocSinhTheoId);
+router.post('/', checkModuleAccess('hoc-sinh', true), taoHocSinh);
+router.put('/:id', checkModuleAccess('hoc-sinh', true), capNhatHocSinh);
+router.delete('/:id', checkModuleAccess('hoc-sinh', true), xoaHocSinh);
 
 export default router;

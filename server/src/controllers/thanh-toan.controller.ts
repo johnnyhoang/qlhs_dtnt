@@ -23,7 +23,8 @@ export const layChiTietDotThanhToan = async (req: Request, res: Response) => {
 export const taoDotThanhToanMoi = async (req: Request, res: Response) => {
     try {
         const { thang, nam, ghi_chu } = req.body;
-        const result = await ThanhToanService.taoMoiDotThanhToan(thang, nam, ghi_chu);
+        const user = (req as any).user;
+        const result = await ThanhToanService.taoMoiDotThanhToan(thang, nam, user?.id, ghi_chu);
         res.status(201).json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi tao dot thanh toan", error });

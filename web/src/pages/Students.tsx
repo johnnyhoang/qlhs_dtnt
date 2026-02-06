@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Button, Input, Space, Card, Tag, Popconfirm, message } from 'antd';
+import { Table, Button, Input, Space, Card, Tag, Popconfirm, message, Tooltip } from 'antd';
 import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layDanhSachHocSinh, taoHocSinh, capNhatHocSinh, xoaHocSinh } from '../api/hoc-sinh';
@@ -71,21 +71,29 @@ const Students: React.FC = () => {
         }
     };
 
+    const userJson = localStorage.getItem('user');
+    const user = userJson ? JSON.parse(userJson) : null;
+    const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'hoc-sinh' && p.co_quyen_sua);
+    const canImport = canEdit;
+
     const columns = [
         {
             title: 'Mã HS',
             dataIndex: 'ma_hoc_sinh',
             key: 'ma_hoc_sinh',
+            sorter: (a: any, b: any) => a.ma_hoc_sinh.localeCompare(b.ma_hoc_sinh),
         },
         {
             title: 'Họ và tên',
             dataIndex: 'ho_ten',
             key: 'ho_ten',
+            sorter: (a: any, b: any) => a.ho_ten.localeCompare(b.ho_ten),
         },
         {
             title: 'Lớp',
             dataIndex: 'lop',
             key: 'lop',
+            sorter: (a: any, b: any) => a.lop.localeCompare(b.lop),
         },
         {
             title: 'Ngày sinh',
@@ -107,6 +115,7 @@ const Students: React.FC = () => {
             title: 'Trạng thái',
             dataIndex: 'trang_thai',
             key: 'trang_thai',
+            sorter: (a: any, b: any) => a.trang_thai.localeCompare(b.trang_thai),
             render: (trang_thai: TrangThaiHocSinh) => (
                 <Tag color={trang_thai === TrangThaiHocSinh.DANG_HOC ? 'success' : 'error'}>
                     {trang_thai === TrangThaiHocSinh.DANG_HOC ? 'Đang học' : 'Đã nghỉ'}
@@ -114,6 +123,21 @@ const Students: React.FC = () => {
             ),
         },
         {
+            title: 'Ngày cập nhật',
+            dataIndex: 'updatedAt',
+            key: 'updatedAt',
+            render: (date: string) => date ? dayjs(date).format('DD/MM/YYYY HH:mm') : '-',
+        },
+        {
+            title: 'Người cập nhật',
+            dataIndex: ['nguoi_cap_nhat', 'ho_ten'],
+            key: 'updatedBy',
+            render: (text: string) => text || '-',
+        },
+    ];
+
+    if (canEdit) {
+        columns.push({
             title: 'Thao tác',
             key: 'action',
             render: (_: any, record: HocSinh) => (
@@ -137,21 +161,25 @@ const Students: React.FC = () => {
                     </Popconfirm>
                 </Space>
             ),
-        },
-    ];
+        } as any);
+    }
 
     return (
         <Card title="Quản lý học sinh" extra={
             <Space>
-                <Button icon={<FileExcelOutlined />} onClick={() => setIsImportModalVisible(true)}>
-                    Import Excel
-                </Button>
-                <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-                    Thêm học sinh
-                </Button>
+                {canImport && (
+                    <Tooltip title="Import từ CSV">
+                        <Button icon={<FileExcelOutlined />} onClick={() => setIsImportModalVisible(true)} />
+                    </Tooltip>
+                )}
+                {canEdit && (
+                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                        Thêm học sinh
+                    </Button>
+                )}
             </Space>
         }>
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <Input
                         placeholder="Tìm kiếm theo tên..."
@@ -171,6 +199,7 @@ const Students: React.FC = () => {
                     dataSource={data?.data}
                     rowKey="id"
                     loading={isLoading}
+                    scroll={{ x: 'max-content' }}
                     pagination={{
                         current: page,
                         pageSize: pageSize,

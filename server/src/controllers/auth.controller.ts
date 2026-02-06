@@ -43,7 +43,7 @@ export const googleLogin = async (req: Request, res: Response) => {
                 ho_ten: user.ho_ten,
                 vai_tro: user.vai_tro,
                 anh_dai_dien: user.anh_dai_dien,
-                quyen: user.danh_sach_quyen
+                danh_sach_quyen: user.danh_sach_quyen
             } 
         });
     } catch (error) {

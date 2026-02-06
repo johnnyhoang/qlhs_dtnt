@@ -33,7 +33,7 @@ const ProtectedRoute = ({ children, module }: { children: React.ReactElement, mo
     if (user.vai_tro === 'ADMIN') return children;
 
     if (module) {
-      const hasAccess = user.quyen?.some((p: any) => p.ma_module === module && p.co_quyen_xem);
+      const hasAccess = user.danh_sach_quyen?.some((p: any) => p.ma_module === module && p.co_quyen_xem);
       if (!hasAccess) return <Navigate to="/" replace />;
     }
   } catch (error) {
@@ -63,28 +63,44 @@ const AdminRoute = ({ children }: { children: React.ReactElement }) => {
   return children;
 };
 
+import { ConfigProvider } from 'antd';
+
 const App: React.FC = () => {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <MainLayout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Dashboard />} />
-              <Route path="hoc-sinh" element={<ProtectedRoute module="hoc-sinh"><Students /></ProtectedRoute>} />
-              <Route path="suat-an" element={<ProtectedRoute module="suat-an"><Meals /></ProtectedRoute>} />
-              <Route path="dinh-muc-xe" element={<ProtectedRoute module="dinh-muc-xe"><Transport /></ProtectedRoute>} />
-              <Route path="bao-hiem" element={<ProtectedRoute module="bao-hiem"><Insurance /></ProtectedRoute>} />
-              <Route path="thanh-toan" element={<ProtectedRoute module="thanh-toan"><Payments /></ProtectedRoute>} />
-              <Route path="nguoi-dung" element={<AdminRoute><Users /></AdminRoute>} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
+        <ConfigProvider
+          theme={{
+            token: {
+              fontSize: 13,
+              borderRadius: 4,
+            },
+            components: {
+              Table: {
+                paddingContentVerticalLG: 8,
+              }
+            }
+          }}
+        >
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <MainLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Dashboard />} />
+                <Route path="hoc-sinh" element={<ProtectedRoute module="hoc-sinh"><Students /></ProtectedRoute>} />
+                <Route path="suat-an" element={<ProtectedRoute module="suat-an"><Meals /></ProtectedRoute>} />
+                <Route path="dinh-muc-xe" element={<ProtectedRoute module="dinh-muc-xe"><Transport /></ProtectedRoute>} />
+                <Route path="bao-hiem" element={<ProtectedRoute module="bao-hiem"><Insurance /></ProtectedRoute>} />
+                <Route path="thanh-toan" element={<ProtectedRoute module="thanh-toan"><Payments /></ProtectedRoute>} />
+                <Route path="nguoi-dung" element={<AdminRoute><Users /></AdminRoute>} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </ConfigProvider>
       </QueryClientProvider>
     </GoogleOAuthProvider>
   );

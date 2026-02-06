@@ -22,7 +22,8 @@ export const SuatAnService = {
 
         // Lay thong tin suat an cho ngay do
         const records = await suatAnRepository.find({
-            where: { ngay }
+            where: { ngay },
+            relations: ["nguoi_cap_nhat"]
         });
 
         // Mapping records vao map de tra cuu nhanh
@@ -39,18 +40,21 @@ export const SuatAnService = {
                 [LoaiSuatAn.SANG]: recordMap.get(`${hoc_sinh.id}_${LoaiSuatAn.SANG}`)?.bao_cat ?? false,
                 [LoaiSuatAn.TRUA]: recordMap.get(`${hoc_sinh.id}_${LoaiSuatAn.TRUA}`)?.bao_cat ?? false,
                 [LoaiSuatAn.TOI]: recordMap.get(`${hoc_sinh.id}_${LoaiSuatAn.TOI}`)?.bao_cat ?? false,
-                ghi_chu: recordMap.get(`${hoc_sinh.id}_${LoaiSuatAn.SANG}`)?.ghi_chu || "" 
+                ghi_chu: recordMap.get(`${hoc_sinh.id}_${LoaiSuatAn.SANG}`)?.ghi_chu || "",
+                lastUpdated: recordMap.get(`${hoc_sinh.id}_${LoaiSuatAn.SANG}`)?.updatedAt,
+                updatedBy: recordMap.get(`${hoc_sinh.id}_${LoaiSuatAn.SANG}`)?.nguoi_cap_nhat?.ho_ten
             }
         }));
     },
 
-    doiTrangThaiBaoCat: async (hoc_sinh_id: string, ngay: string, loai_suat_an: LoaiSuatAn, bao_cat: boolean, ghi_chu?: string) => {
+    doiTrangThaiBaoCat: async (hoc_sinh_id: string, ngay: string, loai_suat_an: LoaiSuatAn, bao_cat: boolean, userId?: number, ghi_chu?: string) => {
         let record = await suatAnRepository.findOne({
             where: { hoc_sinh_id, ngay, loai_suat_an }
         });
 
         if (record) {
             record.bao_cat = bao_cat;
+            record.nguoi_cap_nhat_id = userId as any;
             if (ghi_chu !== undefined) record.ghi_chu = ghi_chu;
             return await suatAnRepository.save(record);
         } else {
@@ -59,7 +63,8 @@ export const SuatAnService = {
                 ngay,
                 loai_suat_an,
                 bao_cat,
-                ghi_chu
+                ghi_chu,
+                nguoi_cap_nhat_id: userId
             });
             return await suatAnRepository.save(record);
         }

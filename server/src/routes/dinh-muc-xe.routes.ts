@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { layTatCaDinhMuc, layDinhMucTheoHocSinh, luuDinhMucXe } from '../controllers/dinh-muc-xe.controller';
-import { authMiddleware } from '../middlewares/auth.middleware';
+import { authMiddleware, checkModuleAccess } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 router.use(authMiddleware);
 
-router.get('/', layTatCaDinhMuc);
-router.get('/:studentId', layDinhMucTheoHocSinh);
-router.post('/', luuDinhMucXe);
+router.get('/', checkModuleAccess('dinh-muc-xe'), layTatCaDinhMuc);
+router.get('/:studentId', checkModuleAccess('dinh-muc-xe'), layDinhMucTheoHocSinh);
+router.post('/', checkModuleAccess('dinh-muc-xe', true), luuDinhMucXe);
 
 export default router;

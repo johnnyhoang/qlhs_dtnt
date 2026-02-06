@@ -31,9 +31,9 @@ const Login: React.FC = () => {
             background: 'linear-gradient(135deg, #1890ff 0%, #001529 100%)'
         }}>
             <Card
-                style={{ width: 400, textAlign: 'center', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}
+                style={{ width: '90%', maxWidth: 400, textAlign: 'center', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.15)' }}
             >
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Space orientation="vertical" size="large" style={{ width: '100%' }}>
                     <div>
                         <Title level={2} style={{ margin: 0 }}>QLHS DTNT</Title>
                         <Text type="secondary">Hệ thống Quản lý học sinh Nội trú</Text>

@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from "typeorm";
 import { HocSinh } from "./HocSinh";
+import { NguoiDung } from "./NguoiDung";
 
 @Entity("bao_hiem")
 export class BaoHiem {
@@ -48,4 +49,17 @@ export class BaoHiem {
 
     @Column({ type: "text", nullable: true })
     ghi_chu!: string;
+
+    @CreateDateColumn()
+    createdAt!: Date;
+
+    @UpdateDateColumn()
+    updatedAt!: Date;
+
+    @Column({ nullable: true })
+    nguoi_cap_nhat_id!: number;
+
+    @ManyToOne(() => NguoiDung, { nullable: true })
+    @JoinColumn({ name: "nguoi_cap_nhat_id" })
+    nguoi_cap_nhat!: NguoiDung;
 }

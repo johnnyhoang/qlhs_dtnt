@@ -22,7 +22,8 @@ export const layDinhMucTheoHocSinh = async (req: Request, res: Response) => {
 export const luuDinhMucXe = async (req: Request, res: Response) => {
     try {
         const { hoc_sinh_id, ...data } = req.body;
-        const result = await DinhMucXeService.luuDinhMuc(hoc_sinh_id, data);
+        const user = (req as any).user;
+        const result = await DinhMucXeService.luuDinhMuc(hoc_sinh_id, data, user?.id);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi luu dinh muc xe", error });

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { NguoiDung } from "./NguoiDung";
 
 export enum GioiTinh {
     NAM = "NAM",
@@ -45,4 +46,11 @@ export class HocSinh {
 
     @UpdateDateColumn()
     updatedAt!: Date;
+
+    @Column({ nullable: true })
+    nguoi_cap_nhat_id!: number;
+
+    @ManyToOne(() => NguoiDung, { nullable: true })
+    @JoinColumn({ name: "nguoi_cap_nhat_id" })
+    nguoi_cap_nhat!: NguoiDung;
 }

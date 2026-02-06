@@ -21,11 +21,11 @@ export const ThanhToanService = {
     layDotThanhToanTheoId: async (id: number) => {
         return await dotThanhToanRepository.findOne({
             where: { id },
-            relations: ["khoan_thanh_toan", "khoan_thanh_toan.hoc_sinh"]
+            relations: ["khoan_thanh_toan", "khoan_thanh_toan.hoc_sinh", "khoan_thanh_toan.nguoi_cap_nhat"]
         });
     },
 
-    taoMoiDotThanhToan: async (thang: number, nam: number, ghi_chu?: string) => {
+    taoMoiDotThanhToan: async (thang: number, nam: number, userId?: number, ghi_chu?: string) => {
         // Tao dot thanh toan
         const dot = dotThanhToanRepository.create({ thang, nam, ghi_chu });
         await dotThanhToanRepository.save(dot);
@@ -36,10 +36,7 @@ export const ThanhToanService = {
         const khoan_list: KhoanThanhToan[] = [];
 
         for (const hoc_sinh of hoc_sinh_list) {
-            // Logic tinh toan:
-            // 1. Tien an: (Tong ngay - ngay bao cat) * don gia
-            // 2. Tien xe: Khoang cach * don gia
-            
+            // Logic tinh toan
             const thangStr = String(thang).padStart(2, '0');
             const patternDate = `${nam}-${thangStr}-%`;
 
@@ -63,13 +60,21 @@ export const ThanhToanService = {
                 tien_xe: tienXe,
                 ho_tro_khac: 0,
                 tong_tien: tongTien,
-                xa: hoc_sinh.lop, // Tam thoi lay lop vi HocSinh chua co truong Xa
-                trang_thai: TrangThaiThanhToan.CHO_XU_LY
+                xa: hoc_sinh.lop,
+                trang_thai: TrangThaiThanhToan.CHO_XU_LY,
+                nguoi_cap_nhat_id: userId
             });
             khoan_list.push(khoan);
         }
 
         await khoanThanhToanRepository.save(khoan_list);
         return dot;
+    },
+    
+    capNhatKhoanThanhToan: async (id: number, data: Partial<KhoanThanhToan>, userId?: number) => {
+        const khoan = await khoanThanhToanRepository.findOneBy({ id });
+        if (!khoan) return null;
+        khoanThanhToanRepository.merge(khoan, { ...data, nguoi_cap_nhat_id: userId });
+        return await khoanThanhToanRepository.save(khoan);
     }
 };

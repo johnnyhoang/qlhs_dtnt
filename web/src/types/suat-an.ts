@@ -11,6 +11,8 @@ export interface TrangThaiSuatAn {
     TRUA: boolean;
     TOI: boolean;
     ghi_chu: string;
+    lastUpdated?: string;
+    updatedBy?: string;
 }
 
 export interface HocSinhSuatAnStatus {

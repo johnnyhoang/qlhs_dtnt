@@ -6,7 +6,7 @@ const baoHiemRepository = AppDataSource.getRepository(BaoHiem);
 export const BaoHiemService = {
     getAll: async () => {
         return await baoHiemRepository.find({
-            relations: ["hoc_sinh"]
+            relations: ["hoc_sinh", "nguoi_cap_nhat"]
         });
     },
 
@@ -17,12 +17,12 @@ export const BaoHiemService = {
         });
     },
 
-    luuHoSo: async (hoc_sinh_id: string, data: Partial<BaoHiem>) => {
+    luuHoSo: async (hoc_sinh_id: string, data: Partial<BaoHiem>, userId?: number) => {
         let ho_so = await baoHiemRepository.findOneBy({ hoc_sinh_id });
         if (ho_so) {
-            baoHiemRepository.merge(ho_so, data);
+            baoHiemRepository.merge(ho_so, { ...data, nguoi_cap_nhat_id: userId });
         } else {
-            ho_so = baoHiemRepository.create({ ...data, hoc_sinh_id });
+            ho_so = baoHiemRepository.create({ ...data, hoc_sinh_id, nguoi_cap_nhat_id: userId });
         }
         return await baoHiemRepository.save(ho_so);
     },

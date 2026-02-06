@@ -5,6 +5,10 @@ export interface DotThanhToan {
     thang: number;
     nam: number;
     createdAt: string;
+    updatedAt?: string;
+    nguoi_cap_nhat?: {
+        ho_ten: string;
+    };
     ghi_chu?: string;
     khoan_thanh_toan?: KhoanThanhToan[];
 }
@@ -21,6 +25,11 @@ export interface KhoanThanhToan {
     trang_thai: string;
     ngay_chi_tra?: string;
     ghi_chu?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    nguoi_cap_nhat?: {
+        ho_ten: string;
+    };
 }
 
 export interface CreateDotThanhToanRequest {

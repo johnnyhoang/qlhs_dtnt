@@ -17,7 +17,8 @@ export const layTrangThaiSuatAn = async (req: Request, res: Response) => {
 export const baoCatSuatAn = async (req: Request, res: Response) => {
     try {
         const { hoc_sinh_id, ngay, loai_suat_an, bao_cat, ghi_chu } = req.body;
-        const result = await SuatAnService.doiTrangThaiBaoCat(hoc_sinh_id, ngay, loai_suat_an, bao_cat, ghi_chu);
+        const user = (req as any).user;
+        const result = await SuatAnService.doiTrangThaiBaoCat(hoc_sinh_id, ngay, loai_suat_an, bao_cat, user?.id, ghi_chu);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi bao cat suat an", error });

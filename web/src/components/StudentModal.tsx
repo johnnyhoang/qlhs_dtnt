@@ -4,6 +4,8 @@ import dayjs from 'dayjs';
 import { GioiTinh, TrangThaiHocSinh } from '../types/hoc-sinh';
 import type { HocSinh, CreateHocSinhRequest } from '../types/hoc-sinh';
 
+import AuditFooter from './AuditFooter';
+
 interface StudentModalProps {
     visible: boolean;
     student?: HocSinh | null;
@@ -59,7 +61,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
             onCancel={onCancel}
             confirmLoading={loading}
             width={600}
-            destroyOnClose
+            destroyOnHidden
         >
             <Form
                 form={form}
@@ -134,6 +136,11 @@ const StudentModal: React.FC<StudentModalProps> = ({
                         <Select.Option value={TrangThaiHocSinh.DA_NGHI}>Đã nghỉ</Select.Option>
                     </Select>
                 </Form.Item>
+                <AuditFooter
+                    createdAt={student?.createdAt}
+                    updatedAt={student?.updatedAt}
+                    updatedBy={student?.nguoi_cap_nhat?.ho_ten}
+                />
             </Form>
         </Modal>
     );

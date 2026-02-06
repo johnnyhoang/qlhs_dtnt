@@ -17,14 +17,14 @@ services:
     build: ./server
     container_name: qlhs_server
     ports:
-      - "3000:3000"
+      - "3500:3500"
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
       - DB_USERNAME=root
       - DB_PASSWORD=rootpassword
       - DB_NAME=qlhs_db
-      - PORT=3000
+      - PORT=3500
     depends_on:
       - mysql
     volumes:
@@ -37,7 +37,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:3000/api
+      - VITE_API_URL=http://localhost:3500/api
     depends_on:
       - server
     volumes:
