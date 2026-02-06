@@ -144,7 +144,7 @@ const Students: React.FC = () => {
         <Card title="Quản lý học sinh" extra={
             <Space>
                 <Button icon={<FileExcelOutlined />} onClick={() => setIsImportModalVisible(true)}>
-                    Import Excel
+                    Import CSV
                 </Button>
                 <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
                     Thêm học sinh

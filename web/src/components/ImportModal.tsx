@@ -20,21 +20,35 @@ const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess 
 
     const handleImport = async () => {
         if (fileList.length === 0) {
-            message.warning('Vui lòng chọn file Excel');
+            message.warning('Vui lòng chọn file CSV');
             return;
         }
 
+        const file = fileList[0];
+        console.log('[FRONTEND] ImportModal: Starting import for file:', {
+            name: file.name,
+            size: file.size,
+            type: file.type
+        });
+
         const formData = new FormData();
-        formData.append('file', fileList[0] as any);
+        formData.append('file', file as any);
 
         setImporting(true);
         try {
-            const response = await client.post('/nhap-lieu/hoc-sinh-excel', formData, {
+            console.log('[FRONTEND] ImportModal: Sending POST request to /nhap-lieu/hoc-sinh-csv');
+            const response = await client.post('/nhap-lieu/hoc-sinh-csv', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+            console.log('[FRONTEND] ImportModal: Received response:', response.data);
             setResults(response.data.data); // Backend returns { message, data: { thanh_cong, loi, chi_tiet_loi } }
             message.success('Import hoàn tất');
         } catch (error: any) {
+            console.error('[FRONTEND] ImportModal: Error during import:', error);
+            if (error.response) {
+                console.error('[FRONTEND] ImportModal: Error response data:', error.response.data);
+                console.error('[FRONTEND] ImportModal: Error response status:', error.response.status);
+            }
             message.error(error.response?.data?.message || 'Lỗi khi import file');
         } finally {
             setImporting(false);
@@ -46,9 +60,9 @@ const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess 
         multiple: false,
         fileList,
         beforeUpload: (file: any) => {
-            const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || file.name.endsWith('.xlsx');
-            if (!isExcel) {
-                message.error('Chỉ chấp nhận file Excel (.xlsx)');
+            const isCsv = file.type === 'text/csv' || file.name.endsWith('.csv');
+            if (!isCsv) {
+                message.error('Chỉ chấp nhận file CSV (.csv)');
                 return Upload.LIST_IGNORE;
             }
             setFileList([file]);
@@ -70,7 +84,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess 
 
     return (
         <Modal
-            title="Import học sinh từ Excel"
+            title="Import học sinh từ CSV"
             open={visible}
             onCancel={handleClose}
             footer={[
@@ -90,7 +104,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess 
             {!results ? (
                 <>
                     <div style={{ marginBottom: 24 }}>
-                        <Text strong><InfoCircleOutlined style={{ color: '#1890ff', marginRight: 8 }} /> Cấu trúc file Excel hợp lệ</Text>
+                        <Text strong><InfoCircleOutlined style={{ color: '#1890ff', marginRight: 8 }} /> Cấu trúc file CSV hợp lệ</Text>
                         <Table
                             size="small"
                             pagination={false}
@@ -118,7 +132,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess 
                             <InboxOutlined />
                         </p>
                         <p className="ant-upload-text">Nhấp hoặc kéo tệp vào khu vực này để tải lên</p>
-                        <p className="ant-upload-hint">Chỉ chấp nhận file .xlsx</p>
+                        <p className="ant-upload-hint">Chỉ chấp nhận file .csv</p>
                     </Dragger>
                 </>
             ) : (
@@ -135,7 +149,13 @@ const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess 
                             <List
                                 size="small"
                                 dataSource={results.chi_tiet_loi}
-                                renderItem={(item: any) => <List.Item><Text type="secondary" style={{ fontSize: '12px' }}>{item.item['Họ và tên']}: {item.error}</Text></List.Item>}
+                                renderItem={(item: any) => (
+                                    <List.Item>
+                                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                                            {item.item_ten !== 'N/A' ? item.item_ten : item.item_ma}: {item.error}
+                                        </Text>
+                                    </List.Item>
+                                )}
                             />
                         </div>
                     )}
