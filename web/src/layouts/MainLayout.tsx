@@ -76,7 +76,7 @@ const MainLayout: React.FC = () => {
         user?.vai_tro === 'ADMIN' && {
             key: '/danh-muc-master',
             icon: <DatabaseOutlined />,
-            label: 'Danh mục Master',
+            label: 'Danh mục',
             onClick: () => navigate('/danh-muc-master')
         },
         user?.vai_tro === 'ADMIN' && {

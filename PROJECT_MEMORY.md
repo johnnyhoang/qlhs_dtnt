@@ -68,7 +68,8 @@ The project follows a **Monorepo** structure:
 ### 6. Master Data (`danh_muc_master`)
 - **Focus**: Centralized reference data management.
 - **Categories**: Health facilities, Wards, Provinces, Banks, Ethnicities, Religions.
-- **Reference Data**: Vietnam administrative data sourced from `provinces.open-api.vn`.
+- **Reference Data**: Vietnam administrative data updated to 2025 standards (34 provincial units) as per Decision 19/2025/QĐ-TTg.
+- **Source**: `provinces.open-api.vn` and archival data for Decision 19/2025/QĐ-TTg.
 
 ### 7. Dashboard & Reporting (`thong_ke`)
 - **Focus**: High-level visibility and dense reports.
