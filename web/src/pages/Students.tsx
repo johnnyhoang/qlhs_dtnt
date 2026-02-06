@@ -114,6 +114,18 @@ const Students: React.FC = () => {
             ),
         },
         {
+            title: 'Ngày cập nhật',
+            dataIndex: 'updatedAt',
+            key: 'updatedAt',
+            render: (date: string) => date ? dayjs(date).format('DD/MM/YYYY HH:mm') : '-',
+        },
+        {
+            title: 'Người cập nhật',
+            dataIndex: ['nguoi_cap_nhat', 'ho_ten'],
+            key: 'updatedBy',
+            render: (text: string) => text || '-',
+        },
+        {
             title: 'Thao tác',
             key: 'action',
             render: (_: any, record: HocSinh) => (

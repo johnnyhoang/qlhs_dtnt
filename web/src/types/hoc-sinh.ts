@@ -25,6 +25,9 @@ export interface HocSinh {
     trang_thai: TrangThaiHocSinh;
     createdAt: string;
     updatedAt: string;
+    nguoi_cap_nhat?: {
+        ho_ten: string;
+    };
 }
 
 export interface CreateHocSinhRequest {

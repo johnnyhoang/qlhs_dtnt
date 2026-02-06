@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Table, Card, Button, Modal, Form, Select, Input, InputNumber, message } from 'antd';
-import { PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import { PlusOutlined, EyeOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { layDanhSachDotThanhToan, layChiTietDotThanhToan, taoDotThanhToanMoi } from '../api/thanh-toan';
 import type { DotThanhToan, KhoanThanhToan } from '../types/thanh-toan';
+import ImportModal from '../components/ImportModal';
 
 const Payments: React.FC = () => {
     const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -103,7 +104,19 @@ const Payments: React.FC = () => {
             key: 'tong_tien',
             render: (val: number) => <b>{val?.toLocaleString()} đ</b>,
         },
+        {
+            title: 'Ngày cập nhật',
+            key: 'updatedAt',
+            render: (record: KhoanThanhToan) => record.updatedAt ? dayjs(record.updatedAt).format('DD/MM/YYYY HH:mm') : '-',
+        },
+        {
+            title: 'Người cập nhật',
+            key: 'updatedBy',
+            render: (record: KhoanThanhToan) => record.nguoi_cap_nhat?.ho_ten || '-',
+        }
     ];
+
+    const [isImportModalVisible, setIsImportModalVisible] = useState(false);
 
     return (
         <Card title="Quản lý chi trả hỗ trợ" extra={
@@ -145,11 +158,21 @@ const Payments: React.FC = () => {
             </Modal>
 
             <Modal
-                title={`Chi tiết đợt chi trả: Tháng ${batchDetails?.thang}/${batchDetails?.nam}`}
+                title={
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 32 }}>
+                        <span>Chi tiết đợt chi trả: Tháng {batchDetails?.thang}/{batchDetails?.nam}</span>
+                        <Button
+                            icon={<FileExcelOutlined />}
+                            onClick={() => setIsImportModalVisible(true)}
+                        >
+                            Import CSV
+                        </Button>
+                    </div>
+                }
                 open={!!detailsBatchId}
                 onCancel={() => setDetailsBatchId(null)}
                 footer={null}
-                width={900}
+                width={1000}
             >
                 <Table
                     columns={detailColumns}
@@ -159,6 +182,19 @@ const Payments: React.FC = () => {
                     pagination={{ pageSize: 10 }}
                 />
             </Modal>
+
+            <ImportModal
+                visible={isImportModalVisible}
+                onCancel={() => setIsImportModalVisible(false)}
+                onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ['thanh-toan-batch-details', detailsBatchId] });
+                    setIsImportModalVisible(false);
+                }}
+                title="Import danh sách chi trả hỗ trợ"
+                endpoint="/nhap-lieu/thanh-toan-csv"
+                description="Hệ thống cập nhật số tiền chi trả cho từng học sinh trong đợt này. Cột cần có: 'ma_hoc_sinh', 'tien_an', 'tien_xe' (Số tiền VND)."
+                additionalFields={{ dot_thanh_toan_id: detailsBatchId }}
+            />
         </Card>
     );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Upload, Button, message, List, Typography, Statistic, Space, Table, Divider } from 'antd';
+import { Modal, Upload, Button, message, List, Typography, Statistic, Space, Divider } from 'antd';
 import { InboxOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import client from '../api/client';
@@ -11,9 +11,21 @@ interface ImportModalProps {
     visible: boolean;
     onCancel: () => void;
     onSuccess: () => void;
+    title?: string;
+    endpoint?: string;
+    description?: string;
+    additionalFields?: Record<string, any>;
 }
 
-const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess }) => {
+const ImportModal: React.FC<ImportModalProps> = ({
+    visible,
+    onCancel,
+    onSuccess,
+    title = "Import học sinh từ CSV",
+    endpoint = "/nhap-lieu/hoc-sinh-csv",
+    description = "Hệ thống sẽ cập nhật thông tin học sinh. File CSV cần có các cột tối thiểu: ma_hoc_sinh, ho_ten, lop.",
+    additionalFields
+}) => {
     const [fileList, setFileList] = useState<UploadFile[]>([]);
     const [importing, setImporting] = useState(false);
     const [results, setResults] = useState<any>(null);
@@ -33,22 +45,23 @@ const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess 
 
         const formData = new FormData();
         formData.append('file', file as any);
+        if (additionalFields) {
+            Object.entries(additionalFields).forEach(([key, value]) => {
+                formData.append(key, value);
+            });
+        }
 
         setImporting(true);
         try {
-            console.log('[FRONTEND] ImportModal: Sending POST request to /nhap-lieu/hoc-sinh-csv');
-            const response = await client.post('/nhap-lieu/hoc-sinh-csv', formData, {
+            console.log(`[FRONTEND] ImportModal: Sending POST request to ${endpoint}`);
+            const response = await client.post(endpoint, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             console.log('[FRONTEND] ImportModal: Received response:', response.data);
-            setResults(response.data.data); // Backend returns { message, data: { thanh_cong, loi, chi_tiet_loi } }
+            setResults(response.data.data);
             message.success('Import hoàn tất');
         } catch (error: any) {
             console.error('[FRONTEND] ImportModal: Error during import:', error);
-            if (error.response) {
-                console.error('[FRONTEND] ImportModal: Error response data:', error.response.data);
-                console.error('[FRONTEND] ImportModal: Error response status:', error.response.status);
-            }
             message.error(error.response?.data?.message || 'Lỗi khi import file');
         } finally {
             setImporting(false);
@@ -84,7 +97,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess 
 
     return (
         <Modal
-            title="Import học sinh từ CSV"
+            title={title}
             open={visible}
             onCancel={handleClose}
             footer={[
@@ -104,26 +117,12 @@ const ImportModal: React.FC<ImportModalProps> = ({ visible, onCancel, onSuccess 
             {!results ? (
                 <>
                     <div style={{ marginBottom: 24 }}>
-                        <Text strong><InfoCircleOutlined style={{ color: '#1890ff', marginRight: 8 }} /> Cấu trúc file CSV hợp lệ</Text>
-                        <Table
-                            size="small"
-                            pagination={false}
-                            style={{ marginTop: 8 }}
-                            dataSource={[
-                                { col: 'Mã học sinh', req: 'Có', note: 'Không trùng lặp' },
-                                { col: 'Họ và tên', req: 'Có', note: 'Tiếng Việt hoặc English' },
-                                { col: 'Lớp', req: 'Có', note: 'Ví dụ: 10A1' },
-                                { col: 'Mã MOET', req: 'Không', note: 'Mã định danh BGD' },
-                                { col: 'Giới tính', req: 'Không', note: 'Nam/Nữ' },
-                            ]}
-                            columns={[
-                                { title: 'Tên cột (Header)', dataIndex: 'col', key: 'col' },
-                                { title: 'Bắt buộc', dataIndex: 'req', key: 'req', align: 'center' },
-                                { title: 'Ghi chú', dataIndex: 'note', key: 'note' },
-                            ]}
-                        />
+                        <Text strong><InfoCircleOutlined style={{ color: '#1890ff', marginRight: 8 }} /> Hướng dẫn Import</Text>
+                        <div style={{ marginTop: 8, padding: '8px 12px', background: '#f0f2f5', borderRadius: '4px' }}>
+                            <Text>{description}</Text>
+                        </div>
                         <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: 8 }}>
-                            * Bạn có thể sử dụng tên cột bằng tiếng Việt không dấu (ma_hoc_sinh, ho_ten...)
+                            * Lưu ý: Hệ thống hỗ trợ định dạng CSV UTF-8. Các cột có thể viết Tiếng Việt không dấu.
                         </Text>
                     </div>
                     <Divider />

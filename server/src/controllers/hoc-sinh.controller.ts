@@ -29,7 +29,8 @@ export const layHocSinhTheoId = async (req: Request, res: Response) => {
 
 export const taoHocSinh = async (req: Request, res: Response) => {
     try {
-        const hoc_sinh = await HocSinhService.create(req.body);
+        const user = (req as any).user;
+        const hoc_sinh = await HocSinhService.create(req.body, user?.id);
         res.status(201).json(hoc_sinh);
     } catch (error) {
         res.status(400).json({ message: "Loi khi tao hoc sinh", error });
@@ -38,7 +39,8 @@ export const taoHocSinh = async (req: Request, res: Response) => {
 
 export const capNhatHocSinh = async (req: Request, res: Response) => {
     try {
-        const hoc_sinh = await HocSinhService.update(req.params.id as string, req.body);
+        const user = (req as any).user;
+        const hoc_sinh = await HocSinhService.update(req.params.id as string, req.body, user?.id);
         if (!hoc_sinh) {
             return res.status(404).json({ message: "Khong tim thay hoc sinh" });
         }

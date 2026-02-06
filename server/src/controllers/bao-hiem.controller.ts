@@ -23,7 +23,8 @@ export const layBaoHiemTheoHocSinh = async (req: Request, res: Response) => {
 export const luuHoSoBaoHiem = async (req: Request, res: Response) => {
     try {
         const { hoc_sinh_id, ...data } = req.body;
-        const result = await BaoHiemService.luuHoSo(hoc_sinh_id, data);
+        const user = (req as any).user;
+        const result = await BaoHiemService.luuHoSo(hoc_sinh_id, data, user?.id);
         res.json(result);
     } catch (error) {
         res.status(400).json({ message: "Loi khi luu ho so bao hiem", error });

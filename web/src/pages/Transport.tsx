@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Table, Card, Button, Modal, Form, Input, InputNumber, message } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layTatCaDinhMuc, luuDinhMucXe } from '../api/dinh-muc-xe';
 import { layDanhSachHocSinh } from '../api/hoc-sinh';
 import type { HocSinh } from '../types/hoc-sinh';
 import type { DinhMucXe } from '../types/dinh-muc-xe';
+import ImportModal from '../components/ImportModal';
+import AuditFooter from '../components/AuditFooter';
+import dayjs from 'dayjs';
 
 const Transport: React.FC = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -84,6 +87,22 @@ const Transport: React.FC = () => {
             },
         },
         {
+            title: 'Ngày cập nhật',
+            key: 'updatedAt',
+            render: (_: any, record: HocSinh) => {
+                const p = profileMap.get(record.id);
+                return p?.updatedAt ? dayjs(p.updatedAt).format('DD/MM/YYYY HH:mm') : '-';
+            },
+        },
+        {
+            title: 'Người cập nhật',
+            key: 'updatedBy',
+            render: (_: any, record: HocSinh) => {
+                const p = profileMap.get(record.id);
+                return p?.nguoi_cap_nhat?.ho_ten || '-';
+            },
+        },
+        {
             title: 'Thao tác',
             key: 'action',
             render: (_: any, record: HocSinh) => (
@@ -98,8 +117,20 @@ const Transport: React.FC = () => {
         },
     ];
 
+    const [isImportModalVisible, setIsImportModalVisible] = useState(false);
+
     return (
-        <Card title="Quản lý hỗ trợ chi phí vận chuyển">
+        <Card
+            title="Quản lý hỗ trợ chi phí vận chuyển"
+            extra={
+                <Button
+                    icon={<FileExcelOutlined />}
+                    onClick={() => setIsImportModalVisible(true)}
+                >
+                    Import CSV
+                </Button>
+            }
+        >
             <Table
                 columns={columns}
                 dataSource={students?.data}
@@ -145,8 +176,26 @@ const Transport: React.FC = () => {
                     <Form.Item name="ten_diem_dung" label="Điểm dừng xe buýt (nếu có)">
                         <Input />
                     </Form.Item>
+
+                    <AuditFooter
+                        createdAt={profileMap.get(editingStudent?.id || '')?.createdAt}
+                        updatedAt={profileMap.get(editingStudent?.id || '')?.updatedAt}
+                        updatedBy={profileMap.get(editingStudent?.id || '')?.nguoi_cap_nhat?.ho_ten}
+                    />
                 </Form>
             </Modal>
+
+            <ImportModal
+                visible={isImportModalVisible}
+                onCancel={() => setIsImportModalVisible(false)}
+                onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ['dinh-muc-xe-profiles'] });
+                    setIsImportModalVisible(false);
+                }}
+                title="Import định mức hỗ trợ vận chuyển"
+                endpoint="/nhap-lieu/dinh-muc-xe-csv"
+                description="Hệ thống cập nhật định mức km và thông tin ngân hàng. Cột cần có: 'ma_hoc_sinh', 'khoang_cach', 'ngan_hang', 'stk'."
+            />
         </Card>
     );
 };

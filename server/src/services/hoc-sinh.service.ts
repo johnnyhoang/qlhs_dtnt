@@ -21,7 +21,8 @@ export const HocSinhService = {
             where,
             skip,
             take: pageSize,
-            order: { ho_ten: "ASC" }
+            order: { ho_ten: "ASC" },
+            relations: ["nguoi_cap_nhat"]
         });
 
         return {
@@ -37,15 +38,15 @@ export const HocSinhService = {
         return await hocSinhRepository.findOneBy({ id });
     },
 
-    create: async (data: Partial<HocSinh>) => {
-        const hoc_sinh = hocSinhRepository.create(data);
+    create: async (data: Partial<HocSinh>, userId?: number) => {
+        const hoc_sinh = hocSinhRepository.create({ ...data, nguoi_cap_nhat_id: userId });
         return await hocSinhRepository.save(hoc_sinh);
     },
 
-    update: async (id: string, data: Partial<HocSinh>) => {
+    update: async (id: string, data: Partial<HocSinh>, userId?: number) => {
         const hoc_sinh = await hocSinhRepository.findOneBy({ id });
         if (!hoc_sinh) return null;
-        hocSinhRepository.merge(hoc_sinh, data);
+        hocSinhRepository.merge(hoc_sinh, { ...data, nguoi_cap_nhat_id: userId });
         return await hocSinhRepository.save(hoc_sinh);
     },
 
@@ -53,15 +54,15 @@ export const HocSinhService = {
         return await hocSinhRepository.delete(id);
     },
 
-    upsertByMaHocSinh: async (data: Partial<HocSinh>) => {
+    upsertByMaHocSinh: async (data: Partial<HocSinh>, userId?: number) => {
         if (!data.ma_hoc_sinh) throw new Error("Mã học sinh là bắt buộc");
         
         const existing = await hocSinhRepository.findOneBy({ ma_hoc_sinh: data.ma_hoc_sinh });
         if (existing) {
-            hocSinhRepository.merge(existing, data);
+            hocSinhRepository.merge(existing, { ...data, nguoi_cap_nhat_id: userId });
             return await hocSinhRepository.save(existing);
         } else {
-            const hoc_sinh = hocSinhRepository.create(data);
+            const hoc_sinh = hocSinhRepository.create({ ...data, nguoi_cap_nhat_id: userId });
             return await hocSinhRepository.save(hoc_sinh);
         }
     }

@@ -6,7 +6,7 @@ const dinhMucXeRepository = AppDataSource.getRepository(DinhMucXe);
 export const DinhMucXeService = {
     getAll: async () => {
         return await dinhMucXeRepository.find({
-            relations: ["hoc_sinh"]
+            relations: ["hoc_sinh", "nguoi_cap_nhat"]
         });
     },
 
@@ -17,12 +17,12 @@ export const DinhMucXeService = {
         });
     },
 
-    luuDinhMuc: async (hoc_sinh_id: string, data: Partial<DinhMucXe>) => {
+    luuDinhMuc: async (hoc_sinh_id: string, data: Partial<DinhMucXe>, userId?: number) => {
         let dinh_muc = await dinhMucXeRepository.findOneBy({ hoc_sinh_id });
         if (dinh_muc) {
-            dinhMucXeRepository.merge(dinh_muc, data);
+            dinhMucXeRepository.merge(dinh_muc, { ...data, nguoi_cap_nhat_id: userId });
         } else {
-            dinh_muc = dinhMucXeRepository.create({ ...data, hoc_sinh_id });
+            dinh_muc = dinhMucXeRepository.create({ ...data, hoc_sinh_id, nguoi_cap_nhat_id: userId });
         }
         return await dinhMucXeRepository.save(dinh_muc);
     },

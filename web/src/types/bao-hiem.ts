@@ -16,6 +16,11 @@ export interface BaoHiem {
     tra_cuu_vssid?: string;
     ngay_du_5_nam?: string;
     ghi_chu?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    nguoi_cap_nhat?: {
+        ho_ten: string;
+    };
 }
 
 export interface UpsertBaoHiemRequest extends Partial<Omit<BaoHiem, 'id' | 'hoc_sinh'>> {

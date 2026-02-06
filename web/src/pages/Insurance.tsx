@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Table, Card, Button, Modal, Form, Input, DatePicker, Checkbox, Tag, message } from 'antd';
-import { EditOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { EditOutlined, CheckCircleOutlined, CloseCircleOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { layDanhSachBaoHiem, luuHoSoBaoHiem } from '../api/bao-hiem';
 import { layDanhSachHocSinh } from '../api/hoc-sinh';
 import type { HocSinh } from '../types/hoc-sinh';
 import type { BaoHiem } from '../types/bao-hiem';
+import ImportModal from '../components/ImportModal';
+import AuditFooter from '../components/AuditFooter';
 
 const Insurance: React.FC = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -100,6 +102,22 @@ const Insurance: React.FC = () => {
             },
         },
         {
+            title: 'Ngày cập nhật',
+            key: 'updatedAt',
+            render: (_: any, record: HocSinh) => {
+                const p = profileMap.get(record.id);
+                return p?.updatedAt ? dayjs(p.updatedAt).format('DD/MM/YYYY HH:mm') : '-';
+            },
+        },
+        {
+            title: 'Người cập nhật',
+            key: 'updatedBy',
+            render: (_: any, record: HocSinh) => {
+                const p = profileMap.get(record.id);
+                return p?.nguoi_cap_nhat?.ho_ten || '-';
+            },
+        },
+        {
             title: 'Thao tác',
             key: 'action',
             render: (_: any, record: HocSinh) => (
@@ -114,8 +132,20 @@ const Insurance: React.FC = () => {
         },
     ];
 
+    const [isImportModalVisible, setIsImportModalVisible] = useState(false);
+
     return (
-        <Card title="Quản lý Bảo hiểm y tế">
+        <Card
+            title="Quản lý Bảo hiểm y tế"
+            extra={
+                <Button
+                    icon={<FileExcelOutlined />}
+                    onClick={() => setIsImportModalVisible(true)}
+                >
+                    Import CSV
+                </Button>
+            }
+        >
             <Table
                 columns={columns}
                 dataSource={students?.data}
@@ -184,8 +214,26 @@ const Insurance: React.FC = () => {
                     <Form.Item name="ghi_chu" label="Ghi chú thêm">
                         <Input />
                     </Form.Item>
+
+                    <AuditFooter
+                        createdAt={profileMap.get(editingStudent?.id || '')?.createdAt}
+                        updatedAt={profileMap.get(editingStudent?.id || '')?.updatedAt}
+                        updatedBy={profileMap.get(editingStudent?.id || '')?.nguoi_cap_nhat?.ho_ten}
+                    />
                 </Form>
             </Modal>
+
+            <ImportModal
+                visible={isImportModalVisible}
+                onCancel={() => setIsImportModalVisible(false)}
+                onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ['bao-hiem-profiles'] });
+                    setIsImportModalVisible(false);
+                }}
+                title="Import hồ sơ Bảo hiểm y tế"
+                endpoint="/nhap-lieu/bao-hiem-csv"
+                description="Hệ thống cập nhật thông tin thẻ BHYT. Cột cần có: 'ma_hoc_sinh', 'so_the', 'han_dung' (dd/mm/yyyy), 'noi_dk'."
+            />
         </Card>
     );
 };
