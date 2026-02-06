@@ -1,0 +1,94 @@
+steps:
+  # Build backend (server) image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/qlhs-server:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/qlhs-server:latest'
+      - '-f'
+      - 'server/Dockerfile'
+      - './server'
+    id: 'build-server'
+
+  # Build frontend (web) image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/qlhs-web:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/qlhs-web:latest'
+      - '-f'
+      - 'web/Dockerfile'
+      - './web'
+    id: 'build-web'
+
+  # Push backend image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/qlhs-server:$COMMIT_SHA'
+    id: 'push-server'
+    waitFor: ['build-server']
+
+  # Push frontend image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/qlhs-web:$COMMIT_SHA'
+    id: 'push-web'
+    waitFor: ['build-web']
+
+  # Deploy backend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'qlhs-server'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/qlhs-server:$COMMIT_SHA'
+      - '--region'
+      - 'asia-southeast1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '3500'
+      - '--set-env-vars'
+      - 'NODE_ENV=production'
+    id: 'deploy-server'
+    waitFor: ['push-server']
+
+  # Deploy frontend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'qlhs-web'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/qlhs-web:$COMMIT_SHA'
+      - '--region'
+      - 'asia-southeast1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '80'
+    id: 'deploy-web'
+    waitFor: ['push-web', 'deploy-server']
+
+images:
+  - 'gcr.io/$PROJECT_ID/qlhs-server:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/qlhs-server:latest'
+  - 'gcr.io/$PROJECT_ID/qlhs-web:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/qlhs-web:latest'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '1800s'
