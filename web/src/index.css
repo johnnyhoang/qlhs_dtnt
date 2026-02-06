@@ -73,3 +73,27 @@ h3 {
 .ant-card-body {
   padding: 16px !important;
 }
+
+/* Responsive Overrides */
+@media (max-width: 768px) {
+  :root, body {
+    font-size: 12px;
+  }
+
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.5em; }
+  h3 { font-size: 1.3em; }
+
+  .ant-table-cell {
+    padding: 6px 8px !important;
+  }
+
+  .ant-card-body {
+    padding: 12px !important;
+  }
+
+  /* Reduce content padding on mobile */
+  .site-layout-content {
+    padding: 12px !important;
+  }
+}

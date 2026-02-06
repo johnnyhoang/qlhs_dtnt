@@ -137,7 +137,7 @@ const ImportModal: React.FC<ImportModalProps> = ({
             ) : (
                 <div>
                     <div style={{ marginBottom: 16, textAlign: 'center' }}>
-                        <Space size="large">
+                        <Space size="large" orientation="horizontal">
                             <Statistic title="Thành công" value={results.thanh_cong} valueStyle={{ color: '#3f8600' }} />
                             <Statistic title="Thất bại" value={results.loi} valueStyle={{ color: '#cf1322' }} />
                         </Space>

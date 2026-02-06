@@ -81,16 +81,19 @@ const Students: React.FC = () => {
             title: 'Mã HS',
             dataIndex: 'ma_hoc_sinh',
             key: 'ma_hoc_sinh',
+            sorter: (a: any, b: any) => a.ma_hoc_sinh.localeCompare(b.ma_hoc_sinh),
         },
         {
             title: 'Họ và tên',
             dataIndex: 'ho_ten',
             key: 'ho_ten',
+            sorter: (a: any, b: any) => a.ho_ten.localeCompare(b.ho_ten),
         },
         {
             title: 'Lớp',
             dataIndex: 'lop',
             key: 'lop',
+            sorter: (a: any, b: any) => a.lop.localeCompare(b.lop),
         },
         {
             title: 'Ngày sinh',
@@ -112,6 +115,7 @@ const Students: React.FC = () => {
             title: 'Trạng thái',
             dataIndex: 'trang_thai',
             key: 'trang_thai',
+            sorter: (a: any, b: any) => a.trang_thai.localeCompare(b.trang_thai),
             render: (trang_thai: TrangThaiHocSinh) => (
                 <Tag color={trang_thai === TrangThaiHocSinh.DANG_HOC ? 'success' : 'error'}>
                     {trang_thai === TrangThaiHocSinh.DANG_HOC ? 'Đang học' : 'Đã nghỉ'}
@@ -175,7 +179,7 @@ const Students: React.FC = () => {
                 )}
             </Space>
         }>
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <Input
                         placeholder="Tìm kiếm theo tên..."
@@ -195,6 +199,7 @@ const Students: React.FC = () => {
                     dataSource={data?.data}
                     rowKey="id"
                     loading={isLoading}
+                    scroll={{ x: 'max-content' }}
                     pagination={{
                         current: page,
                         pageSize: pageSize,

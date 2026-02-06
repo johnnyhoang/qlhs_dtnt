@@ -52,12 +52,18 @@ const Payments: React.FC = () => {
         {
             title: 'Tháng/Năm',
             key: 'period',
+            sorter: (a: any, b: any) => {
+                const dateA = dayjs(`${a.thang}/${a.nam}`, 'MM/YYYY');
+                const dateB = dayjs(`${b.thang}/${b.nam}`, 'MM/YYYY');
+                return dateA.unix() - dateB.unix();
+            },
             render: (_: any, record: DotThanhToan) => `Tháng ${record.thang}/${record.nam}`,
         },
         {
             title: 'Ngày tạo',
             dataIndex: 'createdAt',
             key: 'createdAt',
+            sorter: (a: any, b: any) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
             render: (date: string) => dayjs(date).format('DD/MM/YYYY HH:mm'),
         },
         {
@@ -136,6 +142,7 @@ const Payments: React.FC = () => {
                 dataSource={batches}
                 rowKey="id"
                 loading={isLoading}
+                scroll={{ x: 'max-content' }}
             />
 
             <Modal

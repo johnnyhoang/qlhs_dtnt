@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Input, InputNumber, message, Tooltip } from 'antd';
-import { EditOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { Table, Card, Button, Modal, Form, Input, InputNumber, message, Tooltip, Select, Space } from 'antd';
+import { EditOutlined, FileExcelOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layTatCaDinhMuc, luuDinhMucXe } from '../api/dinh-muc-xe';
 import { layDanhSachHocSinh } from '../api/hoc-sinh';
@@ -11,6 +11,8 @@ import AuditFooter from '../components/AuditFooter';
 import dayjs from 'dayjs';
 
 const Transport: React.FC = () => {
+    const [searchText, setSearchText] = useState('');
+    const [selectedClass, setSelectedClass] = useState<string | null>(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingStudent, setEditingStudent] = useState<HocSinh | null>(null);
     const [form] = Form.useForm();
@@ -62,26 +64,61 @@ const Transport: React.FC = () => {
     const profileMap = new Map();
     profiles?.forEach(p => profileMap.set(p.hoc_sinh_id, p));
 
+    const classes = Array.from(new Set(students?.data?.map((s: any) => s.lop))).filter(Boolean).sort();
+
+    const filteredData = students?.data?.filter((s: any) => {
+        const matchesSearch = s.ho_ten.toLowerCase().includes(searchText.toLowerCase()) ||
+            s.ma_hoc_sinh.toLowerCase().includes(searchText.toLowerCase());
+        const matchesClass = !selectedClass || s.lop === selectedClass;
+        return matchesSearch && matchesClass;
+    });
+
     const columns = [
         {
             title: 'Mã HS',
             dataIndex: 'ma_hoc_sinh',
             key: 'ma_hoc_sinh',
+            sorter: (a: any, b: any) => a.ma_hoc_sinh.localeCompare(b.ma_hoc_sinh),
         },
         {
             title: 'Họ và tên',
             dataIndex: 'ho_ten',
             key: 'ho_ten',
+            sorter: (a: any, b: any) => a.ho_ten.localeCompare(b.ho_ten),
         },
         {
             title: 'Lớp',
             dataIndex: 'lop',
             key: 'lop',
+            sorter: (a: any, b: any) => a.lop.localeCompare(b.lop),
         },
         {
             title: 'Khoảng cách (km)',
             key: 'khoang_cach',
+            sorter: (a: any, b: any) => (profileMap.get(a.id)?.khoang_cach || 0) - (profileMap.get(b.id)?.khoang_cach || 0),
             render: (_: any, record: HocSinh) => profileMap.get(record.id)?.khoang_cach || '-',
+        },
+        {
+            title: 'Định mức (VNĐ)',
+            key: 'dinh_muc',
+            sorter: (a: any, b: any) => (profileMap.get(a.id)?.dinh_muc || 0) - (profileMap.get(b.id)?.dinh_muc || 0),
+            render: (_: any, record: HocSinh) => profileMap.get(record.id)?.dinh_muc?.toLocaleString() || '-',
+        },
+        {
+            title: 'Thành tiền (VNĐ)',
+            key: 'thanh_tien',
+            sorter: (a: any, b: any) => {
+                const pA = profileMap.get(a.id);
+                const pB = profileMap.get(b.id);
+                const valA = (pA?.khoang_cach || 0) * (pA?.dinh_muc || 0);
+                const valB = (pB?.khoang_cach || 0) * (pB?.dinh_muc || 0);
+                return valA - valB;
+            },
+            render: (_: any, record: HocSinh) => {
+                const p = profileMap.get(record.id);
+                if (!p) return '-';
+                return ((p.khoang_cach || 0) * (p.dinh_muc || 0)).toLocaleString();
+            },
         },
         {
             title: 'Ngân hàng',
@@ -128,22 +165,43 @@ const Transport: React.FC = () => {
         <Card
             title="Quản lý hỗ trợ chi phí vận chuyển"
             extra={
-                canImport && (
-                    <Tooltip title="Import từ CSV">
-                        <Button
-                            icon={<FileExcelOutlined />}
-                            onClick={() => setIsImportModalVisible(true)}
-                        />
-                    </Tooltip>
-                )
+                <Space>
+                    {canImport && (
+                        <Tooltip title="Import từ CSV">
+                            <Button
+                                icon={<FileExcelOutlined />}
+                                onClick={() => setIsImportModalVisible(true)}
+                            />
+                        </Tooltip>
+                    )}
+                </Space>
             }
         >
-            <Table
-                columns={columns}
-                dataSource={students?.data}
-                rowKey="id"
-                loading={isLoadingStudents || isLoadingProfiles}
-            />
+            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <Input
+                        placeholder="Tìm theo tên hoặc mã HS..."
+                        prefix={<SearchOutlined />}
+                        onChange={e => setSearchText(e.target.value)}
+                        style={{ width: 300 }}
+                        allowClear
+                    />
+                    <Select
+                        placeholder="Lọc theo lớp"
+                        style={{ width: 150 }}
+                        allowClear
+                        onChange={value => setSelectedClass(value)}
+                        options={classes.map(c => ({ label: c, value: c }))}
+                    />
+                </div>
+                <Table
+                    columns={columns}
+                    dataSource={filteredData}
+                    rowKey="id"
+                    loading={isLoadingStudents || isLoadingProfiles}
+                    scroll={{ x: 'max-content' }}
+                />
+            </Space>
 
             <Modal
                 title={`${canEdit ? 'Hồ sơ hỗ trợ' : 'Xem hồ sơ'}: ${editingStudent?.ho_ten}`}

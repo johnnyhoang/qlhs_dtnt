@@ -57,12 +57,14 @@ const Meals: React.FC = () => {
             title: 'Họ và tên',
             dataIndex: 'ho_ten',
             key: 'ho_ten',
+            sorter: (a: any, b: any) => a.ho_ten.localeCompare(b.ho_ten),
         },
         {
             title: 'Lớp',
             dataIndex: 'lop',
             key: 'lop',
             width: 100,
+            sorter: (a: any, b: any) => a.lop.localeCompare(b.lop),
         },
         {
             title: 'Báo cắt Sáng',
@@ -145,7 +147,7 @@ const Meals: React.FC = () => {
                 )
             }
         >
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                     <DatePicker
                         value={dayjs(ngay)}
@@ -172,7 +174,7 @@ const Meals: React.FC = () => {
                     rowKey="id"
                     loading={isLoading || toggleMutation.isPending}
                     pagination={false}
-                    scroll={{ y: 600 }}
+                    scroll={{ x: 'max-content', y: 600 }}
                 />
             </Space>
 

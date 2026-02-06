@@ -57,16 +57,19 @@ const Users: React.FC = () => {
         {
             title: 'Họ và tên',
             dataIndex: 'ho_ten',
-            key: 'ho_ten'
+            key: 'ho_ten',
+            sorter: (a: NguoiDung, b: NguoiDung) => a.ho_ten.localeCompare(b.ho_ten),
         },
         {
             title: 'Email',
             dataIndex: 'email',
-            key: 'email'
+            key: 'email',
+            sorter: (a: NguoiDung, b: NguoiDung) => a.email.localeCompare(b.email),
         },
         {
             title: 'Vai trò',
             key: 'vai_tro',
+            sorter: (a: NguoiDung, b: NguoiDung) => a.vai_tro.localeCompare(b.vai_tro),
             render: (_: any, record: NguoiDung) => (
                 <Select
                     value={record.vai_tro}
@@ -81,6 +84,7 @@ const Users: React.FC = () => {
         {
             title: 'Trạng thái',
             key: 'kich_hoat',
+            sorter: (a: NguoiDung, b: NguoiDung) => (a.kich_hoat ? 1 : 0) - (b.kich_hoat ? 1 : 0),
             render: (_: any, record: NguoiDung) => (
                 <Switch
                     checked={record.kich_hoat}
@@ -106,6 +110,7 @@ const Users: React.FC = () => {
                 columns={columns}
                 rowKey="id"
                 loading={isLoading}
+                scroll={{ x: 'max-content' }}
             />
 
             <Modal

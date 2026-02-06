@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Menu, Button, Avatar, Space, Typography } from 'antd';
+import { Layout, Menu, Button, Avatar, Space, Typography, Grid } from 'antd';
 import {
     UserOutlined,
     DashboardOutlined,
@@ -14,8 +14,10 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
+const { useBreakpoint } = Grid;
 
 const MainLayout: React.FC = () => {
+    const screens = useBreakpoint();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -94,21 +96,27 @@ const MainLayout: React.FC = () => {
             <Layout className="site-layout">
                 <Header style={{ padding: '0 16px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div />
-                    <Space size="large">
+                    <Space size={screens.xs ? "small" : "large"}>
                         <Space>
                             <Avatar src={user?.anh_dai_dien} icon={<UserOutlined />} />
-                            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 'normal' }}>
-                                <Text strong>{user?.ho_ten}</Text>
-                                <Text type="secondary" style={{ fontSize: '12px' }}>{user?.vai_tro}</Text>
-                            </div>
+                            {screens.sm && (
+                                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 'normal' }}>
+                                    <Text strong>{user?.ho_ten}</Text>
+                                    <Text type="secondary" style={{ fontSize: '12px' }}>{user?.vai_tro}</Text>
+                                </div>
+                            )}
                         </Space>
-                        <Button icon={<LogoutOutlined />} onClick={handleLogout}>
-                            Đăng xuất
+                        <Button
+                            icon={<LogoutOutlined />}
+                            onClick={handleLogout}
+                            title="Đăng xuất"
+                        >
+                            {screens.sm && 'Đăng xuất'}
                         </Button>
                     </Space>
                 </Header>
                 <Content style={{ margin: '0', background: '#f0f2f5' }}>
-                    <div style={{ padding: '24px', minHeight: 'calc(100vh - 64px)', background: '#fff' }}>
+                    <div className="site-layout-content" style={{ padding: screens.xs ? '12px' : '24px', minHeight: 'calc(100vh - 64px)', background: '#fff' }}>
                         <Outlet />
                     </div>
                 </Content>
