@@ -60,7 +60,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
             onOk={handleSubmit}
             onCancel={onCancel}
             confirmLoading={loading}
-            width={600}
+            width={800}
             destroyOnHidden
         >
             <Form
@@ -135,6 +135,108 @@ const StudentModal: React.FC<StudentModalProps> = ({
                         <Select.Option value={TrangThaiHocSinh.DANG_HOC}>Đang học</Select.Option>
                         <Select.Option value={TrangThaiHocSinh.DA_NGHI}>Đã nghỉ</Select.Option>
                     </Select>
+                </Form.Item>
+
+                {/* Address Information */}
+                <div style={{ marginTop: '16px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
+                    Thông tin địa chỉ
+                </div>
+                <Form.Item
+                    name="dia_chi"
+                    label="Địa chỉ"
+                >
+                    <Input placeholder="Số nhà, tên đường" />
+                </Form.Item>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <Form.Item
+                        name="phuong_xa"
+                        label="Phường/Xã"
+                    >
+                        <Input placeholder="Nhập phường/xã" />
+                    </Form.Item>
+                    <Form.Item
+                        name="tinh"
+                        label="Tỉnh/Thành phố"
+                    >
+                        <Input placeholder="Nhập tỉnh/thành phố" />
+                    </Form.Item>
+                </div>
+
+                {/* Banking Information */}
+                <div style={{ marginTop: '16px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
+                    Thông tin ngân hàng
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <Form.Item
+                        name="so_tai_khoan"
+                        label="Số tài khoản"
+                    >
+                        <Input placeholder="Nhập số tài khoản" />
+                    </Form.Item>
+                    <Form.Item
+                        name="ngan_hang"
+                        label="Ngân hàng"
+                    >
+                        <Input placeholder="Tên ngân hàng" />
+                    </Form.Item>
+                </div>
+
+                {/* Personal Information */}
+                <div style={{ marginTop: '16px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
+                    Thông tin cá nhân
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <Form.Item
+                        name="dan_toc"
+                        label="Dân tộc"
+                    >
+                        <Input placeholder="Ví dụ: Kinh" />
+                    </Form.Item>
+                    <Form.Item
+                        name="ton_giao"
+                        label="Tôn giáo"
+                    >
+                        <Input placeholder="Ví dụ: Không" />
+                    </Form.Item>
+                </div>
+
+                <Form.Item
+                    name="so_dien_thoai"
+                    label="Số điện thoại"
+                    rules={[
+                        { pattern: /^[0-9]{10,11}$/, message: 'Số điện thoại phải có 10-11 chữ số' }
+                    ]}
+                >
+                    <Input placeholder="Nhập số điện thoại" />
+                </Form.Item>
+
+                {/* Additional Information */}
+                <div style={{ marginTop: '16px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
+                    Thông tin bổ sung
+                </div>
+                <Form.Item
+                    name="ghi_chu"
+                    label="Ghi chú"
+                >
+                    <Input.TextArea
+                        rows={3}
+                        placeholder="Nhập ghi chú về học sinh"
+                        maxLength={1000}
+                        showCount
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    name="ly_lich"
+                    label="Lý lịch"
+                >
+                    <Input.TextArea
+                        rows={4}
+                        placeholder="Nhập lý lịch, tiểu sử học sinh"
+                        maxLength={2000}
+                        showCount
+                    />
                 </Form.Item>
                 <AuditFooter
                     createdAt={student?.createdAt}

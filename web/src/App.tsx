@@ -10,6 +10,7 @@ import Transport from './pages/Transport';
 import Insurance from './pages/Insurance';
 import Payments from './pages/Payments';
 import Users from './pages/Users';
+import MasterData from './pages/MasterData';
 import MainLayout from './layouts/MainLayout';
 
 const queryClient = new QueryClient();
@@ -96,6 +97,7 @@ const App: React.FC = () => {
                 <Route path="dinh-muc-xe" element={<ProtectedRoute module="dinh-muc-xe"><Transport /></ProtectedRoute>} />
                 <Route path="bao-hiem" element={<ProtectedRoute module="bao-hiem"><Insurance /></ProtectedRoute>} />
                 <Route path="thanh-toan" element={<ProtectedRoute module="thanh-toan"><Payments /></ProtectedRoute>} />
+                <Route path="danh-muc-master" element={<AdminRoute><MasterData /></AdminRoute>} />
                 <Route path="nguoi-dung" element={<AdminRoute><Users /></AdminRoute>} />
               </Route>
             </Routes>

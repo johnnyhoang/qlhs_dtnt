@@ -261,3 +261,59 @@ export const nhapThanhToanCsv = async (req: Request, res: Response) => {
         res.json({ message: "Đã nhập xong thanh toán", data: ket_qua });
     } catch (error: any) { res.status(500).json({ message: "Lỗi", error: error.message }); }
 };
+
+export const nhapDanhMucMasterCsv = async (req: Request, res: Response) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: "Vui lòng chọn file CSV" });
+        const data = getCsvData(req.file.buffer);
+        if (!data) return res.status(400).json({ message: "File rỗng" });
+
+        const user = (req as any).user;
+        const { loai_danh_muc } = req.body; // Required: category type
+        
+        if (!loai_danh_muc) {
+            return res.status(400).json({ message: "Thiếu loại danh mục (loai_danh_muc)" });
+        }
+
+        const ket_qua = { thanh_cong: 0, loi: 0, chi_tiet_loi: [] as any[] };
+
+        const mapping = {
+            ten: ['ten', 'name', 'title'],
+            ma: ['ma', 'code'],
+            ghi_chu: ['ghi_chu', 'note', 'notes'],
+            thu_tu: ['thu_tu', 'order', 'sort_order']
+        };
+
+        const items = [];
+        for (const raw of data) {
+            try {
+                const item = mapFields(raw, mapping);
+                const ten = String(item.ten || '').trim();
+                
+                if (!ten) {
+                    throw new Error("Thiếu tên danh mục");
+                }
+
+                items.push({
+                    ten,
+                    ma: item.ma ? String(item.ma).trim() : undefined,
+                    ghi_chu: item.ghi_chu ? String(item.ghi_chu).trim() : undefined,
+                    thu_tu: item.thu_tu ? Number(item.thu_tu) : 0,
+                    kich_hoat: true
+                });
+            } catch (err: any) {
+                ket_qua.loi++;
+                ket_qua.chi_tiet_loi.push({ error: err.message, row: raw });
+            }
+        }
+
+        // Batch upsert
+        const { DanhMucMasterService } = await import('../services/danh-muc-master.service');
+        await DanhMucMasterService.upsertBatch(loai_danh_muc, items, user?.id);
+        ket_qua.thanh_cong = items.length;
+
+        res.json({ message: `Đã nhập xong danh mục ${loai_danh_muc}`, data: ket_qua });
+    } catch (error: any) { 
+        res.status(500).json({ message: "Lỗi", error: error.message }); 
+    }
+};

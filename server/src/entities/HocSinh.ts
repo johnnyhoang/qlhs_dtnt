@@ -41,6 +41,40 @@ export class HocSinh {
     @Column({ type: "simple-enum", enum: TrangThaiHocSinh, default: TrangThaiHocSinh.DANG_HOC })
     trang_thai!: TrangThaiHocSinh;
 
+    // Address Information
+    @Column({ nullable: true })
+    dia_chi!: string;
+
+    @Column({ nullable: true })
+    phuong_xa!: string;
+
+    @Column({ nullable: true })
+    tinh!: string;
+
+    // Banking Information
+    @Column({ nullable: true })
+    so_tai_khoan!: string;
+
+    @Column({ nullable: true })
+    ngan_hang!: string;
+
+    // Personal Information
+    @Column({ nullable: true })
+    dan_toc!: string;
+
+    @Column({ nullable: true })
+    ton_giao!: string;
+
+    @Column({ nullable: true })
+    so_dien_thoai!: string;
+
+    // Additional Information
+    @Column({ type: "text", nullable: true })
+    ghi_chu!: string;
+
+    @Column({ type: "text", nullable: true })
+    ly_lich!: string;
+
     @CreateDateColumn()
     createdAt!: Date;
 

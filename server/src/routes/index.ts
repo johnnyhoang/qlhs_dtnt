@@ -7,6 +7,8 @@ import baoHiemRoutes from './bao-hiem.routes';
 import thanhToanRoutes from './thanh-toan.routes';
 import nhapLieuRoutes from './nhap-lieu.routes';
 import nguoiDungRoutes from './nguoi-dung.routes';
+import danhMucMasterRoutes from './danh-muc-master.routes';
+import thongKeRoutes from './thong-ke.routes';
 import { authMiddleware, adminOnly, checkModuleAccess } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -26,8 +28,10 @@ router.use('/dinh-muc-xe', checkModuleAccess('dinh-muc-xe'), dinhMucXeRoutes);
 router.use('/bao-hiem', checkModuleAccess('bao-hiem'), baoHiemRoutes);
 router.use('/thanh-toan', checkModuleAccess('thanh-toan'), thanhToanRoutes);
 router.use('/nhap-lieu', checkModuleAccess('nhap-lieu', true), nhapLieuRoutes);
+router.use('/thong-ke', thongKeRoutes);
 
 // Admin only
 router.use('/nguoi-dung', adminOnly, nguoiDungRoutes);
+router.use('/danh-muc-master', adminOnly, danhMucMasterRoutes);
 
 export default router;
