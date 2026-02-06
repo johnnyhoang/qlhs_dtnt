@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Input, InputNumber, message } from 'antd';
+import { Table, Card, Button, Modal, Form, Input, InputNumber, message, Tooltip } from 'antd';
 import { EditOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layTatCaDinhMuc, luuDinhMucXe } from '../api/dinh-muc-xe';
@@ -39,7 +39,7 @@ const Transport: React.FC = () => {
     const userJson = localStorage.getItem('user');
     const user = userJson ? JSON.parse(userJson) : null;
     const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'dinh-muc-xe' && p.co_quyen_sua);
-    const canImport = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'nhap-lieu' && p.co_quyen_sua);
+    const canImport = canEdit;
 
     const handleEdit = (student: HocSinh, profile?: DinhMucXe) => {
         setEditingStudent(student);
@@ -129,12 +129,12 @@ const Transport: React.FC = () => {
             title="Quản lý hỗ trợ chi phí vận chuyển"
             extra={
                 canImport && (
-                    <Button
-                        icon={<FileExcelOutlined />}
-                        onClick={() => setIsImportModalVisible(true)}
-                    >
-                        Import CSV
-                    </Button>
+                    <Tooltip title="Import từ CSV">
+                        <Button
+                            icon={<FileExcelOutlined />}
+                            onClick={() => setIsImportModalVisible(true)}
+                        />
+                    </Tooltip>
                 )
             }
         >

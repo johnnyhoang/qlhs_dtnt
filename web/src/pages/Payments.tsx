@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Select, Input, InputNumber, message } from 'antd';
+import { Table, Card, Button, Modal, Form, Select, Input, InputNumber, message, Tooltip } from 'antd';
 import { PlusOutlined, EyeOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -28,7 +28,7 @@ const Payments: React.FC = () => {
     const userJson = localStorage.getItem('user');
     const user = userJson ? JSON.parse(userJson) : null;
     const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'thanh-toan' && p.co_quyen_sua);
-    const canImport = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'nhap-lieu' && p.co_quyen_sua);
+    const canImport = canEdit;
 
     const createMutation = useMutation({
         mutationFn: taoDotThanhToanMoi,
@@ -169,12 +169,12 @@ const Payments: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 32 }}>
                         <span>Chi tiết đợt chi trả: Tháng {batchDetails?.thang}/{batchDetails?.nam}</span>
                         {canImport && (
-                            <Button
-                                icon={<FileExcelOutlined />}
-                                onClick={() => setIsImportModalVisible(true)}
-                            >
-                                Import CSV
-                            </Button>
+                            <Tooltip title="Import từ CSV">
+                                <Button
+                                    icon={<FileExcelOutlined />}
+                                    onClick={() => setIsImportModalVisible(true)}
+                                />
+                            </Tooltip>
                         )}
                     </div>
                 }

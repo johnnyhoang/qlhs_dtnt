@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Card, DatePicker, Input, Checkbox, Space, message, Button } from 'antd';
+import { Table, Card, DatePicker, Input, Checkbox, Space, message, Button, Tooltip } from 'antd';
 import { SearchOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -33,7 +33,7 @@ const Meals: React.FC = () => {
     const userJson = localStorage.getItem('user');
     const user = userJson ? JSON.parse(userJson) : null;
     const canEdit = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'suat-an' && p.co_quyen_sua);
-    const canImport = user?.vai_tro === 'ADMIN' || user?.danh_sach_quyen?.some((p: any) => p.ma_module === 'nhap-lieu' && p.co_quyen_sua);
+    const canImport = canEdit;
 
     const handleToggle = (hoc_sinh_id: string, loai_suat_an: LoaiSuatAn, bao_cat: boolean, ghi_chu?: string) => {
         if (!canEdit) return;
@@ -136,12 +136,12 @@ const Meals: React.FC = () => {
             title="Quản lý báo cắt cơm"
             extra={
                 canImport && (
-                    <Button
-                        icon={<FileExcelOutlined />}
-                        onClick={() => setIsImportModalVisible(true)}
-                    >
-                        Import CSV
-                    </Button>
+                    <Tooltip title="Import từ CSV">
+                        <Button
+                            icon={<FileExcelOutlined />}
+                            onClick={() => setIsImportModalVisible(true)}
+                        />
+                    </Tooltip>
                 )
             }
         >

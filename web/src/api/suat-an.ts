@@ -6,7 +6,7 @@ export const layTrangThaiSuatAn = async (params: {
     lop?: string;
     search?: string;
 }): Promise<HocSinhSuatAnStatus[]> => {
-    const response = await client.get('/suat-an/status', { params });
+    const response = await client.get('/suat-an', { params });
     return response.data;
 };
 
@@ -17,6 +17,6 @@ export const baoCatSuatAn = async (data: {
     bao_cat: boolean;
     ghi_chu?: string;
 }): Promise<any> => {
-    const response = await client.post('/suat-an/toggle', data);
+    const response = await client.post('/suat-an/bao-cat', data);
     return response.data;
 };
