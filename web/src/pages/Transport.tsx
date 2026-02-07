@@ -100,24 +100,24 @@ const Transport: React.FC = () => {
         },
         {
             title: 'Định mức (VNĐ)',
-            key: 'dinh_muc',
-            sorter: (a: any, b: any) => (profileMap.get(a.id)?.dinh_muc || 0) - (profileMap.get(b.id)?.dinh_muc || 0),
-            render: (_: any, record: HocSinh) => profileMap.get(record.id)?.dinh_muc?.toLocaleString() || '-',
+            key: 'so_tien',
+            sorter: (a: any, b: any) => (profileMap.get(a.id)?.so_tien || 0) - (profileMap.get(b.id)?.so_tien || 0),
+            render: (_: any, record: HocSinh) => profileMap.get(record.id)?.so_tien?.toLocaleString() || '-',
         },
         {
             title: 'Thành tiền (VNĐ)',
             key: 'thanh_tien',
             sorter: (a: any, b: any) => {
-                const pA = profileMap.get(a.id);
-                const pB = profileMap.get(b.id);
-                const valA = (pA?.khoang_cach || 0) * (pA?.dinh_muc || 0);
-                const valB = (pB?.khoang_cach || 0) * (pB?.dinh_muc || 0);
+                // For now, Total Amount = Support Amount (so_tien)
+                // In previous logic it was Distance * Rate. Now we just use so_tien from DB which is already calculated.
+                const valA = profileMap.get(a.id)?.so_tien || 0;
+                const valB = profileMap.get(b.id)?.so_tien || 0;
                 return valA - valB;
             },
             render: (_: any, record: HocSinh) => {
                 const p = profileMap.get(record.id);
                 if (!p) return '-';
-                return ((p.khoang_cach || 0) * (p.dinh_muc || 0)).toLocaleString();
+                return (p.so_tien || 0).toLocaleString();
             },
         },
         {

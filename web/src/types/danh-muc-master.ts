@@ -4,7 +4,8 @@ export const LoaiDanhMuc = {
     TINH: "tinh",
     NGAN_HANG: "ngan_hang",
     DAN_TOC: "dan_toc",
-    TON_GIAO: "ton_giao"
+    TON_GIAO: "ton_giao",
+    LOP: "lop"
 } as const;
 
 export type LoaiDanhMuc = typeof LoaiDanhMuc[keyof typeof LoaiDanhMuc];
@@ -15,7 +16,8 @@ export const TenLoaiDanhMuc: Record<LoaiDanhMuc, string> = {
     [LoaiDanhMuc.TINH]: "Tỉnh/Thành phố",
     [LoaiDanhMuc.NGAN_HANG]: "Ngân hàng",
     [LoaiDanhMuc.DAN_TOC]: "Dân tộc",
-    [LoaiDanhMuc.TON_GIAO]: "Tôn giáo"
+    [LoaiDanhMuc.TON_GIAO]: "Tôn giáo",
+    [LoaiDanhMuc.LOP]: "Lớp học"
 };
 
 export interface DanhMucMaster {

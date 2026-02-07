@@ -48,7 +48,17 @@ export const ThanhToanService = {
                 .getCount();
 
             const dinh_muc_xe = await dinhMucXeRepository.findOneBy({ hoc_sinh_id: hoc_sinh.id });
-            const tienXe = (dinh_muc_xe?.khoang_cach || 0) * 1000; // Gia tam tinh
+            
+            // Use stored amount, or fallback to calculation if missing (migration support)
+            let tienXe = 0;
+            if (dinh_muc_xe) {
+                if (dinh_muc_xe.so_tien !== undefined && dinh_muc_xe.so_tien !== null) {
+                    tienXe = Number(dinh_muc_xe.so_tien);
+                } else {
+                    // Fallback for old records
+                    tienXe = (dinh_muc_xe.khoang_cach || 0) * 1000;
+                }
+            }
 
             const tienAn = Math.max(0, 1500000 - (soNgayBaoCat * 50000));
             const tongTien = tienAn + tienXe;
