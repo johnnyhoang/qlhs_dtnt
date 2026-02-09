@@ -92,7 +92,7 @@ export const nhapTuCsv = async (req: Request, res: Response) => {
                     lop: item.lop ? String(item.lop).trim() : 'N/A',
                     cccd: item.cccd ? String(item.cccd).trim() : undefined,
                     gioi_tinh: String(item.gioi_tinh || '').toLowerCase().includes('nữ') ? GioiTinh.NU : GioiTinh.NAM,
-                }, user?.id);
+                }, user);
                 ket_qua.thanh_cong++;
             } catch (err: any) {
                 ket_qua.loi++;
@@ -128,7 +128,7 @@ export const nhapSuatAnCsv = async (req: Request, res: Response) => {
                 let ma_hs = String(item.ma_hoc_sinh || '').trim();
                 if (ma_hs.endsWith('.0')) ma_hs = ma_hs.slice(0, -2);
                 
-                const hs = await HocSinhService.getAll(1, 1, "", ma_hs); // Search by code
+                const hs = await HocSinhService.getAll(1, 1, "", ma_hs, user); // Search by code
                 const hoc_sinh = hs.data.find(h => h.ma_hoc_sinh === ma_hs);
                 if (!hoc_sinh) throw new Error("Không tìm thấy học sinh");
 
@@ -172,7 +172,7 @@ export const nhapDinhMucXeCsv = async (req: Request, res: Response) => {
                 let ma_hs = String(item.ma_hoc_sinh || '').trim();
                 if (ma_hs.endsWith('.0')) ma_hs = ma_hs.slice(0, -2);
                 
-                const hs = await HocSinhService.getAll(1, 1, "", ma_hs);
+                const hs = await HocSinhService.getAll(1, 1, "", ma_hs, user);
                 const hoc_sinh = hs.data.find(h => h.ma_hoc_sinh === ma_hs);
                 if (!hoc_sinh) throw new Error("N/A");
 
@@ -206,7 +206,7 @@ export const nhapBaoHiemCsv = async (req: Request, res: Response) => {
                 const item = mapFields(raw, mapping);
                 let ma_hs = String(item.ma_hoc_sinh || '').trim();
                 if (ma_hs.endsWith('.0')) ma_hs = ma_hs.slice(0, -2);
-                const hs = await HocSinhService.getAll(1, 1, "", ma_hs);
+                const hs = await HocSinhService.getAll(1, 1, "", ma_hs, user);
                 const hoc_sinh = hs.data.find(h => h.ma_hoc_sinh === ma_hs);
                 if (hoc_sinh) {
                     await BaoHiemService.luuHoSo(hoc_sinh.id, {
@@ -241,7 +241,7 @@ export const nhapThanhToanCsv = async (req: Request, res: Response) => {
                 const item = mapFields(raw, mapping);
                 let ma_hs = String(item.ma_hoc_sinh || '').trim();
                 if (ma_hs.endsWith('.0')) ma_hs = ma_hs.slice(0, -2);
-                const hs = await HocSinhService.getAll(1, 1, "", ma_hs);
+                const hs = await HocSinhService.getAll(1, 1, "", ma_hs, user);
                 const hoc_sinh = hs.data.find(h => h.ma_hoc_sinh === ma_hs);
                 
                 if (hoc_sinh && dot_id) {

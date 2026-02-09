@@ -67,31 +67,72 @@ export const HocSinhService = {
         return hoc_sinh;
     },
 
-    create: async (data: Partial<HocSinh>, userId?: number) => {
-        const hoc_sinh = hocSinhRepository.create({ ...data, nguoi_cap_nhat_id: userId });
+    create: async (data: Partial<HocSinh>, user?: any) => {
+        if (user && user.vai_tro === "TEACHER") {
+             const assignedClasses: string[] = user.lop_phu_trach || [];
+             if (data.lop && !assignedClasses.includes(data.lop)) {
+                 throw new Error("Không có quyền thêm học sinh vào lớp này");
+             }
+        }
+        const hoc_sinh = hocSinhRepository.create({ ...data, nguoi_cap_nhat_id: user?.id });
         return await hocSinhRepository.save(hoc_sinh);
     },
 
-    update: async (id: string, data: Partial<HocSinh>, userId?: number) => {
+    update: async (id: string, data: Partial<HocSinh>, user?: any) => {
         const hoc_sinh = await hocSinhRepository.findOneBy({ id });
         if (!hoc_sinh) return null;
-        hocSinhRepository.merge(hoc_sinh, { ...data, nguoi_cap_nhat_id: userId });
+
+        if (user && user.vai_tro === "TEACHER") {
+             const assignedClasses: string[] = user.lop_phu_trach || [];
+             // Check if teacher manages the CURRENT class of student
+             if (!assignedClasses.includes(hoc_sinh.lop)) {
+                 throw new Error("Không có quyền chỉnh sửa học sinh lớp này");
+             }
+             // Check if teacher is identifying a NEW class they don't manage
+             if (data.lop && !assignedClasses.includes(data.lop)) {
+                 throw new Error("Không có quyền chuyển học sinh sang lớp này");
+             }
+        }
+
+        hocSinhRepository.merge(hoc_sinh, { ...data, nguoi_cap_nhat_id: user?.id });
         return await hocSinhRepository.save(hoc_sinh);
     },
 
-    delete: async (id: string) => {
+    delete: async (id: string, user?: any) => {
+        if (user && user.vai_tro === "TEACHER") {
+            const hoc_sinh = await hocSinhRepository.findOneBy({ id });
+            if (hoc_sinh) {
+                const assignedClasses: string[] = user.lop_phu_trach || [];
+                if (!assignedClasses.includes(hoc_sinh.lop)) {
+                    throw new Error("Không có quyền xóa học sinh lớp này");
+                }
+            }
+        }
         return await hocSinhRepository.delete(id);
     },
 
-    upsertByMaHocSinh: async (data: Partial<HocSinh>, userId?: number) => {
+    upsertByMaHocSinh: async (data: Partial<HocSinh>, user?: any) => {
         if (!data.ma_hoc_sinh) throw new Error("Mã học sinh là bắt buộc");
         
         const existing = await hocSinhRepository.findOneBy({ ma_hoc_sinh: data.ma_hoc_sinh });
+        
+        if (user && user.vai_tro === "TEACHER") {
+             const assignedClasses: string[] = user.lop_phu_trach || [];
+             if (existing) {
+                 if (!assignedClasses.includes(existing.lop)) {
+                     throw new Error(`Không có quyền cập nhật học sinh ${existing.ho_ten} (Lớp ${existing.lop})`);
+                 }
+             }
+             if (data.lop && !assignedClasses.includes(data.lop)) {
+                 throw new Error(`Không có quyền thêm/sửa học sinh vào lớp ${data.lop}`);
+             }
+        }
+
         if (existing) {
-            hocSinhRepository.merge(existing, { ...data, nguoi_cap_nhat_id: userId });
+            hocSinhRepository.merge(existing, { ...data, nguoi_cap_nhat_id: user?.id });
             return await hocSinhRepository.save(existing);
         } else {
-            const hoc_sinh = hocSinhRepository.create({ ...data, nguoi_cap_nhat_id: userId });
+            const hoc_sinh = hocSinhRepository.create({ ...data, nguoi_cap_nhat_id: user?.id });
             return await hocSinhRepository.save(hoc_sinh);
         }
     }

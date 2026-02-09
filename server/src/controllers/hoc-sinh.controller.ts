@@ -18,7 +18,8 @@ export const layDanhSachHocSinh = async (req: Request, res: Response) => {
 
 export const layHocSinhTheoId = async (req: Request, res: Response) => {
     try {
-        const hoc_sinh = await HocSinhService.getById(req.params.id as string);
+        const user = (req as any).user;
+        const hoc_sinh = await HocSinhService.getById(req.params.id as string, user);
         if (!hoc_sinh) {
             return res.status(404).json({ message: "Khong tim thay hoc sinh" });
         }
@@ -31,7 +32,7 @@ export const layHocSinhTheoId = async (req: Request, res: Response) => {
 export const taoHocSinh = async (req: Request, res: Response) => {
     try {
         const user = (req as any).user;
-        const hoc_sinh = await HocSinhService.create(req.body, user?.id);
+        const hoc_sinh = await HocSinhService.create(req.body, user);
         res.status(201).json(hoc_sinh);
     } catch (error) {
         res.status(400).json({ message: "Loi khi tao hoc sinh", error });
@@ -41,7 +42,7 @@ export const taoHocSinh = async (req: Request, res: Response) => {
 export const capNhatHocSinh = async (req: Request, res: Response) => {
     try {
         const user = (req as any).user;
-        const hoc_sinh = await HocSinhService.update(req.params.id as string, req.body, user?.id);
+        const hoc_sinh = await HocSinhService.update(req.params.id as string, req.body, user);
         if (!hoc_sinh) {
             return res.status(404).json({ message: "Khong tim thay hoc sinh" });
         }
@@ -53,7 +54,8 @@ export const capNhatHocSinh = async (req: Request, res: Response) => {
 
 export const xoaHocSinh = async (req: Request, res: Response) => {
     try {
-        await HocSinhService.delete(req.params.id as string);
+        const user = (req as any).user;
+        await HocSinhService.delete(req.params.id as string, user);
         res.json({ message: "Da xoa hoc sinh" });
     } catch (error) {
         res.status(500).json({ message: "Loi khi xoa hoc sinh", error });
