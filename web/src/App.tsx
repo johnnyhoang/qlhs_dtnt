@@ -15,11 +15,19 @@ import MainLayout from './layouts/MainLayout';
 
 const queryClient = new QueryClient();
 
-// In a real app, this would come from process.env or a config file
-// In a real app, this would come from process.env or a config file
-const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "311534268252-fjpb2dvc8kpne0hrca4fr9pb5k9sspeh.apps.googleusercontent.com").trim();
+let finalGoogleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-console.log('Using Google Client ID:', GOOGLE_CLIENT_ID);
+if (!finalGoogleClientId) {
+  if (import.meta.env.DEV) {
+    finalGoogleClientId = "311534268252-fjpb2dvc8kpne0hrca4fr9pb5k9sspeh.apps.googleusercontent.com";
+  } else {
+    throw new Error("VITE_GOOGLE_CLIENT_ID is not defined");
+  }
+}
+
+finalGoogleClientId = finalGoogleClientId.trim();
+
+console.log('Using Google Client ID:', finalGoogleClientId);
 console.log('API URL:', import.meta.env.VITE_API_URL);
 console.log('Current Origin:', window.location.origin);
 
@@ -71,7 +79,7 @@ import { AuthProvider } from './contexts/AuthContext';
 
 const App: React.FC = () => {
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={finalGoogleClientId}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ConfigProvider

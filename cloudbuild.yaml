@@ -60,7 +60,7 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
       - '--port'
-      - '3500'
+      - '8080'
       - '--set-env-vars'
       - 'NODE_ENV=production'
       - '--set-env-vars'
@@ -95,7 +95,7 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
       - '--port'
-      - '80'
+      - '8080'
     id: 'deploy-web'
     waitFor: ['push-web', 'deploy-server']
 

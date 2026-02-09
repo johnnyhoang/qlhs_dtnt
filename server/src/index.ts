@@ -6,7 +6,16 @@ import routes from './routes';
 
 const app = express();
 
-app.use(cors());
+// CORS configuration for production
+app.use(cors({
+  origin: [
+    'https://qlhs-web-311534268252.asia-southeast1.run.app',
+    'http://localhost:5173',
+    'http://localhost:8080',
+    'http://localhost:3500'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 app.use('/api', routes);
@@ -16,7 +25,7 @@ app.get('/', (req, res) => {
 });
 
 const startServer = async () => {
-  const port = Number(process.env.PORT) || Number(CONFIG.PORT) || 3500;
+  const port = Number(process.env.PORT) || 8080;
   
   const server = app.listen(port, "0.0.0.0", () => {
     console.log(`Server is listening on port ${port}`);

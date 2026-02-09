@@ -19,6 +19,9 @@ RUN npm install --omit=dev
 
 COPY --from=build /app/dist ./dist
 
-EXPOSE 3500
+# Standard Cloud Run port 8080
+EXPOSE 8080
+
+ENV NODE_ENV=production
 
 CMD ["node", "dist/index.js"]
