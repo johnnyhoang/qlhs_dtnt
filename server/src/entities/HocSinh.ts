@@ -49,6 +49,9 @@ export class HocSinh {
     phuong_xa!: string;
 
     @Column({ nullable: true })
+    quan_huyen!: string;
+
+    @Column({ nullable: true })
     tinh!: string;
 
     // Banking Information
