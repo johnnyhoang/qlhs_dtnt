@@ -4,10 +4,20 @@ import { DinhMucXe } from "../entities/DinhMucXe";
 const dinhMucXeRepository = AppDataSource.getRepository(DinhMucXe);
 
 export const DinhMucXeService = {
-    getAll: async () => {
-        return await dinhMucXeRepository.find({
-            relations: ["hoc_sinh", "nguoi_cap_nhat"]
-        });
+    getAll: async (user?: any) => {
+        const query = dinhMucXeRepository.createQueryBuilder("dinh_muc_xe")
+            .leftJoinAndSelect("dinh_muc_xe.hoc_sinh", "hoc_sinh")
+            .leftJoinAndSelect("dinh_muc_xe.nguoi_cap_nhat", "nguoi_cap_nhat");
+
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            if (assignedClasses.length === 0) {
+                 return [];
+            }
+            query.where("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+        }
+
+        return await query.getMany();
     },
 
     getByHocSinhId: async (hoc_sinh_id: string) => {

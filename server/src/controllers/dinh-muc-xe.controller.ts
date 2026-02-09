@@ -3,7 +3,8 @@ import { DinhMucXeService } from '../services/dinh-muc-xe.service';
 
 export const layTatCaDinhMuc = async (req: Request, res: Response) => {
     try {
-        const result = await DinhMucXeService.getAll();
+        const user = (req as any).user;
+        const result = await DinhMucXeService.getAll(user);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi lay dinh muc xe", error });

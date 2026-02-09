@@ -1,25 +1,23 @@
 import { AppDataSource } from "../data-source";
 import { BaoHiem } from "../entities/BaoHiem";
-import { Like, In } from "typeorm";
 
 const baoHiemRepository = AppDataSource.getRepository(BaoHiem);
 
 export const BaoHiemService = {
     getAll: async (user?: any) => {
-        const where: any = {};
+        const query = baoHiemRepository.createQueryBuilder("bao_hiem")
+            .leftJoinAndSelect("bao_hiem.hoc_sinh", "hoc_sinh")
+            .leftJoinAndSelect("bao_hiem.nguoi_cap_nhat", "nguoi_cap_nhat");
 
         if (user && user.vai_tro === "TEACHER") {
             const assignedClasses: string[] = user.lop_phu_trach || [];
             if (assignedClasses.length === 0) {
                  return [];
             }
-            where.hoc_sinh = { lop: In(assignedClasses) };
+            query.where("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
         }
 
-        return await baoHiemRepository.find({
-            where,
-            relations: ["hoc_sinh", "nguoi_cap_nhat"]
-        });
+        return await query.getMany();
     },
 
     getByHocSinhId: async (hoc_sinh_id: string) => {

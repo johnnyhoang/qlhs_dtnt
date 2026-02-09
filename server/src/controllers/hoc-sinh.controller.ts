@@ -8,7 +8,8 @@ export const layDanhSachHocSinh = async (req: Request, res: Response) => {
         const search = req.query.search as string || "";
         const lop = req.query.lop as string || "";
 
-        const result = await HocSinhService.getAll(page, pageSize, search, lop);
+        const user = (req as any).user;
+        const result = await HocSinhService.getAll(page, pageSize, search, lop, user);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi lay danh sach hoc sinh", error });
