@@ -51,6 +51,7 @@ Xây dựng hệ thống quản lý toàn diện cho trường Phổ thông Dân
 *   **Chức năng**:
     *   Báo cắt cơm hàng ngày (Sáng, Trưa, Tối).
     *   Lý do cắt cơm, ghi chú.
+    *   **Filtering**: Hỗ trợ lọc theo nhiều lớp (`classes[]`) cùng lúc (Multi-Select).
 *   **Authorization Rule**:
     *   *Read*: Teacher chỉ thấy trạng thái báo ăn của lớp mình.
     *   *Write*: Teacher chỉ được báo cắt cơm cho học sinh lớp mình.
@@ -60,6 +61,7 @@ Xây dựng hệ thống quản lý toàn diện cho trường Phổ thông Dân
     *   Khai báo khoảng cách từ nhà đến trường.
     *   Tính toán số tiền hỗ trợ tàu xe.
     *   Thông tin tài khoản ngân hàng nhận hỗ trợ.
+    *   **Filtering**: Hỗ trợ lọc theo nhiều lớp (`classes[]`) cùng lúc.
 *   **Authorization Rule**:
     *   *Read/Write*: Teacher chỉ truy cập dữ liệu định mức của học sinh lớp mình.
 
@@ -67,6 +69,7 @@ Xây dựng hệ thống quản lý toàn diện cho trường Phổ thông Dân
 *   **Chức năng**:
     *   Theo dõi hạn sử dụng thẻ BHYT.
     *   Lưu trữ thông tin thẻ, nơi đăng ký KCB ban đầu.
+    *   **Filtering**: Hỗ trợ lọc theo nhiều lớp (`classes[]`) cùng lúc.
 *   **Authorization Rule**:
     *   *Read/Write*: Teacher chỉ truy cập dữ liệu bảo hiểm của học sinh lớp mình.
 
@@ -93,7 +96,7 @@ Xây dựng hệ thống quản lý toàn diện cho trường Phổ thông Dân
 
 ### Module Behavior
 *   Các Dropdown chọn lớp (Class Filter) trên UI phải tự động filter chỉ hiển thị các lớp được phép.
-*   **Multi-Select Class Filter**: Áp dụng cho module **Học sinh** và **Thống kê**. Logic:
+*   **Multi-Select Class Filter**: Áp dụng cho **TẤT CẢ** module (**Học sinh**, **Suất ăn**, **Định mức xe**, **Bảo hiểm**, **Thống kê**). Logic:
     *   Empty selection = All permitted classes.
     *   Specific selection = Intersection(Selected, Permitted).
 
