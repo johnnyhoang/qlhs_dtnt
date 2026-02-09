@@ -1,19 +1,41 @@
-import React, { useState } from 'react';
-import { Tabs, Space, Button, DatePicker, Typography } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Tabs, Space, Button, DatePicker, Typography, Select } from 'antd';
 import { LeftOutlined, RightOutlined, CalendarOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import MealCutoffReport from './MealCutoffReport';
 import MealStatisticsReport from './MealStatisticsReport';
 import TransportStatisticsReport from './TransportStatisticsReport';
+import { useAuth } from '../../contexts/AuthContext';
+import { layDanhSachLop } from '../../api/hoc-sinh';
 
 dayjs.extend(isoWeek);
 
 const { Text } = Typography;
+const { Option } = Select;
 
 const ReportTabs: React.FC = () => {
+    const { user } = useAuth();
     const [selectedDate, setSelectedDate] = useState(dayjs());
     const [activeTab, setActiveTab] = useState('meal-cutoff');
+    const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+    const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            if (user?.vai_tro === 'TEACHER') {
+                setAvailableClasses(user.lop_phu_trach || []);
+            } else {
+                try {
+                    const res = await layDanhSachLop();
+                    setAvailableClasses(res);
+                } catch (error) {
+                    console.error("Lỗi lấy danh sách lớp", error);
+                }
+            }
+        };
+        fetchClasses();
+    }, [user]);
 
     const startOfWeek = selectedDate.startOf('isoWeek');
     const endOfWeek = selectedDate.endOf('isoWeek');
@@ -40,6 +62,7 @@ const ReportTabs: React.FC = () => {
                 <MealCutoffReport
                     startDate={startOfWeek.format('YYYY-MM-DD')}
                     endDate={endOfWeek.format('YYYY-MM-DD')}
+                    classes={selectedClasses}
                 />
             )
         },
@@ -50,6 +73,7 @@ const ReportTabs: React.FC = () => {
                 <MealStatisticsReport
                     month={selectedDate.month() + 1}
                     year={selectedDate.year()}
+                    classes={selectedClasses}
                 />
             )
         },
@@ -60,6 +84,7 @@ const ReportTabs: React.FC = () => {
                 <TransportStatisticsReport
                     startDate={startOfWeek.format('YYYY-MM-DD')}
                     endDate={endOfWeek.format('YYYY-MM-DD')}
+                    classes={selectedClasses}
                 />
             )
         }
@@ -84,8 +109,26 @@ const ReportTabs: React.FC = () => {
                     </Text>
                 </Space>
 
-                <Text type="secondary">
-                    Dữ liệu báo cáo dựa trên thời gian đã chọn
+                <Space>
+                    <Select
+                        mode="multiple"
+                        style={{ minWidth: 200 }}
+                        placeholder="Lọc theo lớp (Tất cả)"
+                        value={selectedClasses}
+                        onChange={setSelectedClasses}
+                        allowClear
+                        maxTagCount="responsive"
+                    >
+                        {availableClasses.map(lop => (
+                            <Option key={lop} value={lop}>{lop}</Option>
+                        ))}
+                    </Select>
+                </Space>
+            </div>
+
+            <div style={{ textAlign: 'right', marginTop: -10, marginBottom: 10 }}>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                    {!selectedClasses.length ? "Đang hiển thị tất cả các lớp được phép" : `Đang lọc: ${selectedClasses.join(', ')}`}
                 </Text>
             </div>
 

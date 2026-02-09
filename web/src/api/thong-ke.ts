@@ -1,23 +1,29 @@
-import client from './client';
+import axiosClient from './client';
 import type { MealCutoffWeeklyReport, MonthlyMealStats, TransportStatsReport } from '../types/thong-ke';
 
-export const layThongKeSuatAnCatTheoLopVaNgay = async (startDate: string, endDate: string): Promise<MealCutoffWeeklyReport> => {
-    const response = await client.get('/thong-ke/suat-an/cat-theo-lop-va-ngay', {
-        params: { start_date: startDate, end_date: endDate }
-    });
+// Thống kê cắt phần ăn theo lớp và ngày
+export const layThongKeSuatAnCatTheoLopVaNgay = async (startDate: string, endDate: string, classes: string[] = []) => {
+    const params = new URLSearchParams({ startDate, endDate });
+    if (classes.length > 0) params.append('classes', classes.join(','));
+    const response = await axiosClient.get(`/thong-ke/suat-an-cat-lop-ngay?${params.toString()}`);
     return response.data;
 };
 
-export const layThongKeSuatAnTheoThang = async (month: number, year: number): Promise<MonthlyMealStats> => {
-    const response = await client.get('/thong-ke/suat-an/thang', {
-        params: { month, year }
-    });
+// Thống kê suất ăn theo tháng
+export const layThongKeSuatAnTheoThang = async (month: number, year: number, classes: string[] = []) => {
+    const params = new URLSearchParams({ month: String(month), year: String(year) });
+    if (classes.length > 0) params.append('classes', classes.join(','));
+    const response = await axiosClient.get(`/thong-ke/suat-an-thang?${params.toString()}`);
     return response.data;
 };
 
-export const layThongKeVanChuyenTheoLop = async (startDate?: string, endDate?: string): Promise<TransportStatsReport> => {
-    const response = await client.get('/thong-ke/van-chuyen/theo-lop', {
-        params: { start_date: startDate, end_date: endDate }
-    });
+// Thống kê vận chuyển theo lớp
+export const layThongKeVanChuyenTheoLop = async (startDate?: string, endDate?: string, classes: string[] = []) => {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (classes.length > 0) params.append('classes', classes.join(','));
+    
+    const response = await axiosClient.get(`/thong-ke/van-chuyen-lop?${params.toString()}`);
     return response.data;
 };

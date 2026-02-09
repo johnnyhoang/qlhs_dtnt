@@ -65,44 +65,47 @@ const AdminRoute = ({ children }: { children: React.ReactElement }) => {
 };
 
 import { ConfigProvider } from 'antd';
+import { AuthProvider } from './contexts/AuthContext';
 
 const App: React.FC = () => {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
-        <ConfigProvider
-          theme={{
-            token: {
-              fontSize: 13,
-              borderRadius: 4,
-            },
-            components: {
-              Table: {
-                paddingContentVerticalLG: 8,
+        <AuthProvider>
+          <ConfigProvider
+            theme={{
+              token: {
+                fontSize: 13,
+                borderRadius: 4,
+              },
+              components: {
+                Table: {
+                  paddingContentVerticalLG: 8,
+                }
               }
-            }
-          }}
-        >
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <MainLayout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<Dashboard />} />
-                <Route path="hoc-sinh" element={<ProtectedRoute module="hoc-sinh"><Students /></ProtectedRoute>} />
-                <Route path="suat-an" element={<ProtectedRoute module="suat-an"><Meals /></ProtectedRoute>} />
-                <Route path="dinh-muc-xe" element={<ProtectedRoute module="dinh-muc-xe"><Transport /></ProtectedRoute>} />
-                <Route path="bao-hiem" element={<ProtectedRoute module="bao-hiem"><Insurance /></ProtectedRoute>} />
-                <Route path="thanh-toan" element={<ProtectedRoute module="thanh-toan"><Payments /></ProtectedRoute>} />
-                <Route path="danh-muc-master" element={<AdminRoute><MasterData /></AdminRoute>} />
-                <Route path="nguoi-dung" element={<AdminRoute><Users /></AdminRoute>} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </ConfigProvider>
+            }}
+          >
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <MainLayout />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<Dashboard />} />
+                  <Route path="hoc-sinh" element={<ProtectedRoute module="hoc-sinh"><Students /></ProtectedRoute>} />
+                  <Route path="suat-an" element={<ProtectedRoute module="suat-an"><Meals /></ProtectedRoute>} />
+                  <Route path="dinh-muc-xe" element={<ProtectedRoute module="dinh-muc-xe"><Transport /></ProtectedRoute>} />
+                  <Route path="bao-hiem" element={<ProtectedRoute module="bao-hiem"><Insurance /></ProtectedRoute>} />
+                  <Route path="thanh-toan" element={<ProtectedRoute module="thanh-toan"><Payments /></ProtectedRoute>} />
+                  <Route path="danh-muc-master" element={<AdminRoute><MasterData /></AdminRoute>} />
+                  <Route path="nguoi-dung" element={<AdminRoute><Users /></AdminRoute>} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </ConfigProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </GoogleOAuthProvider>
   );

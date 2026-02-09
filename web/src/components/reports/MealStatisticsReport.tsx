@@ -6,12 +6,13 @@ import { layThongKeSuatAnTheoThang } from '../../api/thong-ke';
 interface MealStatisticsReportProps {
     month: number;
     year: number;
+    classes?: string[];
 }
 
-const MealStatisticsReport: React.FC<MealStatisticsReportProps> = ({ month, year }) => {
+const MealStatisticsReport: React.FC<MealStatisticsReportProps> = ({ month, year, classes = [] }) => {
     const { data, isLoading } = useQuery({
-        queryKey: ['thong-ke-suat-an-thang', month, year],
-        queryFn: () => layThongKeSuatAnTheoThang(month, year),
+        queryKey: ['thong-ke-suat-an-thang', month, year, classes],
+        queryFn: () => layThongKeSuatAnTheoThang(month, year, classes),
         enabled: !!month && !!year
     });
 

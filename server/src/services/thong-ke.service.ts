@@ -10,14 +10,30 @@ const dinhMucXeRepository = AppDataSource.getRepository(DinhMucXe);
 
 export const ThongKeService = {
     // Thống kê cắt phần ăn theo lớp và ngày
-    getMealCutoffByClassAndWeek: async (startDate: string, endDate: string, user?: any) => {
+    getMealCutoffByClassAndWeek: async (startDate: string, endDate: string, user?: any, classes: string[] = []) => {
         const where: any = { trang_thai: TrangThaiHocSinh.DANG_HOC };
+        let assignedClasses: string[] = [];
 
         if (user && user.vai_tro === "TEACHER") {
-            const assignedClasses: string[] = user.lop_phu_trach || [];
-            if (assignedClasses.length === 0) {
+             assignedClasses = user.lop_phu_trach || [];
+             if (assignedClasses.length === 0) {
                  return { start_date: startDate, end_date: endDate, dates: [], data: [] };
+             }
+        }
+
+        // Apply class filter
+        if (classes.length > 0) {
+            if (user && user.vai_tro === "TEACHER") {
+                // Intersection: Teacher can only select from their assigned classes
+                assignedClasses = assignedClasses.filter(c => classes.includes(c));
+                if (assignedClasses.length === 0) return { start_date: startDate, end_date: endDate, dates: [], data: [] };
+            } else {
+                // Admin/User filtering
+                where.lop = In(classes);
             }
+        }
+
+        if (user && user.vai_tro === "TEACHER") {
             where.lop = In(assignedClasses);
         }
 
@@ -81,38 +97,44 @@ export const ThongKeService = {
     },
 
     // Thống kê suất ăn theo tháng
-    getMonthlyMealStatistics: async (month: number, year: number, user?: any) => {
+    getMonthlyMealStatistics: async (month: number, year: number, user?: any, classes: string[] = []) => {
         // Calculate date range for the month
         const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
         const lastDay = new Date(year, month, 0).getDate();
         const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
         const whereStudent: any = { trang_thai: TrangThaiHocSinh.DANG_HOC };
-        const whereMeal: any = {
-            ngay: Between(startDate, endDate),
-            bao_cat: true
-        };
+        let assignedClasses: string[] = [];
 
         if (user && user.vai_tro === "TEACHER") {
-            const assignedClasses: string[] = user.lop_phu_trach || [];
-            if (assignedClasses.length === 0) {
+             assignedClasses = user.lop_phu_trach || [];
+             if (assignedClasses.length === 0) {
                  return {
                     month, year, total_students: 0, total_meal_days: 0, total_possible_meals: 0,
                     total_meals_cut: 0, total_meals_served: 0,
-                    by_meal_type: {
-                        sang: { possible: 0, cut: 0, served: 0 },
-                        trua: { possible: 0, cut: 0, served: 0 },
-                        toi: { possible: 0, cut: 0, served: 0 }
-                    }
+                    by_meal_type: { sang: { possible: 0, cut: 0, served: 0 }, trua: { possible: 0, cut: 0, served: 0 }, toi: { possible: 0, cut: 0, served: 0 } }
                  };
             }
+        }
+
+        // Apply class filter
+        if (classes.length > 0) {
+            if (user && user.vai_tro === "TEACHER") {
+                assignedClasses = assignedClasses.filter(c => classes.includes(c));
+                if (assignedClasses.length === 0) {
+                     return {
+                        month, year, total_students: 0, total_meal_days: 0, total_possible_meals: 0,
+                        total_meals_cut: 0, total_meals_served: 0,
+                        by_meal_type: { sang: { possible: 0, cut: 0, served: 0 }, trua: { possible: 0, cut: 0, served: 0 }, toi: { possible: 0, cut: 0, served: 0 } }
+                     };
+                }
+            } else {
+                whereStudent.lop = In(classes);
+            }
+        }
+
+        if (user && user.vai_tro === "TEACHER") {
             whereStudent.lop = In(assignedClasses);
-            // Meal records also implicitly filtered because we only count cuts if they exist, 
-            // but strict filtering on meal query is better performance-wise if possible, 
-            // though suat_an doesn't have direct 'lop' column, need to join or subquery.
-            // For simplicity and since we control student count, let's just count cuts 
-            // that belong to students in these classes.
-            // Or use query builder to join.
         }
 
         // Get total active students
@@ -132,24 +154,20 @@ export const ThongKeService = {
 
         // Get all meal cut records for the month
         let cutRecords: SuatAn[] = [];
+        const mealQuery = suatAnRepository.createQueryBuilder("suat_an")
+            .innerJoin("hoc_sinh", "hs", "hs.id = suat_an.hoc_sinh_id")
+            .where("suat_an.ngay BETWEEN :startDate AND :endDate", { startDate, endDate })
+            .andWhere("suat_an.bao_cat = :bao_cat", { bao_cat: true });
+
         if (user && user.vai_tro === "TEACHER") {
-             const assignedClasses: string[] = user.lop_phu_trach || [];
              if (assignedClasses.length > 0) {
-                 cutRecords = await suatAnRepository.createQueryBuilder("suat_an")
-                    .innerJoin("hoc_sinh", "hs", "hs.id = suat_an.hoc_sinh_id")
-                    .where("suat_an.ngay BETWEEN :startDate AND :endDate", { startDate, endDate })
-                    .andWhere("suat_an.bao_cat = :bao_cat", { bao_cat: true })
-                    .andWhere("hs.lop IN (:...assignedClasses)", { assignedClasses })
-                    .getMany();
+                 mealQuery.andWhere("hs.lop IN (:...assignedClasses)", { assignedClasses });
              }
-        } else {
-             cutRecords = await suatAnRepository.find({
-                where: {
-                    ngay: Between(startDate, endDate),
-                    bao_cat: true
-                }
-            });
+        } else if (classes.length > 0) {
+             mealQuery.andWhere("hs.lop IN (:...classes)", { classes });
         }
+        
+        cutRecords = await mealQuery.getMany();
 
         // Calculate statistics by meal type
         const sangCuts = cutRecords.filter(r => r.loai_suat_an === LoaiSuatAn.SANG).length;
@@ -187,15 +205,31 @@ export const ThongKeService = {
     },
 
     // Thống kê vận chuyển theo lớp
-    getTransportStatisticsByClass: async (startDate: string = "", endDate: string = "", user?: any) => {
+    getTransportStatisticsByClass: async (startDate: string = "", endDate: string = "", user?: any, classes: string[] = []) => {
         const where: any = { trang_thai: TrangThaiHocSinh.DANG_HOC };
+        let assignedClasses: string[] = [];
 
         if (user && user.vai_tro === "TEACHER") {
-            const assignedClasses: string[] = user.lop_phu_trach || [];
+            assignedClasses = user.lop_phu_trach || [];
             if (assignedClasses.length === 0) {
                  return { data: [], summary: { total_students: 0, total_with_support: 0, total_distance: 0, total_amount: 0 }};
             }
-            where.lop = In(assignedClasses);
+        }
+
+        // Apply class filter
+        if (classes.length > 0) {
+            if (user && user.vai_tro === "TEACHER") {
+                assignedClasses = assignedClasses.filter(c => classes.includes(c));
+                 if (assignedClasses.length === 0) {
+                     return { data: [], summary: { total_students: 0, total_with_support: 0, total_distance: 0, total_amount: 0 }};
+                 }
+            } else {
+                where.lop = In(classes);
+            }
+        }
+
+        if (user && user.vai_tro === "TEACHER") {
+             where.lop = In(assignedClasses);
         }
 
         const students = await hocSinhRepository.find({

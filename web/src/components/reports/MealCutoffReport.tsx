@@ -7,12 +7,13 @@ import type { MealCutoffByClass } from '../../types/thong-ke';
 interface MealCutoffReportProps {
     startDate: string;
     endDate: string;
+    classes?: string[];
 }
 
-const MealCutoffReport: React.FC<MealCutoffReportProps> = ({ startDate, endDate }) => {
+const MealCutoffReport: React.FC<MealCutoffReportProps> = ({ startDate, endDate, classes = [] }) => {
     const { data, isLoading } = useQuery({
-        queryKey: ['thong-ke-suat-an-cat', startDate, endDate],
-        queryFn: () => layThongKeSuatAnCatTheoLopVaNgay(startDate, endDate),
+        queryKey: ['thong-ke-suat-an-cat', startDate, endDate, classes],
+        queryFn: () => layThongKeSuatAnCatTheoLopVaNgay(startDate, endDate, classes),
         enabled: !!startDate && !!endDate
     });
 

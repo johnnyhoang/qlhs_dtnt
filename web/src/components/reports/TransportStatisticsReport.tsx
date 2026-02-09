@@ -7,12 +7,13 @@ import type { TransportStatsByClass } from '../../types/thong-ke';
 interface TransportStatisticsReportProps {
     startDate?: string;
     endDate?: string;
+    classes?: string[];
 }
 
-const TransportStatisticsReport: React.FC<TransportStatisticsReportProps> = ({ startDate, endDate }) => {
+const TransportStatisticsReport: React.FC<TransportStatisticsReportProps> = ({ startDate, endDate, classes = [] }) => {
     const { data, isLoading } = useQuery({
-        queryKey: ['thong-ke-van-chuyen', startDate, endDate],
-        queryFn: () => layThongKeVanChuyenTheoLop(startDate, endDate)
+        queryKey: ['thong-ke-van-chuyen', startDate, endDate, classes],
+        queryFn: () => layThongKeVanChuyenTheoLop(startDate, endDate, classes)
     });
 
     if (isLoading) {

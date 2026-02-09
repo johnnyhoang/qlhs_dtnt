@@ -28,7 +28,8 @@ export const layThongKeSuatAnTheoThang = async (req: Request, res: Response) => 
         }
 
         const user = (req as any).user;
-        const result = await ThongKeService.getMonthlyMealStatistics(month, year, user);
+        const classes = req.query.classes ? (req.query.classes as string).split(',') : [];
+        const result = await ThongKeService.getMonthlyMealStatistics(month, year, user, classes);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi lay thong ke suat an thang", error });
@@ -37,11 +38,12 @@ export const layThongKeSuatAnTheoThang = async (req: Request, res: Response) => 
 
 export const layThongKeVanChuyenTheoLop = async (req: Request, res: Response) => {
     try {
-        const start_date = req.query.start_date as string;
-        const end_date = req.query.end_date as string;
-
+        const startDate = req.query.startDate as string;
+        const endDate = req.query.endDate as string;
         const user = (req as any).user;
-        const result = await ThongKeService.getTransportStatisticsByClass(start_date, end_date, user);
+        const classes = req.query.classes ? (req.query.classes as string).split(',') : [];
+
+        const result = await ThongKeService.getTransportStatisticsByClass(startDate, endDate, user, classes);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi lay thong ke van chuyen", error });
