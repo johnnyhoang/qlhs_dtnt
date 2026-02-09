@@ -12,7 +12,8 @@ export const layDanhSachDotThanhToan = async (req: Request, res: Response) => {
 
 export const layChiTietDotThanhToan = async (req: Request, res: Response) => {
     try {
-        const result = await ThanhToanService.layDotThanhToanTheoId(Number(req.params.id));
+        const user = (req as any).user;
+        const result = await ThanhToanService.layDotThanhToanTheoId(Number(req.params.id), user);
         if (!result) return res.status(404).json({ message: "Khong tim thay dot thanh toan" });
         res.json(result);
     } catch (error) {

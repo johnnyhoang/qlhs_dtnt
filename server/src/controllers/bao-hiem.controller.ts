@@ -3,7 +3,8 @@ import { BaoHiemService } from '../services/bao-hiem.service';
 
 export const layDanhSachBaoHiem = async (req: Request, res: Response) => {
     try {
-        const result = await BaoHiemService.getAll();
+        const user = (req as any).user;
+        const result = await BaoHiemService.getAll(user);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi lay danh sach bao hiem", error });

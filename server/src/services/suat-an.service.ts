@@ -6,14 +6,31 @@ const suatAnRepository = AppDataSource.getRepository(SuatAn);
 const hocSinhRepository = AppDataSource.getRepository(HocSinh);
 
 export const SuatAnService = {
-    layTrangThaiHangNgay: async (ngay: string, lop?: string, search?: string) => {
+    layTrangThaiHangNgay: async (ngay: string, lop?: string, search?: string, user?: any) => {
         // Lay tat ca hoc sinh dang hoc
         const query = hocSinhRepository.createQueryBuilder("hoc_sinh")
             .where("hoc_sinh.trang_thai = :trang_thai", { trang_thai: TrangThaiHocSinh.DANG_HOC });
 
-        if (lop) {
-            query.andWhere("hoc_sinh.lop = :lop", { lop });
+        // Teacher restriction
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            if (assignedClasses.length === 0) {
+                 return [];
+            }
+            if (lop) {
+                if (!assignedClasses.includes(lop)) {
+                    return [];
+                }
+                query.andWhere("hoc_sinh.lop = :lop", { lop });
+            } else {
+                query.andWhere("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+            }
+        } else {
+             if (lop) {
+                query.andWhere("hoc_sinh.lop = :lop", { lop });
+            }
         }
+
         if (search) {
             query.andWhere("hoc_sinh.ho_ten LIKE :search", { search: `%${search}%` });
         }

@@ -99,6 +99,17 @@ const Users: React.FC = () => {
             )
         },
         {
+            title: 'Lớp phụ trách',
+            key: 'lop_phu_trach',
+            render: (_: any, record: NguoiDung) => (
+                record.vai_tro === 'TEACHER' && record.lop_phu_trach ? (
+                    <span>{record.lop_phu_trach.join(', ')}</span>
+                ) : (
+                    <span style={{ color: '#ccc' }}>-</span>
+                )
+            )
+        },
+        {
             title: 'Trạng thái',
             key: 'kich_hoat',
             sorter: (a: NguoiDung, b: NguoiDung) => (a.kich_hoat ? 1 : 0) - (b.kich_hoat ? 1 : 0),

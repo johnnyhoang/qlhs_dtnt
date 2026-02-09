@@ -18,11 +18,27 @@ export const ThanhToanService = {
         });
     },
 
-    layDotThanhToanTheoId: async (id: number) => {
-        return await dotThanhToanRepository.findOne({
-            where: { id },
-            relations: ["khoan_thanh_toan", "khoan_thanh_toan.hoc_sinh", "khoan_thanh_toan.nguoi_cap_nhat"]
-        });
+    layDotThanhToanTheoId: async (id: number, user?: any) => {
+        const dot = await dotThanhToanRepository.findOneBy({ id });
+        if (!dot) return null;
+
+        const query = khoanThanhToanRepository.createQueryBuilder("khoan")
+            .leftJoinAndSelect("khoan.hoc_sinh", "hoc_sinh")
+            .leftJoinAndSelect("khoan.nguoi_cap_nhat", "nguoi_cap_nhat")
+            .where("khoan.dot_thanh_toan_id = :id", { id });
+
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            if (assignedClasses.length > 0) {
+                 query.andWhere("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+            } else {
+                 // Teacher with no classes sees no records
+                 query.andWhere("1=0");
+            }
+        }
+
+        dot.khoan_thanh_toan = await query.getMany();
+        return dot;
     },
 
     taoMoiDotThanhToan: async (thang: number, nam: number, userId?: number, ghi_chu?: string) => {
