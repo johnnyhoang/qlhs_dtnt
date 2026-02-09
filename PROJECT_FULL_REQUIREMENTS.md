@@ -41,6 +41,7 @@ Xây dựng hệ thống quản lý toàn diện cho trường Phổ thông Dân
 *   **Chức năng**:
     *   Quản lý hồ sơ: Mã HS, Họ tên, Lớp, Ngày sinh, Dân tộc, BHYT, v.v.
     *   Nhập/Xuất dữ liệu từ CSV.
+    *   **Filtering**: Hỗ trợ lọc theo nhiều lớp (`classes[]`) cùng lúc (Multi-Select).
 *   **Authorization Rule**:
     *   *Read*: Teacher chỉ thấy học sinh thuộc lớp mình quản lý.
     *   *Write (Create/Update)*: Teacher chỉ thêm/sửa học sinh vào lớp mình quản lý. Chặn việc chuyển học sinh sang lớp khác.
@@ -92,7 +93,7 @@ Xây dựng hệ thống quản lý toàn diện cho trường Phổ thông Dân
 
 ### Module Behavior
 *   Các Dropdown chọn lớp (Class Filter) trên UI phải tự động filter chỉ hiển thị các lớp được phép.
-*   **Statistics**: Dropdown chọn lớp cho phép chọn nhiều lớp (Multi-Select). Logic:
+*   **Multi-Select Class Filter**: Áp dụng cho module **Học sinh** và **Thống kê**. Logic:
     *   Empty selection = All permitted classes.
     *   Specific selection = Intersection(Selected, Permitted).
 

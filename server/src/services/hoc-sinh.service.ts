@@ -5,31 +5,34 @@ import { Like, In } from "typeorm";
 const hocSinhRepository = AppDataSource.getRepository(HocSinh);
 
 export const HocSinhService = {
-    getAll: async (page = 1, pageSize = 10, search = "", lop = "", user?: any) => {
+    getAll: async (page = 1, pageSize = 10, search = "", lop: string | string[] = "", user?: any) => {
         const skip = (page - 1) * pageSize;
         const where: any = {};
+        
+        // Normalize lop to array if it's a string
+        const filterClasses = Array.isArray(lop) ? lop : (lop ? [lop] : []);
 
         // Teacher restriction
         if (user && user.vai_tro === "TEACHER") {
             const assignedClasses: string[] = user.lop_phu_trach || [];
             if (assignedClasses.length === 0) {
-                 // Teacher with no classes sees nothing
                  return { data: [], total: 0, page, pageSize, totalPages: 0 };
             }
-            // If filtering by class, ensure it's allowed
-            if (lop) {
-                if (!assignedClasses.includes(lop)) {
-                    return { data: [], total: 0, page, pageSize, totalPages: 0 };
+            
+            if (filterClasses.length > 0) {
+                // Intersection check
+                const allowedClasses = filterClasses.filter(c => assignedClasses.includes(c));
+                if (allowedClasses.length === 0) {
+                     return { data: [], total: 0, page, pageSize, totalPages: 0 };
                 }
-                where.lop = lop;
+                where.lop = In(allowedClasses);
             } else {
-                // Return students from ALL assigned classes
                 where.lop = In(assignedClasses);
             }
         } else {
              // Admin/User behavior
-             if (lop) {
-                 where.lop = lop;
+             if (filterClasses.length > 0) {
+                 where.lop = In(filterClasses);
              }
         }
 
@@ -135,5 +138,20 @@ export const HocSinhService = {
             const hoc_sinh = hocSinhRepository.create({ ...data, nguoi_cap_nhat_id: user?.id });
             return await hocSinhRepository.save(hoc_sinh);
         }
+    },
+
+    getClasses: async (user?: any) => {
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            return assignedClasses.sort();
+        }
+
+        const classes = await hocSinhRepository
+            .createQueryBuilder("hoc_sinh")
+            .select("DISTINCT hoc_sinh.lop", "lop")
+            .orderBy("hoc_sinh.lop", "ASC")
+            .getRawMany();
+
+        return classes.map(c => c.lop).filter(Boolean);
     }
 };

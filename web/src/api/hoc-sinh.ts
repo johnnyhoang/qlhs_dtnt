@@ -5,7 +5,7 @@ export const layDanhSachHocSinh = async (params?: {
     page?: number;
     pageSize?: number;
     search?: string;
-    lop?: string;
+    lop?: string | string[];
 }): Promise<HocSinhListResponse> => {
     const response = await axiosClient.get('/hoc-sinh', { params });
     return response.data;
@@ -31,6 +31,6 @@ export const xoaHocSinh = async (id: string): Promise<void> => {
 };
 
 export const layDanhSachLop = async (): Promise<string[]> => {
-    const response = await axiosClient.get('/danh-muc/lop');
+    const response = await axiosClient.get('/hoc-sinh/danh-muc-lop');
     return response.data;
 };

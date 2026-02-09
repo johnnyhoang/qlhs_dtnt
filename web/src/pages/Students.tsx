@@ -14,7 +14,7 @@ const Students: React.FC = () => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [searchText, setSearchText] = useState('');
-    const [lop, setLop] = useState('');
+    const [lop, setLop] = useState<string[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isImportModalVisible, setIsImportModalVisible] = useState(false);
     const [editingStudent, setEditingStudent] = useState<HocSinh | null>(null);
@@ -189,8 +189,10 @@ const Students: React.FC = () => {
                         style={{ width: 300 }}
                     />
                     <ClassSelect
-                        style={{ width: 150 }}
-                        onChange={(value) => setLop(value as string)}
+                        style={{ minWidth: 200, maxWidth: 400 }}
+                        value={lop}
+                        mode="multiple"
+                        onChange={(value) => setLop(value as string[])}
                     />
                 </div>
 
