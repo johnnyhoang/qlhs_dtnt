@@ -1,8 +1,8 @@
 import client from './client';
 import type { BaoHiem, UpsertBaoHiemRequest } from '../types/bao-hiem';
 
-export const layDanhSachBaoHiem = async (): Promise<BaoHiem[]> => {
-    const response = await client.get('/bao-hiem');
+export const layDanhSachBaoHiem = async (lop?: string | string[]): Promise<BaoHiem[]> => {
+    const response = await client.get('/bao-hiem', { params: { lop } });
     return response.data;
 };
 

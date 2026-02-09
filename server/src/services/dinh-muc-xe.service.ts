@@ -4,17 +4,31 @@ import { DinhMucXe } from "../entities/DinhMucXe";
 const dinhMucXeRepository = AppDataSource.getRepository(DinhMucXe);
 
 export const DinhMucXeService = {
-    getAll: async (user?: any) => {
+    getAll: async (user?: any, lop: string | string[] = "") => {
         const query = dinhMucXeRepository.createQueryBuilder("dinh_muc_xe")
             .leftJoinAndSelect("dinh_muc_xe.hoc_sinh", "hoc_sinh")
             .leftJoinAndSelect("dinh_muc_xe.nguoi_cap_nhat", "nguoi_cap_nhat");
+
+        // Normalize lop to array
+        const filterClasses = Array.isArray(lop) ? lop : (lop ? [lop] : []);
 
         if (user && user.vai_tro === "TEACHER") {
             const assignedClasses: string[] = user.lop_phu_trach || [];
             if (assignedClasses.length === 0) {
                  return [];
             }
-            query.where("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+            
+            if (filterClasses.length > 0) {
+                 const allowedClasses = filterClasses.filter(c => assignedClasses.includes(c));
+                 if (allowedClasses.length === 0) return [];
+                 query.where("hoc_sinh.lop IN (:...allowedClasses)", { allowedClasses });
+            } else {
+                 query.where("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+            }
+        } else {
+             if (filterClasses.length > 0) {
+                 query.where("hoc_sinh.lop IN (:...filterClasses)", { filterClasses });
+             }
         }
 
         return await query.getMany();

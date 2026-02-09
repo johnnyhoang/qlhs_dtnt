@@ -6,8 +6,8 @@ export const layDanhSachDotThanhToan = async (): Promise<DotThanhToan[]> => {
     return response.data;
 };
 
-export const layChiTietDotThanhToan = async (id: number): Promise<DotThanhToan> => {
-    const response = await client.get(`/thanh-toan/batches/${id}`);
+export const layChiTietDotThanhToan = async (id: number, lop?: string | string[]): Promise<DotThanhToan> => {
+    const response = await client.get(`/thanh-toan/batches/${id}`, { params: { lop } });
     return response.data;
 };
 

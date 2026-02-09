@@ -13,8 +13,15 @@ import AuditFooter from '../components/AuditFooter';
 
 const Insurance: React.FC = () => {
     const [searchText, setSearchText] = useState('');
-    const [selectedClass, setSelectedClass] = useState<string | null>(null);
+    const [selectedClass, setSelectedClass] = useState<string[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    //...
+    <ClassSelect
+        style={{ minWidth: 150, maxWidth: 300 }}
+        value={selectedClass}
+        mode="multiple"
+        onChange={(value) => setSelectedClass(value as string[])}
+    />
     const [editingStudent, setEditingStudent] = useState<HocSinh | null>(null);
     const [form] = Form.useForm();
 
@@ -27,7 +34,7 @@ const Insurance: React.FC = () => {
 
     const { data: profiles, isLoading: isLoadingProfiles } = useQuery({
         queryKey: ['bao-hiem-profiles'],
-        queryFn: layDanhSachBaoHiem,
+        queryFn: () => layDanhSachBaoHiem(),
     });
 
     const userJson = localStorage.getItem('user');
@@ -75,7 +82,7 @@ const Insurance: React.FC = () => {
     const filteredData = students?.data?.filter((s: any) => {
         const matchesSearch = s.ho_ten.toLowerCase().includes(searchText.toLowerCase()) ||
             s.ma_hoc_sinh.toLowerCase().includes(searchText.toLowerCase());
-        const matchesClass = !selectedClass || s.lop === selectedClass;
+        const matchesClass = selectedClass.length === 0 || selectedClass.includes(s.lop);
         return matchesSearch && matchesClass;
     });
 
@@ -185,8 +192,10 @@ const Insurance: React.FC = () => {
                         allowClear
                     />
                     <ClassSelect
-                        style={{ width: 150 }}
-                        onChange={(value) => setSelectedClass(value as string)}
+                        style={{ minWidth: 150, maxWidth: 300 }}
+                        value={selectedClass}
+                        mode="multiple"
+                        onChange={(value) => setSelectedClass(value as string[])}
                     />
                 </div>
                 <Table

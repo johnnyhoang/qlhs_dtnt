@@ -4,7 +4,17 @@ import { BaoHiemService } from '../services/bao-hiem.service';
 export const layDanhSachBaoHiem = async (req: Request, res: Response) => {
     try {
         const user = (req as any).user;
-        const result = await BaoHiemService.getAll(user);
+        
+        // Parse lop param
+        let lop: string | string[] = "";
+        const rawLop = req.query.lop;
+        if (typeof rawLop === 'string') {
+            lop = rawLop.includes(',') ? rawLop.split(',') : rawLop;
+        } else if (Array.isArray(rawLop)) {
+            lop = rawLop as string[];
+        }
+
+        const result = await BaoHiemService.getAll(user, lop);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi lay danh sach bao hiem", error });

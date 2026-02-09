@@ -11,8 +11,8 @@ import ImportModal from '../components/ImportModal';
 
 const Meals: React.FC = () => {
     const [ngay, setNgay] = useState(dayjs().format('YYYY-MM-DD'));
+    const [lop, setLop] = useState<string[]>([]);
     const [searchText, setSearchText] = useState('');
-    const [lop, setLop] = useState('');
 
     const queryClient = useQueryClient();
 
@@ -163,8 +163,10 @@ const Meals: React.FC = () => {
                         style={{ width: 250 }}
                     />
                     <ClassSelect
-                        style={{ width: 120 }}
-                        onChange={(value) => setLop(value as string)}
+                        style={{ minWidth: 150, maxWidth: 300 }}
+                        value={lop}
+                        mode="multiple"
+                        onChange={(value) => setLop(value as string[])}
                     />
                 </div>
 

@@ -18,7 +18,7 @@ export const ThanhToanService = {
         });
     },
 
-    layDotThanhToanTheoId: async (id: number, user?: any) => {
+    layDotThanhToanTheoId: async (id: number, user?: any, lop: string | string[] = "") => {
         const dot = await dotThanhToanRepository.findOneBy({ id });
         if (!dot) return null;
 
@@ -27,14 +27,30 @@ export const ThanhToanService = {
             .leftJoinAndSelect("khoan.nguoi_cap_nhat", "nguoi_cap_nhat")
             .where("khoan.dot_thanh_toan_id = :id", { id });
 
+        // Normalize lop to array
+        const filterClasses = Array.isArray(lop) ? lop : (lop ? [lop] : []);
+
         if (user && user.vai_tro === "TEACHER") {
             const assignedClasses: string[] = user.lop_phu_trach || [];
             if (assignedClasses.length > 0) {
-                 query.andWhere("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+                 if (filterClasses.length > 0) {
+                     const allowedClasses = filterClasses.filter(c => assignedClasses.includes(c));
+                     if (allowedClasses.length === 0) {
+                         query.andWhere("1=0");
+                     } else {
+                         query.andWhere("hoc_sinh.lop IN (:...allowedClasses)", { allowedClasses });
+                     }
+                 } else {
+                     query.andWhere("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+                 }
             } else {
                  // Teacher with no classes sees no records
                  query.andWhere("1=0");
             }
+        } else {
+             if (filterClasses.length > 0) {
+                 query.andWhere("hoc_sinh.lop IN (:...filterClasses)", { filterClasses });
+             }
         }
 
         dot.khoan_thanh_toan = await query.getMany();

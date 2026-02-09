@@ -6,10 +6,13 @@ const suatAnRepository = AppDataSource.getRepository(SuatAn);
 const hocSinhRepository = AppDataSource.getRepository(HocSinh);
 
 export const SuatAnService = {
-    layTrangThaiHangNgay: async (ngay: string, lop?: string, search?: string, user?: any) => {
+    layTrangThaiHangNgay: async (ngay: string, lop: string | string[] = "", search?: string, user?: any) => {
         // Lay tat ca hoc sinh dang hoc
         const query = hocSinhRepository.createQueryBuilder("hoc_sinh")
             .where("hoc_sinh.trang_thai = :trang_thai", { trang_thai: TrangThaiHocSinh.DANG_HOC });
+
+        // Normalize lop to array
+        const filterClasses = Array.isArray(lop) ? lop : (lop ? [lop] : []);
 
         // Teacher restriction
         if (user && user.vai_tro === "TEACHER") {
@@ -17,17 +20,20 @@ export const SuatAnService = {
             if (assignedClasses.length === 0) {
                  return [];
             }
-            if (lop) {
-                if (!assignedClasses.includes(lop)) {
-                    return [];
+            
+            if (filterClasses.length > 0) {
+                 // Intersection check
+                const allowedClasses = filterClasses.filter(c => assignedClasses.includes(c));
+                if (allowedClasses.length === 0) {
+                     return [];
                 }
-                query.andWhere("hoc_sinh.lop = :lop", { lop });
+                query.andWhere("hoc_sinh.lop IN (:...allowedClasses)", { allowedClasses });
             } else {
                 query.andWhere("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
             }
         } else {
-             if (lop) {
-                query.andWhere("hoc_sinh.lop = :lop", { lop });
+             if (filterClasses.length > 0) {
+                query.andWhere("hoc_sinh.lop IN (:...filterClasses)", { filterClasses });
             }
         }
 
