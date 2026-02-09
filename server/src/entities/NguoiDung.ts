@@ -3,7 +3,8 @@ import { PhanQuyen } from "./PhanQuyen";
 
 export enum VaiTro {
     ADMIN = "ADMIN",
-    USER = "USER"
+    USER = "USER",
+    TEACHER = "TEACHER"
 }
 
 @Entity("nguoi_dung")
@@ -26,6 +27,9 @@ export class NguoiDung {
         default: VaiTro.USER
     })
     vai_tro!: VaiTro;
+
+    @Column("simple-json", { nullable: true })
+    lop_phu_trach?: string[]; // Array of class names e.g., ["10A1", "10A2"]
 
     @Column({ default: true })
     kich_hoat!: boolean;

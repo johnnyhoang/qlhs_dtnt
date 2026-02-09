@@ -50,4 +50,12 @@ export class NguoiDungService {
         }));
         return await this.permissionRepository.save(newPermissions);
     }
+
+    static async updateClassAssignments(userId: number, classes: string[]) {
+        const user = await this.userRepository.findOneBy({ id: userId });
+        if (!user) throw new Error("User not found");
+        
+        user.lop_phu_trach = classes;
+        return await this.userRepository.save(user);
+    }
 }

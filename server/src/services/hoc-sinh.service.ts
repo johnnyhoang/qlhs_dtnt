@@ -1,20 +1,40 @@
 import { AppDataSource } from "../data-source";
 import { HocSinh } from "../entities/HocSinh";
-import { Like } from "typeorm";
+import { Like, In } from "typeorm";
 
 const hocSinhRepository = AppDataSource.getRepository(HocSinh);
 
 export const HocSinhService = {
-    getAll: async (page = 1, pageSize = 10, search = "", lop = "") => {
+    getAll: async (page = 1, pageSize = 10, search = "", lop = "", user?: any) => {
         const skip = (page - 1) * pageSize;
         const where: any = {};
 
-        if (lop) {
-            where.lop = lop;
+        // Teacher restriction
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            if (assignedClasses.length === 0) {
+                 // Teacher with no classes sees nothing
+                 return { data: [], total: 0, page, pageSize, totalPages: 0 };
+            }
+            // If filtering by class, ensure it's allowed
+            if (lop) {
+                if (!assignedClasses.includes(lop)) {
+                    return { data: [], total: 0, page, pageSize, totalPages: 0 };
+                }
+                where.lop = lop;
+            } else {
+                // Return students from ALL assigned classes
+                where.lop = In(assignedClasses);
+            }
+        } else {
+             // Admin/User behavior
+             if (lop) {
+                 where.lop = lop;
+             }
         }
 
         if (search) {
-            where.ho_ten = Like(`%${search}%`);
+             where.ho_ten = Like(`%${search}%`);
         }
 
         const [hoc_sinh_list, total] = await hocSinhRepository.findAndCount({
@@ -34,8 +54,17 @@ export const HocSinhService = {
         };
     },
 
-    getById: async (id: string) => {
-        return await hocSinhRepository.findOneBy({ id });
+    getById: async (id: string, user?: any) => {
+        const hoc_sinh = await hocSinhRepository.findOneBy({ id });
+        if (!hoc_sinh) return null;
+
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            if (!assignedClasses.includes(hoc_sinh.lop)) {
+                return null; // Or use a specific error if preferred
+            }
+        }
+        return hoc_sinh;
     },
 
     create: async (data: Partial<HocSinh>, userId?: number) => {
