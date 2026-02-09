@@ -22,6 +22,8 @@ steps:
       - 'gcr.io/$PROJECT_ID/qlhs-web:latest'
       - '-f'
       - 'web/Dockerfile'
+      - '--build-arg'
+      - 'VITE_API_URL=$_VITE_API_URL'
       - './web'
     id: 'build-web'
 
@@ -92,3 +94,6 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 timeout: '1800s'
+
+substitutions:
+  _VITE_API_URL: 'https://qlhs-server-r647244510468.asia-southeast1.run.app/api' # Pls update this with your actual backend URL in Cloud Build Trigger
