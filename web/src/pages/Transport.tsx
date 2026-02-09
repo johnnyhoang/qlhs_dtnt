@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Input, InputNumber, message, Tooltip, Select, Space } from 'antd';
+import { Table, Card, Button, Modal, Form, Input, InputNumber, message, Tooltip, Space } from 'antd';
 import { EditOutlined, FileExcelOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layTatCaDinhMuc, luuDinhMucXe } from '../api/dinh-muc-xe';
@@ -9,6 +9,7 @@ import type { DinhMucXe } from '../types/dinh-muc-xe';
 import ImportModal from '../components/ImportModal';
 import AuditFooter from '../components/AuditFooter';
 import dayjs from 'dayjs';
+import ClassSelect from '../components/ClassSelect';
 
 const Transport: React.FC = () => {
     const [searchText, setSearchText] = useState('');
@@ -63,8 +64,6 @@ const Transport: React.FC = () => {
 
     const profileMap = new Map();
     profiles?.forEach(p => profileMap.set(p.hoc_sinh_id, p));
-
-    const classes = Array.from(new Set(students?.data?.map((s: any) => s.lop))).filter(Boolean).sort();
 
     const filteredData = students?.data?.filter((s: any) => {
         const matchesSearch = s.ho_ten.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -186,12 +185,9 @@ const Transport: React.FC = () => {
                         style={{ width: 300 }}
                         allowClear
                     />
-                    <Select
-                        placeholder="Lọc theo lớp"
+                    <ClassSelect
                         style={{ width: 150 }}
-                        allowClear
-                        onChange={value => setSelectedClass(value)}
-                        options={classes.map(c => ({ label: c, value: c }))}
+                        onChange={(value) => setSelectedClass(value as string)}
                     />
                 </div>
                 <Table

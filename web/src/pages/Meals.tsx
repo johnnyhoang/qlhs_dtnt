@@ -3,6 +3,7 @@ import { Table, Card, DatePicker, Input, Checkbox, Space, message, Button, Toolt
 import { SearchOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import ClassSelect from '../components/ClassSelect';
 import { layTrangThaiSuatAn, baoCatSuatAn } from '../api/suat-an';
 import { LoaiSuatAn } from '../types/suat-an';
 import type { HocSinhSuatAnStatus } from '../types/suat-an';
@@ -161,10 +162,9 @@ const Meals: React.FC = () => {
                         onChange={(e) => setSearchText(e.target.value)}
                         style={{ width: 250 }}
                     />
-                    <Input
-                        placeholder="Lớp..."
-                        onChange={(e) => setLop(e.target.value)}
+                    <ClassSelect
                         style={{ width: 120 }}
+                        onChange={(value) => setLop(value as string)}
                     />
                 </div>
 

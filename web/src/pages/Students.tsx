@@ -8,6 +8,7 @@ import type { HocSinh } from '../types/hoc-sinh';
 import StudentModal from '../components/StudentModal'; // Need to update this too
 import ImportModal from '../components/ImportModal'; // Need to update this too
 import dayjs from 'dayjs';
+import ClassSelect from '../components/ClassSelect';
 
 const Students: React.FC = () => {
     const [page, setPage] = useState(1);
@@ -187,10 +188,9 @@ const Students: React.FC = () => {
                         onChange={(e) => setSearchText(e.target.value)}
                         style={{ width: 300 }}
                     />
-                    <Input
-                        placeholder="Lớp..."
-                        onChange={(e) => setLop(e.target.value)}
+                    <ClassSelect
                         style={{ width: 150 }}
+                        onChange={(value) => setLop(value as string)}
                     />
                 </div>
 
