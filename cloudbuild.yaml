@@ -96,4 +96,4 @@ options:
 timeout: '1800s'
 
 substitutions:
-  _VITE_API_URL: 'https://qlhs-server-r647244510468.asia-southeast1.run.app/api' # Pls update this with your actual backend URL in Cloud Build Trigger
+  _VITE_API_URL: 'https://qlhs-server-311534268252.asia-southeast1.run.app/api' # Pls update this with your actual backend URL in Cloud Build Trigger
