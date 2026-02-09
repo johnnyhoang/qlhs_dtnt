@@ -24,6 +24,8 @@ steps:
       - 'web/Dockerfile'
       - '--build-arg'
       - 'VITE_API_URL=$_VITE_API_URL'
+      - '--build-arg'
+      - 'VITE_GOOGLE_CLIENT_ID=$_GOOGLE_CLIENT_ID'
       - './web'
     id: 'build-web'
 
@@ -61,6 +63,20 @@ steps:
       - '3500'
       - '--set-env-vars'
       - 'NODE_ENV=production'
+      - '--set-env-vars'
+      - 'DB_SOCKET_PATH=/cloudsql/$_INSTANCE_CONNECTION_NAME'
+      - '--set-env-vars'
+      - 'DB_USER=$_DB_USER'
+      - '--set-env-vars'
+      - 'DB_PASS=$_DB_PASS'
+      - '--set-env-vars'
+      - 'DB_NAME=$_DB_NAME'
+      - '--set-env-vars'
+      - 'JWT_SECRET=$_JWT_SECRET'
+      - '--set-env-vars'
+      - 'GOOGLE_CLIENT_ID=$_GOOGLE_CLIENT_ID'
+      - '--add-cloudsql-instances'
+      - '$_INSTANCE_CONNECTION_NAME'
     id: 'deploy-server'
     waitFor: ['push-server']
 
@@ -96,4 +112,10 @@ options:
 timeout: '1800s'
 
 substitutions:
-  _VITE_API_URL: 'https://qlhs-server-311534268252.asia-southeast1.run.app/api' # Pls update this with your actual backend URL in Cloud Build Trigger
+  _VITE_API_URL: 'https://qlhs-server-311534268252.asia-southeast1.run.app/api'
+  _INSTANCE_CONNECTION_NAME: 'qlhsdtnt:asia-southeast1:qlhs-db-instance' # Default or override in Trigger
+  _DB_USER: 'qlhs_user' # Default or override in Trigger
+  _DB_PASS: 'needs_to_be_set_in_trigger' # SECURITY: Set this in Cloud Build Trigger
+  _DB_NAME: 'qlhs_db'
+  _JWT_SECRET: 'needs_to_be_set_in_trigger' # SECURITY: Set this in Cloud Build Trigger
+  _GOOGLE_CLIENT_ID: '311534268252-fjpb2dvc8kpne0hrca4fr9pb5k9sspeh.apps.googleusercontent.com'

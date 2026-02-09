@@ -159,4 +159,29 @@ Xây dựng hệ thống quản lý toàn diện cho trường Phổ thông Dân
 *   **Secure Import**: Ngăn chặn User/Teacher import đè dữ liệu của lớp khác.
 
 ## 9. Conclusion
-Tài liệu này tổng hợp toàn bộ requirements và technical specs của dự án tính đến thời điểm hiện tại. Mọi phát triển trong tương lai cần tuân thủ nghiêm ngặt quy tắc **"Server-side Class-Based Access Control"** đã được định nghĩa ở mục 3 và 6.
+## 10. Deployment & Infrastructure
+
+### 10.1. Platform
+*   **Cloud Provider**: Google Cloud Platform (GCP).
+*   **Compute**: Cloud Run (Managed) for both Backend and Frontend containers.
+*   **Database**: Cloud SQL (MySQL 8.0).
+*   **CI/CD**: Google Cloud Build.
+
+### 10.2. Environment Configuration
+*   **Secret Management**:
+    *   Secrets (DB Password, JWT Secret) **MUST NOT** be committed to Git.
+    *   Use **Cloud Build Substitutions** (`_DB_PASS`, `_JWT_SECRET`) to inject secrets during deployment.
+    *   Cloud Run services must be deployed with `--set-env-vars` mapped to these substitutions.
+*   **Required Environment Variables (Production)**:
+    *   `NODE_ENV=production`
+    *   `DB_SOCKET_PATH`: Unix socket path for Cloud SQL (e.g., `/cloudsql/project:region:instance`).
+    *   `INSTANCE_CONNECTION_NAME`: Cloud SQL connection string.
+    *   `DB_USER`, `DB_PASS`, `DB_NAME`.
+    *   `JWT_SECRET`: For signing session tokens.
+    *   `GOOGLE_CLIENT_ID`: For Google OAuth.
+    *   `VITE_API_URL`: Frontend build argument pointing to Backend URL.
+
+### 10.3. Database Connection
+*   **Local**: TCP connection via `localhost:3306` (using Auth Proxy or local DB).
+*   **Production (Cloud Run)**: Unix Domain Socket connection provided by Cloud SQL Auth Proxy sidecar (enabled via `--add-cloudsql-instances`).
+
