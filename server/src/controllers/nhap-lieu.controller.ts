@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as xlsx from 'xlsx';
+import { parse } from 'csv-parse/sync';
 import { HocSinhService } from '../services/hoc-sinh.service';
 import { SuatAnService } from '../services/suat-an.service';
 import { DinhMucXeService } from '../services/dinh-muc-xe.service';
@@ -18,27 +18,35 @@ const getCsvData = (buffer: Buffer) => {
     }
 
     const content = cleanBuffer.toString('utf8');
-    const workbook = xlsx.read(content, { type: 'string' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
     
-    const rows = xlsx.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-    if (rows.length < 2) return null;
-
-    const rawHeaders = rows[0].map(h => {
-        let s = String(h || '').trim().toLowerCase();
-        s = s.replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
-        return s;
-    });
-
-    const dataRows = rows.slice(1);
-    return dataRows.map((row) => {
-        const item: any = {};
-        rawHeaders.forEach((header, index) => {
-            item[header] = row[index];
+    try {
+        const records = parse(content, {
+            columns: true,
+            skip_empty_lines: true,
+            trim: true,
+            relax_quotes: true
         });
-        return item;
-    });
+
+        if (!records || records.length === 0) return null;
+
+        // Normalize keys in the first record to create a mapping or just map each record
+        // Since csv-parse returns objects with keys as headers, we need to normalize them
+        
+        const normalizedData = records.map((record: any) => {
+            const newRecord: any = {};
+            Object.keys(record).forEach(key => {
+                let s = String(key || '').trim().toLowerCase();
+                s = s.replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
+                newRecord[s] = record[key];
+            });
+            return newRecord;
+        });
+
+        return normalizedData;
+    } catch (error) {
+        console.error("CSV Parse Error:", error);
+        return null;
+    }
 };
 
 // Map header linh hoat

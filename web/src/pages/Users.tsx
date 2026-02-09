@@ -45,7 +45,7 @@ const Users: React.FC = () => {
         { key: 'dinh-muc-xe', label: 'Định mức xe' },
         { key: 'bao-hiem', label: 'Bảo hiểm' },
         { key: 'thanh-toan', label: 'Thanh toán' },
-        { key: 'nhap-lieu', label: 'Nhập liệu (Excel)' }
+        { key: 'nhap-lieu', label: 'Nhập liệu (CSV)' }
     ];
 
     const { data: danhMucLop } = useQuery({

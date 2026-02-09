@@ -21,9 +21,9 @@ const ImportModal: React.FC<ImportModalProps> = ({
     visible,
     onCancel,
     onSuccess,
-    title = "Import học sinh từ CSV",
+    title = "Import học sinh từ file CSV",
     endpoint = "/nhap-lieu/hoc-sinh-csv",
-    description = "Hệ thống sẽ cập nhật thông tin học sinh. File CSV cần có các cột tối thiểu: ma_hoc_sinh, ho_ten, lop.",
+    description = "Hệ thống sẽ cập nhật thông tin học sinh từ file CSV. File cần có các cột tối thiểu: ma_hoc_sinh, ho_ten, lop.",
     additionalFields
 }) => {
     const [fileList, setFileList] = useState<UploadFile[]>([]);

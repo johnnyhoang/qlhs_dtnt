@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Button, Input, Space, Card, Tag, Popconfirm, message, Tooltip } from 'antd';
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layDanhSachHocSinh, taoHocSinh, capNhatHocSinh, xoaHocSinh } from '../api/hoc-sinh';
 import { TrangThaiHocSinh, GioiTinh } from '../types/hoc-sinh';
@@ -170,7 +170,7 @@ const Students: React.FC = () => {
             <Space>
                 {canImport && (
                     <Tooltip title="Import từ CSV">
-                        <Button icon={<FileExcelOutlined />} onClick={() => setIsImportModalVisible(true)} />
+                        <Button icon={<FileTextOutlined />} onClick={() => setIsImportModalVisible(true)} />
                     </Tooltip>
                 )}
                 {canEdit && (

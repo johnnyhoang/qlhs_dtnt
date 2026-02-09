@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Card, Button, Modal, Form, Input, DatePicker, Checkbox, Tag, message, Tooltip, Space } from 'antd';
-import { EditOutlined, CheckCircleOutlined, CloseCircleOutlined, FileExcelOutlined, SearchOutlined } from '@ant-design/icons';
+import { EditOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import ClassSelect from '../components/ClassSelect';
@@ -167,7 +167,7 @@ const Insurance: React.FC = () => {
                     {canImport && (
                         <Tooltip title="Import từ CSV">
                             <Button
-                                icon={<FileExcelOutlined />}
+                                icon={<FileTextOutlined />}
                                 onClick={() => setIsImportModalVisible(true)}
                             />
                         </Tooltip>

@@ -40,7 +40,7 @@ Xây dựng hệ thống quản lý toàn diện cho trường Phổ thông Dân
 ### 4.1. Quản lý Học sinh (Student Module)
 *   **Chức năng**:
     *   Quản lý hồ sơ: Mã HS, Họ tên, Lớp, Ngày sinh, Dân tộc, BHYT, v.v.
-    *   Nhập/Xuất dữ liệu từ Excel/CSV.
+    *   Nhập/Xuất dữ liệu từ CSV.
 *   **Authorization Rule**:
     *   *Read*: Teacher chỉ thấy học sinh thuộc lớp mình quản lý.
     *   *Write (Create/Update)*: Teacher chỉ thêm/sửa học sinh vào lớp mình quản lý. Chặn việc chuyển học sinh sang lớp khác.
@@ -146,7 +146,7 @@ Xây dựng hệ thống quản lý toàn diện cho trường Phổ thông Dân
 
 ### Phase 2: Feature Expansion
 *   Thêm module Bảo hiểm, Định mức xe, Thanh toán.
-*   Tính năng Import/Export Excel.
+*   Tính năng Import/Export CSV.
 
 ### Phase 3: Teacher Role & Security Hardening (Current)
 *   **Add Teacher Role**: Nhu cầu phân quyền chi tiết cho GVCN.
