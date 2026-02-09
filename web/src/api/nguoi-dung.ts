@@ -15,3 +15,8 @@ export const capNhatPhanQuyen = async (id: number, permissions: Partial<PhanQuye
     const response = await client.post(`/nguoi-dung/${id}/phan-quyen`, { permissions });
     return response.data;
 };
+
+export const capNhatLopPhuTrach = async (id: number, lop_phu_trach: string[]) => {
+    const response = await client.post(`/nguoi-dung/${id}/lop-phu-trach`, { lop_phu_trach });
+    return response.data;
+};

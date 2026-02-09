@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Select, Input, InputNumber, message, Tooltip } from 'antd';
-import { PlusOutlined, EyeOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { Table, Card, Button, Modal, Form, Select, Input, InputNumber, message, Tooltip, Space } from 'antd';
+import { PlusOutlined, EyeOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { layDanhSachDotThanhToan, layChiTietDotThanhToan, taoDotThanhToanMoi } from '../api/thanh-toan';
 import type { DotThanhToan, KhoanThanhToan } from '../types/thanh-toan';
 import ImportModal from '../components/ImportModal';
+import ClassSelect from '../components/ClassSelect';
 
 const Payments: React.FC = () => {
     const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
     const [detailsBatchId, setDetailsBatchId] = useState<number | null>(null);
+    const [filterClass, setFilterClass] = useState<string[]>([]);
     const [form] = Form.useForm();
 
     const queryClient = useQueryClient();
@@ -20,8 +22,8 @@ const Payments: React.FC = () => {
     });
 
     const { data: batchDetails, isLoading: isLoadingDetails } = useQuery({
-        queryKey: ['thanh-toan-batch-details', detailsBatchId],
-        queryFn: () => layChiTietDotThanhToan(detailsBatchId!),
+        queryKey: ['thanh-toan-batch-details', detailsBatchId, filterClass],
+        queryFn: () => layChiTietDotThanhToan(detailsBatchId!, filterClass),
         enabled: !!detailsBatchId,
     });
 
@@ -175,18 +177,30 @@ const Payments: React.FC = () => {
                 title={
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 32 }}>
                         <span>Chi tiết đợt chi trả: Tháng {batchDetails?.thang}/{batchDetails?.nam}</span>
-                        {canImport && (
-                            <Tooltip title="Import từ CSV">
-                                <Button
-                                    icon={<FileExcelOutlined />}
-                                    onClick={() => setIsImportModalVisible(true)}
-                                />
-                            </Tooltip>
-                        )}
+                        <Space>
+                            <ClassSelect
+                                style={{ minWidth: 150, maxWidth: 300 }}
+                                mode="multiple"
+                                placeholder="Lọc theo lớp"
+                                value={filterClass}
+                                onChange={(val) => setFilterClass(val as string[])}
+                            />
+                            {canImport && (
+                                <Tooltip title="Import từ CSV">
+                                    <Button
+                                        icon={<FileTextOutlined />}
+                                        onClick={() => setIsImportModalVisible(true)}
+                                    />
+                                </Tooltip>
+                            )}
+                        </Space>
                     </div>
                 }
                 open={!!detailsBatchId}
-                onCancel={() => setDetailsBatchId(null)}
+                onCancel={() => {
+                    setDetailsBatchId(null);
+                    setFilterClass([]);
+                }}
                 footer={null}
                 width={1000}
             >
@@ -196,6 +210,7 @@ const Payments: React.FC = () => {
                     rowKey="id"
                     loading={isLoadingDetails}
                     pagination={{ pageSize: 10 }}
+                    scroll={{ x: 'max-content' }}
                 />
             </Modal>
 

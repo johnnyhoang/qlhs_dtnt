@@ -23,6 +23,20 @@ export interface HocSinh {
     ngay_sinh?: string | Date;
     gioi_tinh?: GioiTinh;
     trang_thai: TrangThaiHocSinh;
+    // Address Information
+    dia_chi?: string;
+    phuong_xa?: string;
+    tinh?: string;
+    // Banking Information
+    so_tai_khoan?: string;
+    ngan_hang?: string;
+    // Personal Information
+    dan_toc?: string;
+    ton_giao?: string;
+    so_dien_thoai?: string;
+    // Additional Information
+    ghi_chu?: string;
+    ly_lich?: string;
     createdAt: string;
     updatedAt: string;
     nguoi_cap_nhat?: {
@@ -39,6 +53,20 @@ export interface CreateHocSinhRequest {
     ngay_sinh?: string | Date;
     gioi_tinh?: GioiTinh;
     trang_thai?: TrangThaiHocSinh;
+    // Address Information
+    dia_chi?: string;
+    phuong_xa?: string;
+    tinh?: string;
+    // Banking Information
+    so_tai_khoan?: string;
+    ngan_hang?: string;
+    // Personal Information
+    dan_toc?: string;
+    ton_giao?: string;
+    so_dien_thoai?: string;
+    // Additional Information
+    ghi_chu?: string;
+    ly_lich?: string;
 }
 
 export interface UpdateHocSinhRequest extends Partial<CreateHocSinhRequest> {}

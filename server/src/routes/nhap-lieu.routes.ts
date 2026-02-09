@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { nhapTuCsv, nhapSuatAnCsv, nhapDinhMucXeCsv, nhapBaoHiemCsv, nhapThanhToanCsv } from '../controllers/nhap-lieu.controller';
-import { authMiddleware, checkModuleAccess } from '../middlewares/auth.middleware';
+import { nhapTuCsv, nhapSuatAnCsv, nhapDinhMucXeCsv, nhapBaoHiemCsv, nhapThanhToanCsv, nhapDanhMucMasterCsv } from '../controllers/nhap-lieu.controller';
+import { authMiddleware, checkModuleAccess, adminOnly } from '../middlewares/auth.middleware';
 import multer from 'multer';
 
 const router = Router();
@@ -13,5 +13,6 @@ router.post('/suat-an-csv', checkModuleAccess('suat-an', true), upload.single('f
 router.post('/dinh-muc-xe-csv', checkModuleAccess('dinh-muc-xe', true), upload.single('file'), nhapDinhMucXeCsv);
 router.post('/bao-hiem-csv', checkModuleAccess('bao-hiem', true), upload.single('file'), nhapBaoHiemCsv);
 router.post('/thanh-toan-csv', checkModuleAccess('thanh-toan', true), upload.single('file'), nhapThanhToanCsv);
+router.post('/danh-muc-master-csv', adminOnly, upload.single('file'), nhapDanhMucMasterCsv);
 
 export default router;

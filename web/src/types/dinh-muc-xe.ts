@@ -8,6 +8,7 @@ export interface DinhMucXe {
     ngan_hang?: string;
     dia_chi_xa_moi?: string;
     xa_huong_tro_cap?: string;
+    so_tien?: number;
     khoang_cach?: number;
     ten_diem_dung?: string;
     phuong_tien?: string;

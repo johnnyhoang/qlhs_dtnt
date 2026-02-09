@@ -4,10 +4,34 @@ import { DinhMucXe } from "../entities/DinhMucXe";
 const dinhMucXeRepository = AppDataSource.getRepository(DinhMucXe);
 
 export const DinhMucXeService = {
-    getAll: async () => {
-        return await dinhMucXeRepository.find({
-            relations: ["hoc_sinh", "nguoi_cap_nhat"]
-        });
+    getAll: async (user?: any, lop: string | string[] = "") => {
+        const query = dinhMucXeRepository.createQueryBuilder("dinh_muc_xe")
+            .leftJoinAndSelect("dinh_muc_xe.hoc_sinh", "hoc_sinh")
+            .leftJoinAndSelect("dinh_muc_xe.nguoi_cap_nhat", "nguoi_cap_nhat");
+
+        // Normalize lop to array
+        const filterClasses = Array.isArray(lop) ? lop : (lop ? [lop] : []);
+
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            if (assignedClasses.length === 0) {
+                 return [];
+            }
+            
+            if (filterClasses.length > 0) {
+                 const allowedClasses = filterClasses.filter(c => assignedClasses.includes(c));
+                 if (allowedClasses.length === 0) return [];
+                 query.where("hoc_sinh.lop IN (:...allowedClasses)", { allowedClasses });
+            } else {
+                 query.where("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+            }
+        } else {
+             if (filterClasses.length > 0) {
+                 query.where("hoc_sinh.lop IN (:...filterClasses)", { filterClasses });
+             }
+        }
+
+        return await query.getMany();
     },
 
     getByHocSinhId: async (hoc_sinh_id: string) => {
@@ -17,12 +41,26 @@ export const DinhMucXeService = {
         });
     },
 
+    calculateSupportAmount: (distance: number): number => {
+        // Default logic: Distance * 1000 VND
+        // TODO: Implement zone-based pricing in future
+        return Math.round(distance * 1000);
+    },
+
     luuDinhMuc: async (hoc_sinh_id: string, data: Partial<DinhMucXe>, userId?: number) => {
         let dinh_muc = await dinhMucXeRepository.findOneBy({ hoc_sinh_id });
+        
+        let so_tien = data.so_tien;
+        if (data.khoang_cach !== undefined) {
+             // Recalculate if distance changes, unless specific amount override is provided (though currently we trust calculation)
+             // For now, always recalculate based on distance if distance is provided
+             so_tien = DinhMucXeService.calculateSupportAmount(Number(data.khoang_cach));
+        }
+
         if (dinh_muc) {
-            dinhMucXeRepository.merge(dinh_muc, { ...data, nguoi_cap_nhat_id: userId });
+            dinhMucXeRepository.merge(dinh_muc, { ...data, so_tien, nguoi_cap_nhat_id: userId });
         } else {
-            dinh_muc = dinhMucXeRepository.create({ ...data, hoc_sinh_id, nguoi_cap_nhat_id: userId });
+            dinh_muc = dinhMucXeRepository.create({ ...data, so_tien, hoc_sinh_id, nguoi_cap_nhat_id: userId });
         }
         return await dinhMucXeRepository.save(dinh_muc);
     },

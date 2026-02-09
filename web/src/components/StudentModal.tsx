@@ -1,6 +1,9 @@
-import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, message } from 'antd';
+import React, { useEffect, useMemo } from 'react';
+import { Modal, Form, Input, Select, DatePicker, message, Row, Col } from 'antd';
 import dayjs from 'dayjs';
+import { useQuery } from '@tanstack/react-query';
+import { layDanhSachDanhMuc } from '../api/danh-muc-master';
+import { LoaiDanhMuc } from '../types/danh-muc-master';
 import { GioiTinh, TrangThaiHocSinh } from '../types/hoc-sinh';
 import type { HocSinh, CreateHocSinhRequest } from '../types/hoc-sinh';
 
@@ -24,6 +27,28 @@ const StudentModal: React.FC<StudentModalProps> = ({
     onSave
 }) => {
     const [form] = Form.useForm();
+
+    // Fetch Master Data
+    const { data: categories } = useQuery({
+        queryKey: ['danh-muc-master-all'],
+        queryFn: () => layDanhSachDanhMuc({ pageSize: 1000 }),
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const getOptions = (type: LoaiDanhMuc, filterNote?: string) => {
+        if (!categories?.data) return [];
+        return categories.data
+            .filter(item => item.loai_danh_muc === type && item.kich_hoat)
+            .filter(item => !filterNote || item.ghi_chu?.includes(filterNote))
+            .map(item => ({ label: item.ten, value: item.ten })); // Backend expects string name for now, update to ID if needed later
+    };
+
+    const classOptions = useMemo(() => getOptions(LoaiDanhMuc.LOP, '2025'), [categories]);
+    const ethnicityOptions = useMemo(() => getOptions(LoaiDanhMuc.DAN_TOC), [categories]);
+    const religionOptions = useMemo(() => getOptions(LoaiDanhMuc.TON_GIAO), [categories]);
+    // const bankOptions = useMemo(() => getOptions(LoaiDanhMuc.NGAN_HANG), [categories]); // Keep as input or select? Input used in UI currently but could be select.
+    const provinceOptions = useMemo(() => getOptions(LoaiDanhMuc.TINH), [categories]);
+    // const wardOptions = useMemo(() => getOptions(LoaiDanhMuc.PHUONG_XA), [categories]); // Dependent on district? For now just list all or filter if possible.
 
     useEffect(() => {
         if (visible) {
@@ -60,7 +85,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
             onOk={handleSubmit}
             onCancel={onCancel}
             confirmLoading={loading}
-            width={600}
+            width={900}
             destroyOnHidden
         >
             <Form
@@ -68,74 +93,223 @@ const StudentModal: React.FC<StudentModalProps> = ({
                 layout="vertical"
                 initialValues={{ trang_thai: TrangThaiHocSinh.DANG_HOC, gioi_tinh: GioiTinh.NAM }}
             >
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <Form.Item
-                        name="ma_hoc_sinh"
-                        label="Mã học sinh"
-                        rules={[{ required: true, message: 'Vui lòng nhập mã học sinh' }]}
-                    >
-                        <Input placeholder="Ví dụ: HS001" />
-                    </Form.Item>
-                    <Form.Item
-                        name="ho_ten"
-                        label="Họ và tên"
-                        rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
-                    >
-                        <Input placeholder="Nguyễn Văn A" />
-                    </Form.Item>
+                {/* --- Row 1: Basic Info (3 Cols) --- */}
+                <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item
+                            name="ma_hoc_sinh"
+                            label="Mã học sinh"
+                            rules={[{ required: true, message: 'Vui lòng nhập mã' }]}
+                        >
+                            <Input placeholder="HS001" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="ho_ten"
+                            label="Họ và tên"
+                            rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+                        >
+                            <Input placeholder="Nguyễn Văn A" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="lop"
+                            label="Lớp"
+                            rules={[{ required: true, message: 'Vui lòng chọn lớp' }]}
+                        >
+                            <Select
+                                placeholder="Chọn lớp"
+                                showSearch
+                                options={classOptions}
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                {/* --- Row 2: Personal Details (3 Cols) --- */}
+                <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item
+                            name="ngay_sinh"
+                            label="Ngày sinh"
+                        >
+                            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="Chọn ngày" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="gioi_tinh"
+                            label="Giới tính"
+                        >
+                            <Select>
+                                <Select.Option value={GioiTinh.NAM}>Nam</Select.Option>
+                                <Select.Option value={GioiTinh.NU}>Nữ</Select.Option>
+                                <Select.Option value={GioiTinh.KHAC}>Khác</Select.Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="trang_thai"
+                            label="Trạng thái"
+                        >
+                            <Select>
+                                <Select.Option value={TrangThaiHocSinh.DANG_HOC}>Đang học</Select.Option>
+                                <Select.Option value={TrangThaiHocSinh.DA_NGHI}>Đã nghỉ</Select.Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                {/* --- Row 3: Identifiers (3 Cols) --- */}
+                <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item
+                            name="cccd"
+                            label="CCCD/Định danh"
+                        >
+                            <Input placeholder="Số định danh" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="so_dien_thoai"
+                            label="Số điện thoại"
+                            rules={[
+                                { pattern: /^[0-9]{10,11}$/, message: 'SDT không hợp lệ' }
+                            ]}
+                        >
+                            <Input placeholder="Số điện thoại" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="ma_moet"
+                            label="Mã MOET"
+                        >
+                            <Input placeholder="Mã BGD" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                {/* --- Section: Address --- */}
+                <div style={{ marginTop: '8px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
+                    Thông tin địa chỉ & Cá nhân
                 </div>
+                <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item
+                            name="dia_chi"
+                            label="Địa chỉ cụ thể"
+                        >
+                            <Input placeholder="Số nhà, đường" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="phuong_xa"
+                            label="Phường/Xã"
+                        >
+                            <Input placeholder="Nhập phường/xã" />
+                            {/* Future: Convert to Select using wardOptions if available */}
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="tinh"
+                            label="Tỉnh/Thành phố"
+                        >
+                            <Select
+                                placeholder="Chọn tỉnh/TP"
+                                showSearch
+                                allowClear
+                                options={provinceOptions}
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <Form.Item
-                        name="lop"
-                        label="Lớp"
-                        rules={[{ required: true, message: 'Vui lòng nhập lớp' }]}
-                    >
-                        <Input placeholder="Ví dụ: 10A1" />
-                    </Form.Item>
-                    <Form.Item
-                        name="ma_moet"
-                        label="Mã MOET"
-                    >
-                        <Input placeholder="Mã định danh BGD" />
-                    </Form.Item>
+                <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item
+                            name="dan_toc"
+                            label="Dân tộc"
+                        >
+                            <Select
+                                placeholder="Chọn dân tộc"
+                                showSearch
+                                allowClear
+                                options={ethnicityOptions}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="ton_giao"
+                            label="Tôn giáo"
+                        >
+                            <Select
+                                placeholder="Chọn tôn giáo"
+                                showSearch
+                                allowClear
+                                options={religionOptions}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        {/* Placeholder for 3rd column alignment or extra field */}
+                    </Col>
+                </Row>
+
+
+                {/* --- Section: Banking --- */}
+                <div style={{ marginTop: '8px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
+                    Thông tin ngân hàng
                 </div>
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="ngan_hang"
+                            label="Ngân hàng"
+                        >
+                            <Input placeholder="Tên ngân hàng" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="so_tai_khoan"
+                            label="Số tài khoản"
+                        >
+                            <Input placeholder="Số tài khoản" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <Form.Item
-                        name="ngay_sinh"
-                        label="Ngày sinh"
-                    >
-                        <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="Chọn ngày" />
-                    </Form.Item>
-                    <Form.Item
-                        name="gioi_tinh"
-                        label="Giới tính"
-                    >
-                        <Select>
-                            <Select.Option value={GioiTinh.NAM}>Nam</Select.Option>
-                            <Select.Option value={GioiTinh.NU}>Nữ</Select.Option>
-                            <Select.Option value={GioiTinh.KHAC}>Khác</Select.Option>
-                        </Select>
-                    </Form.Item>
+                {/* --- Section: Notes --- */}
+                <div style={{ marginTop: '8px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
+                    Ghi chú & Lý lịch
                 </div>
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item
+                            name="ghi_chu"
+                            label="Ghi chú"
+                        >
+                            <Input.TextArea rows={2} placeholder="Ghi chú..." />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item
+                            name="ly_lich"
+                            label="Lý lịch"
+                        >
+                            <Input.TextArea rows={2} placeholder="Tiểu sử..." />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-                <Form.Item
-                    name="cccd"
-                    label="Số CCCD/Định danh"
-                >
-                    <Input placeholder="Nhập số định danh" />
-                </Form.Item>
-
-                <Form.Item
-                    name="trang_thai"
-                    label="Trạng thái"
-                >
-                    <Select>
-                        <Select.Option value={TrangThaiHocSinh.DANG_HOC}>Đang học</Select.Option>
-                        <Select.Option value={TrangThaiHocSinh.DA_NGHI}>Đã nghỉ</Select.Option>
-                    </Select>
-                </Form.Item>
                 <AuditFooter
                     createdAt={student?.createdAt}
                     updatedAt={student?.updatedAt}

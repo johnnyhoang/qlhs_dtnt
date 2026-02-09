@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Table, Button, Input, Space, Card, Tag, Popconfirm, message, Tooltip } from 'antd';
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layDanhSachHocSinh, taoHocSinh, capNhatHocSinh, xoaHocSinh } from '../api/hoc-sinh';
 import { TrangThaiHocSinh, GioiTinh } from '../types/hoc-sinh';
@@ -8,12 +8,13 @@ import type { HocSinh } from '../types/hoc-sinh';
 import StudentModal from '../components/StudentModal'; // Need to update this too
 import ImportModal from '../components/ImportModal'; // Need to update this too
 import dayjs from 'dayjs';
+import ClassSelect from '../components/ClassSelect';
 
 const Students: React.FC = () => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [searchText, setSearchText] = useState('');
-    const [lop, setLop] = useState('');
+    const [lop, setLop] = useState<string[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isImportModalVisible, setIsImportModalVisible] = useState(false);
     const [editingStudent, setEditingStudent] = useState<HocSinh | null>(null);
@@ -169,7 +170,7 @@ const Students: React.FC = () => {
             <Space>
                 {canImport && (
                     <Tooltip title="Import từ CSV">
-                        <Button icon={<FileExcelOutlined />} onClick={() => setIsImportModalVisible(true)} />
+                        <Button icon={<FileTextOutlined />} onClick={() => setIsImportModalVisible(true)} />
                     </Tooltip>
                 )}
                 {canEdit && (
@@ -187,10 +188,11 @@ const Students: React.FC = () => {
                         onChange={(e) => setSearchText(e.target.value)}
                         style={{ width: 300 }}
                     />
-                    <Input
-                        placeholder="Lớp..."
-                        onChange={(e) => setLop(e.target.value)}
-                        style={{ width: 150 }}
+                    <ClassSelect
+                        style={{ minWidth: 200, maxWidth: 400 }}
+                        value={lop}
+                        mode="multiple"
+                        onChange={(value) => setLop(value as string[])}
                     />
                 </div>
 

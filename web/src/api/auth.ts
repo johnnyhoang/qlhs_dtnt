@@ -11,7 +11,8 @@ export interface NguoiDung {
     id: number;
     email: string;
     ho_ten: string;
-    vai_tro: 'ADMIN' | 'USER';
+    vai_tro: 'ADMIN' | 'USER' | 'TEACHER';
+    lop_phu_trach?: string[];
     anh_dai_dien?: string;
     kich_hoat: boolean;
     danh_sach_quyen?: PhanQuyen[];

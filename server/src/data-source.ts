@@ -10,6 +10,7 @@ import { DinhMucXe } from "./entities/DinhMucXe";
 import { DonGiaXe } from "./entities/DonGiaXe";
 import { NguoiDung } from "./entities/NguoiDung";
 import { PhanQuyen } from "./entities/PhanQuyen";
+import { DanhMucMaster } from "./entities/DanhMucMaster";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -30,7 +31,8 @@ export const AppDataSource = new DataSource({
         DinhMucXe, 
         DonGiaXe,
         NguoiDung,
-        PhanQuyen
+        PhanQuyen,
+        DanhMucMaster
     ],
     migrations: [__dirname + "/migrations/*.ts"],
     subscribers: [],

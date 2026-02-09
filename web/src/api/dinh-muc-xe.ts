@@ -1,8 +1,8 @@
 import client from './client';
 import type { DinhMucXe, UpsertDinhMucXeRequest } from '../types/dinh-muc-xe';
 
-export const layTatCaDinhMuc = async (): Promise<DinhMucXe[]> => {
-    const response = await client.get('/dinh-muc-xe');
+export const layTatCaDinhMuc = async (lop?: string | string[]): Promise<DinhMucXe[]> => {
+    const response = await client.get('/dinh-muc-xe', { params: { lop } });
     return response.data;
 };
 

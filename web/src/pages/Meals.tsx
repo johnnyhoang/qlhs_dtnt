@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Table, Card, DatePicker, Input, Checkbox, Space, message, Button, Tooltip } from 'antd';
-import { SearchOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { SearchOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import ClassSelect from '../components/ClassSelect';
 import { layTrangThaiSuatAn, baoCatSuatAn } from '../api/suat-an';
 import { LoaiSuatAn } from '../types/suat-an';
 import type { HocSinhSuatAnStatus } from '../types/suat-an';
@@ -10,8 +11,8 @@ import ImportModal from '../components/ImportModal';
 
 const Meals: React.FC = () => {
     const [ngay, setNgay] = useState(dayjs().format('YYYY-MM-DD'));
+    const [lop, setLop] = useState<string[]>([]);
     const [searchText, setSearchText] = useState('');
-    const [lop, setLop] = useState('');
 
     const queryClient = useQueryClient();
 
@@ -140,7 +141,7 @@ const Meals: React.FC = () => {
                 canImport && (
                     <Tooltip title="Import từ CSV">
                         <Button
-                            icon={<FileExcelOutlined />}
+                            icon={<FileTextOutlined />}
                             onClick={() => setIsImportModalVisible(true)}
                         />
                     </Tooltip>
@@ -161,10 +162,11 @@ const Meals: React.FC = () => {
                         onChange={(e) => setSearchText(e.target.value)}
                         style={{ width: 250 }}
                     />
-                    <Input
-                        placeholder="Lớp..."
-                        onChange={(e) => setLop(e.target.value)}
-                        style={{ width: 120 }}
+                    <ClassSelect
+                        style={{ minWidth: 150, maxWidth: 300 }}
+                        value={lop}
+                        mode="multiple"
+                        onChange={(value) => setLop(value as string[])}
                     />
                 </div>
 

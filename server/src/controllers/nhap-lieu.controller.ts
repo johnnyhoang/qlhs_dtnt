@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as xlsx from 'xlsx';
+import { parse } from 'csv-parse/sync';
 import { HocSinhService } from '../services/hoc-sinh.service';
 import { SuatAnService } from '../services/suat-an.service';
 import { DinhMucXeService } from '../services/dinh-muc-xe.service';
@@ -18,27 +18,35 @@ const getCsvData = (buffer: Buffer) => {
     }
 
     const content = cleanBuffer.toString('utf8');
-    const workbook = xlsx.read(content, { type: 'string' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
     
-    const rows = xlsx.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
-    if (rows.length < 2) return null;
-
-    const rawHeaders = rows[0].map(h => {
-        let s = String(h || '').trim().toLowerCase();
-        s = s.replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
-        return s;
-    });
-
-    const dataRows = rows.slice(1);
-    return dataRows.map((row) => {
-        const item: any = {};
-        rawHeaders.forEach((header, index) => {
-            item[header] = row[index];
+    try {
+        const records = parse(content, {
+            columns: true,
+            skip_empty_lines: true,
+            trim: true,
+            relax_quotes: true
         });
-        return item;
-    });
+
+        if (!records || records.length === 0) return null;
+
+        // Normalize keys in the first record to create a mapping or just map each record
+        // Since csv-parse returns objects with keys as headers, we need to normalize them
+        
+        const normalizedData = records.map((record: any) => {
+            const newRecord: any = {};
+            Object.keys(record).forEach(key => {
+                let s = String(key || '').trim().toLowerCase();
+                s = s.replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '');
+                newRecord[s] = record[key];
+            });
+            return newRecord;
+        });
+
+        return normalizedData;
+    } catch (error) {
+        console.error("CSV Parse Error:", error);
+        return null;
+    }
 };
 
 // Map header linh hoat
@@ -92,7 +100,7 @@ export const nhapTuCsv = async (req: Request, res: Response) => {
                     lop: item.lop ? String(item.lop).trim() : 'N/A',
                     cccd: item.cccd ? String(item.cccd).trim() : undefined,
                     gioi_tinh: String(item.gioi_tinh || '').toLowerCase().includes('nữ') ? GioiTinh.NU : GioiTinh.NAM,
-                }, user?.id);
+                }, user);
                 ket_qua.thanh_cong++;
             } catch (err: any) {
                 ket_qua.loi++;
@@ -128,7 +136,7 @@ export const nhapSuatAnCsv = async (req: Request, res: Response) => {
                 let ma_hs = String(item.ma_hoc_sinh || '').trim();
                 if (ma_hs.endsWith('.0')) ma_hs = ma_hs.slice(0, -2);
                 
-                const hs = await HocSinhService.getAll(1, 1, "", ma_hs); // Search by code
+                const hs = await HocSinhService.getAll(1, 1, "", ma_hs, user); // Search by code
                 const hoc_sinh = hs.data.find(h => h.ma_hoc_sinh === ma_hs);
                 if (!hoc_sinh) throw new Error("Không tìm thấy học sinh");
 
@@ -172,7 +180,7 @@ export const nhapDinhMucXeCsv = async (req: Request, res: Response) => {
                 let ma_hs = String(item.ma_hoc_sinh || '').trim();
                 if (ma_hs.endsWith('.0')) ma_hs = ma_hs.slice(0, -2);
                 
-                const hs = await HocSinhService.getAll(1, 1, "", ma_hs);
+                const hs = await HocSinhService.getAll(1, 1, "", ma_hs, user);
                 const hoc_sinh = hs.data.find(h => h.ma_hoc_sinh === ma_hs);
                 if (!hoc_sinh) throw new Error("N/A");
 
@@ -206,7 +214,7 @@ export const nhapBaoHiemCsv = async (req: Request, res: Response) => {
                 const item = mapFields(raw, mapping);
                 let ma_hs = String(item.ma_hoc_sinh || '').trim();
                 if (ma_hs.endsWith('.0')) ma_hs = ma_hs.slice(0, -2);
-                const hs = await HocSinhService.getAll(1, 1, "", ma_hs);
+                const hs = await HocSinhService.getAll(1, 1, "", ma_hs, user);
                 const hoc_sinh = hs.data.find(h => h.ma_hoc_sinh === ma_hs);
                 if (hoc_sinh) {
                     await BaoHiemService.luuHoSo(hoc_sinh.id, {
@@ -241,7 +249,7 @@ export const nhapThanhToanCsv = async (req: Request, res: Response) => {
                 const item = mapFields(raw, mapping);
                 let ma_hs = String(item.ma_hoc_sinh || '').trim();
                 if (ma_hs.endsWith('.0')) ma_hs = ma_hs.slice(0, -2);
-                const hs = await HocSinhService.getAll(1, 1, "", ma_hs);
+                const hs = await HocSinhService.getAll(1, 1, "", ma_hs, user);
                 const hoc_sinh = hs.data.find(h => h.ma_hoc_sinh === ma_hs);
                 
                 if (hoc_sinh && dot_id) {
@@ -260,4 +268,60 @@ export const nhapThanhToanCsv = async (req: Request, res: Response) => {
         }
         res.json({ message: "Đã nhập xong thanh toán", data: ket_qua });
     } catch (error: any) { res.status(500).json({ message: "Lỗi", error: error.message }); }
+};
+
+export const nhapDanhMucMasterCsv = async (req: Request, res: Response) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: "Vui lòng chọn file CSV" });
+        const data = getCsvData(req.file.buffer);
+        if (!data) return res.status(400).json({ message: "File rỗng" });
+
+        const user = (req as any).user;
+        const { loai_danh_muc } = req.body; // Required: category type
+        
+        if (!loai_danh_muc) {
+            return res.status(400).json({ message: "Thiếu loại danh mục (loai_danh_muc)" });
+        }
+
+        const ket_qua = { thanh_cong: 0, loi: 0, chi_tiet_loi: [] as any[] };
+
+        const mapping = {
+            ten: ['ten', 'name', 'title'],
+            ma: ['ma', 'code'],
+            ghi_chu: ['ghi_chu', 'note', 'notes'],
+            thu_tu: ['thu_tu', 'order', 'sort_order']
+        };
+
+        const items = [];
+        for (const raw of data) {
+            try {
+                const item = mapFields(raw, mapping);
+                const ten = String(item.ten || '').trim();
+                
+                if (!ten) {
+                    throw new Error("Thiếu tên danh mục");
+                }
+
+                items.push({
+                    ten,
+                    ma: item.ma ? String(item.ma).trim() : undefined,
+                    ghi_chu: item.ghi_chu ? String(item.ghi_chu).trim() : undefined,
+                    thu_tu: item.thu_tu ? Number(item.thu_tu) : 0,
+                    kich_hoat: true
+                });
+            } catch (err: any) {
+                ket_qua.loi++;
+                ket_qua.chi_tiet_loi.push({ error: err.message, row: raw });
+            }
+        }
+
+        // Batch upsert
+        const { DanhMucMasterService } = await import('../services/danh-muc-master.service');
+        await DanhMucMasterService.upsertBatch(loai_danh_muc, items, user?.id);
+        ket_qua.thanh_cong = items.length;
+
+        res.json({ message: `Đã nhập xong danh mục ${loai_danh_muc}`, data: ket_qua });
+    } catch (error: any) { 
+        res.status(500).json({ message: "Lỗi", error: error.message }); 
+    }
 };

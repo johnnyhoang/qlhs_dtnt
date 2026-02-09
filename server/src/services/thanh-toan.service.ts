@@ -18,11 +18,43 @@ export const ThanhToanService = {
         });
     },
 
-    layDotThanhToanTheoId: async (id: number) => {
-        return await dotThanhToanRepository.findOne({
-            where: { id },
-            relations: ["khoan_thanh_toan", "khoan_thanh_toan.hoc_sinh", "khoan_thanh_toan.nguoi_cap_nhat"]
-        });
+    layDotThanhToanTheoId: async (id: number, user?: any, lop: string | string[] = "") => {
+        const dot = await dotThanhToanRepository.findOneBy({ id });
+        if (!dot) return null;
+
+        const query = khoanThanhToanRepository.createQueryBuilder("khoan")
+            .leftJoinAndSelect("khoan.hoc_sinh", "hoc_sinh")
+            .leftJoinAndSelect("khoan.nguoi_cap_nhat", "nguoi_cap_nhat")
+            .where("khoan.dot_thanh_toan_id = :id", { id });
+
+        // Normalize lop to array
+        const filterClasses = Array.isArray(lop) ? lop : (lop ? [lop] : []);
+
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            if (assignedClasses.length > 0) {
+                 if (filterClasses.length > 0) {
+                     const allowedClasses = filterClasses.filter(c => assignedClasses.includes(c));
+                     if (allowedClasses.length === 0) {
+                         query.andWhere("1=0");
+                     } else {
+                         query.andWhere("hoc_sinh.lop IN (:...allowedClasses)", { allowedClasses });
+                     }
+                 } else {
+                     query.andWhere("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+                 }
+            } else {
+                 // Teacher with no classes sees no records
+                 query.andWhere("1=0");
+            }
+        } else {
+             if (filterClasses.length > 0) {
+                 query.andWhere("hoc_sinh.lop IN (:...filterClasses)", { filterClasses });
+             }
+        }
+
+        dot.khoan_thanh_toan = await query.getMany();
+        return dot;
     },
 
     taoMoiDotThanhToan: async (thang: number, nam: number, userId?: number, ghi_chu?: string) => {
@@ -48,7 +80,17 @@ export const ThanhToanService = {
                 .getCount();
 
             const dinh_muc_xe = await dinhMucXeRepository.findOneBy({ hoc_sinh_id: hoc_sinh.id });
-            const tienXe = (dinh_muc_xe?.khoang_cach || 0) * 1000; // Gia tam tinh
+            
+            // Use stored amount, or fallback to calculation if missing (migration support)
+            let tienXe = 0;
+            if (dinh_muc_xe) {
+                if (dinh_muc_xe.so_tien !== undefined && dinh_muc_xe.so_tien !== null) {
+                    tienXe = Number(dinh_muc_xe.so_tien);
+                } else {
+                    // Fallback for old records
+                    tienXe = (dinh_muc_xe.khoang_cach || 0) * 1000;
+                }
+            }
 
             const tienAn = Math.max(0, 1500000 - (soNgayBaoCat * 50000));
             const tongTien = tienAn + tienXe;

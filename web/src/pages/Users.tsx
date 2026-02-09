@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Table, Card, Switch, Select, Button, Modal, Checkbox, message } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { layDanhSachNguoiDung, capNhatTrangThaiNguoiDung, capNhatPhanQuyen } from '../api/nguoi-dung';
+import { layDanhSachNguoiDung, capNhatTrangThaiNguoiDung, capNhatPhanQuyen, capNhatLopPhuTrach } from '../api/nguoi-dung';
+import { layDanhMucTheoLoai } from '../api/danh-muc-master';
+import { LoaiDanhMuc } from '../types/danh-muc-master';
 import type { NguoiDung } from '../api/auth';
 
 const Users: React.FC = () => {
@@ -23,7 +25,13 @@ const Users: React.FC = () => {
     });
 
     const permissionMutation = useMutation({
-        mutationFn: ({ id, permissions }: { id: number, permissions: any[] }) => capNhatPhanQuyen(id, permissions),
+        mutationFn: ({ id, permissions, lop_phu_trach }: { id: number, permissions: any[], lop_phu_trach?: string[] }) => {
+            const promises = [capNhatPhanQuyen(id, permissions)];
+            if (lop_phu_trach) {
+                promises.push(capNhatLopPhuTrach(id, lop_phu_trach));
+            }
+            return Promise.all(promises);
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             setPermissionModal({ visible: false, user: null });
@@ -37,8 +45,15 @@ const Users: React.FC = () => {
         { key: 'dinh-muc-xe', label: 'Định mức xe' },
         { key: 'bao-hiem', label: 'Bảo hiểm' },
         { key: 'thanh-toan', label: 'Thanh toán' },
-        { key: 'nhap-lieu', label: 'Nhập liệu (Excel)' }
+        { key: 'nhap-lieu', label: 'Nhập liệu (CSV)' }
     ];
+
+    const { data: danhMucLop } = useQuery({
+        queryKey: ['danh-muc-lop'],
+        queryFn: () => layDanhMucTheoLoai(LoaiDanhMuc.LOP).then(res => res.map((i: any) => ({ label: i.ten, value: i.ten })))
+    });
+
+    const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
 
     const handleOpenPermissions = (user: NguoiDung) => {
         setPermissionModal({ visible: true, user });
@@ -51,6 +66,7 @@ const Users: React.FC = () => {
                 co_quyen_sua: found?.co_quyen_sua || false
             };
         }));
+        setSelectedClasses(user.lop_phu_trach || []);
     };
 
     const columns = [
@@ -78,7 +94,19 @@ const Users: React.FC = () => {
                 >
                     <Select.Option value="ADMIN">ADMIN</Select.Option>
                     <Select.Option value="USER">USER</Select.Option>
+                    <Select.Option value="TEACHER">TEACHER</Select.Option>
                 </Select>
+            )
+        },
+        {
+            title: 'Lớp phụ trách',
+            key: 'lop_phu_trach',
+            render: (_: any, record: NguoiDung) => (
+                record.vai_tro === 'TEACHER' && record.lop_phu_trach ? (
+                    <span>{record.lop_phu_trach.join(', ')}</span>
+                ) : (
+                    <span style={{ color: '#ccc' }}>-</span>
+                )
             )
         },
         {
@@ -116,10 +144,28 @@ const Users: React.FC = () => {
             <Modal
                 title={`Phân quyền module: ${permissionModal.user?.ho_ten}`}
                 open={permissionModal.visible}
-                onOk={() => permissionMutation.mutate({ id: permissionModal.user!.id, permissions: selectedPermissions })}
+                onOk={() => permissionMutation.mutate({
+                    id: permissionModal.user!.id,
+                    permissions: selectedPermissions,
+                    lop_phu_trach: permissionModal.user?.vai_tro === 'TEACHER' ? selectedClasses : undefined
+                })}
                 onCancel={() => setPermissionModal({ visible: false, user: null })}
                 width={600}
             >
+                {permissionModal.user?.vai_tro === 'TEACHER' && (
+                    <div style={{ marginBottom: 16 }}>
+                        <h4>Lớp phụ trách:</h4>
+                        <Select
+                            mode="multiple"
+                            style={{ width: '100%' }}
+                            placeholder="Chọn lớp phụ trách"
+                            options={danhMucLop}
+                            value={selectedClasses}
+                            onChange={setSelectedClasses}
+                        />
+                    </div>
+                )}
+
                 <Table
                     dataSource={selectedPermissions}
                     rowKey="ma_module"

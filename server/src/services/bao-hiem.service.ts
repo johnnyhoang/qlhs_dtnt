@@ -4,10 +4,34 @@ import { BaoHiem } from "../entities/BaoHiem";
 const baoHiemRepository = AppDataSource.getRepository(BaoHiem);
 
 export const BaoHiemService = {
-    getAll: async () => {
-        return await baoHiemRepository.find({
-            relations: ["hoc_sinh", "nguoi_cap_nhat"]
-        });
+    getAll: async (user?: any, lop: string | string[] = "") => {
+        const query = baoHiemRepository.createQueryBuilder("bao_hiem")
+            .leftJoinAndSelect("bao_hiem.hoc_sinh", "hoc_sinh")
+            .leftJoinAndSelect("bao_hiem.nguoi_cap_nhat", "nguoi_cap_nhat");
+
+        // Normalize lop to array
+        const filterClasses = Array.isArray(lop) ? lop : (lop ? [lop] : []);
+
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            if (assignedClasses.length === 0) {
+                 return [];
+            }
+            
+            if (filterClasses.length > 0) {
+                 const allowedClasses = filterClasses.filter(c => assignedClasses.includes(c));
+                 if (allowedClasses.length === 0) return [];
+                 query.where("hoc_sinh.lop IN (:...allowedClasses)", { allowedClasses });
+            } else {
+                 query.where("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+            }
+        } else {
+             if (filterClasses.length > 0) {
+                 query.where("hoc_sinh.lop IN (:...filterClasses)", { filterClasses });
+             }
+        }
+
+        return await query.getMany();
     },
 
     getByHocSinhId: async (hoc_sinh_id: string) => {

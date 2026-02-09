@@ -6,14 +6,37 @@ const suatAnRepository = AppDataSource.getRepository(SuatAn);
 const hocSinhRepository = AppDataSource.getRepository(HocSinh);
 
 export const SuatAnService = {
-    layTrangThaiHangNgay: async (ngay: string, lop?: string, search?: string) => {
+    layTrangThaiHangNgay: async (ngay: string, lop: string | string[] = "", search?: string, user?: any) => {
         // Lay tat ca hoc sinh dang hoc
         const query = hocSinhRepository.createQueryBuilder("hoc_sinh")
             .where("hoc_sinh.trang_thai = :trang_thai", { trang_thai: TrangThaiHocSinh.DANG_HOC });
 
-        if (lop) {
-            query.andWhere("hoc_sinh.lop = :lop", { lop });
+        // Normalize lop to array
+        const filterClasses = Array.isArray(lop) ? lop : (lop ? [lop] : []);
+
+        // Teacher restriction
+        if (user && user.vai_tro === "TEACHER") {
+            const assignedClasses: string[] = user.lop_phu_trach || [];
+            if (assignedClasses.length === 0) {
+                 return [];
+            }
+            
+            if (filterClasses.length > 0) {
+                 // Intersection check
+                const allowedClasses = filterClasses.filter(c => assignedClasses.includes(c));
+                if (allowedClasses.length === 0) {
+                     return [];
+                }
+                query.andWhere("hoc_sinh.lop IN (:...allowedClasses)", { allowedClasses });
+            } else {
+                query.andWhere("hoc_sinh.lop IN (:...assignedClasses)", { assignedClasses });
+            }
+        } else {
+             if (filterClasses.length > 0) {
+                query.andWhere("hoc_sinh.lop IN (:...filterClasses)", { filterClasses });
+            }
         }
+
         if (search) {
             query.andWhere("hoc_sinh.ho_ten LIKE :search", { search: `%${search}%` });
         }

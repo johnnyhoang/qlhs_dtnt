@@ -8,7 +8,8 @@ import {
     CarOutlined,
     SafetyCertificateOutlined,
     DollarCircleOutlined,
-    TeamOutlined
+    TeamOutlined,
+    DatabaseOutlined
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 
@@ -71,6 +72,12 @@ const MainLayout: React.FC = () => {
             icon: <DollarCircleOutlined />,
             label: 'Thanh toán',
             onClick: () => navigate('/thanh-toan')
+        },
+        user?.vai_tro === 'ADMIN' && {
+            key: '/danh-muc-master',
+            icon: <DatabaseOutlined />,
+            label: 'Danh mục',
+            onClick: () => navigate('/danh-muc-master')
         },
         user?.vai_tro === 'ADMIN' && {
             key: '/nguoi-dung',

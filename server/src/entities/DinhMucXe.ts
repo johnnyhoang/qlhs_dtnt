@@ -26,6 +26,9 @@ export class DinhMucXe {
     @Column({ nullable: true })
     xa_huong_tro_cap!: string;
 
+    @Column("decimal", { precision: 12, scale: 0, nullable: true })
+    so_tien!: number;
+
     @Column("decimal", { precision: 6, scale: 2, nullable: true })
     khoang_cach!: number;
 

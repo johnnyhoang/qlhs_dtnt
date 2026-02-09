@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Input, DatePicker, Checkbox, Tag, message, Tooltip, Select, Space } from 'antd';
-import { EditOutlined, CheckCircleOutlined, CloseCircleOutlined, FileExcelOutlined, SearchOutlined } from '@ant-design/icons';
+import { Table, Card, Button, Modal, Form, Input, DatePicker, Checkbox, Tag, message, Tooltip, Space } from 'antd';
+import { EditOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import ClassSelect from '../components/ClassSelect';
 import { layDanhSachBaoHiem, luuHoSoBaoHiem } from '../api/bao-hiem';
 import { layDanhSachHocSinh } from '../api/hoc-sinh';
 import type { HocSinh } from '../types/hoc-sinh';
@@ -12,8 +13,15 @@ import AuditFooter from '../components/AuditFooter';
 
 const Insurance: React.FC = () => {
     const [searchText, setSearchText] = useState('');
-    const [selectedClass, setSelectedClass] = useState<string | null>(null);
+    const [selectedClass, setSelectedClass] = useState<string[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    //...
+    <ClassSelect
+        style={{ minWidth: 150, maxWidth: 300 }}
+        value={selectedClass}
+        mode="multiple"
+        onChange={(value) => setSelectedClass(value as string[])}
+    />
     const [editingStudent, setEditingStudent] = useState<HocSinh | null>(null);
     const [form] = Form.useForm();
 
@@ -26,7 +34,7 @@ const Insurance: React.FC = () => {
 
     const { data: profiles, isLoading: isLoadingProfiles } = useQuery({
         queryKey: ['bao-hiem-profiles'],
-        queryFn: layDanhSachBaoHiem,
+        queryFn: () => layDanhSachBaoHiem(),
     });
 
     const userJson = localStorage.getItem('user');
@@ -71,12 +79,10 @@ const Insurance: React.FC = () => {
     const profileMap = new Map();
     profiles?.forEach(p => profileMap.set(p.hoc_sinh_id, p));
 
-    const classes = Array.from(new Set(students?.data?.map((s: any) => s.lop))).filter(Boolean).sort();
-
     const filteredData = students?.data?.filter((s: any) => {
         const matchesSearch = s.ho_ten.toLowerCase().includes(searchText.toLowerCase()) ||
             s.ma_hoc_sinh.toLowerCase().includes(searchText.toLowerCase());
-        const matchesClass = !selectedClass || s.lop === selectedClass;
+        const matchesClass = selectedClass.length === 0 || selectedClass.includes(s.lop);
         return matchesSearch && matchesClass;
     });
 
@@ -168,7 +174,7 @@ const Insurance: React.FC = () => {
                     {canImport && (
                         <Tooltip title="Import từ CSV">
                             <Button
-                                icon={<FileExcelOutlined />}
+                                icon={<FileTextOutlined />}
                                 onClick={() => setIsImportModalVisible(true)}
                             />
                         </Tooltip>
@@ -185,12 +191,11 @@ const Insurance: React.FC = () => {
                         style={{ width: 300 }}
                         allowClear
                     />
-                    <Select
-                        placeholder="Lọc theo lớp"
-                        style={{ width: 150 }}
-                        allowClear
-                        onChange={value => setSelectedClass(value)}
-                        options={classes.map(c => ({ label: c, value: c }))}
+                    <ClassSelect
+                        style={{ minWidth: 150, maxWidth: 300 }}
+                        value={selectedClass}
+                        mode="multiple"
+                        onChange={(value) => setSelectedClass(value as string[])}
                     />
                 </div>
                 <Table

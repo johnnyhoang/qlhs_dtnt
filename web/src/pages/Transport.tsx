@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Input, InputNumber, message, Tooltip, Select, Space } from 'antd';
-import { EditOutlined, FileExcelOutlined, SearchOutlined } from '@ant-design/icons';
+import { Table, Card, Button, Modal, Form, Input, InputNumber, message, Tooltip, Space } from 'antd';
+import { EditOutlined, FileTextOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layTatCaDinhMuc, luuDinhMucXe } from '../api/dinh-muc-xe';
 import { layDanhSachHocSinh } from '../api/hoc-sinh';
@@ -9,11 +9,19 @@ import type { DinhMucXe } from '../types/dinh-muc-xe';
 import ImportModal from '../components/ImportModal';
 import AuditFooter from '../components/AuditFooter';
 import dayjs from 'dayjs';
+import ClassSelect from '../components/ClassSelect';
 
 const Transport: React.FC = () => {
     const [searchText, setSearchText] = useState('');
-    const [selectedClass, setSelectedClass] = useState<string | null>(null);
+    const [selectedClass, setSelectedClass] = useState<string[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    //...
+    <ClassSelect
+        style={{ minWidth: 150, maxWidth: 300 }}
+        value={selectedClass}
+        mode="multiple"
+        onChange={(value) => setSelectedClass(value as string[])}
+    />
     const [editingStudent, setEditingStudent] = useState<HocSinh | null>(null);
     const [form] = Form.useForm();
 
@@ -26,7 +34,7 @@ const Transport: React.FC = () => {
 
     const { data: profiles, isLoading: isLoadingProfiles } = useQuery({
         queryKey: ['dinh-muc-xe-profiles'],
-        queryFn: layTatCaDinhMuc,
+        queryFn: () => layTatCaDinhMuc(),
     });
 
     const upsertMutation = useMutation({
@@ -64,12 +72,10 @@ const Transport: React.FC = () => {
     const profileMap = new Map();
     profiles?.forEach(p => profileMap.set(p.hoc_sinh_id, p));
 
-    const classes = Array.from(new Set(students?.data?.map((s: any) => s.lop))).filter(Boolean).sort();
-
     const filteredData = students?.data?.filter((s: any) => {
         const matchesSearch = s.ho_ten.toLowerCase().includes(searchText.toLowerCase()) ||
             s.ma_hoc_sinh.toLowerCase().includes(searchText.toLowerCase());
-        const matchesClass = !selectedClass || s.lop === selectedClass;
+        const matchesClass = selectedClass.length === 0 || selectedClass.includes(s.lop);
         return matchesSearch && matchesClass;
     });
 
@@ -100,24 +106,24 @@ const Transport: React.FC = () => {
         },
         {
             title: 'Định mức (VNĐ)',
-            key: 'dinh_muc',
-            sorter: (a: any, b: any) => (profileMap.get(a.id)?.dinh_muc || 0) - (profileMap.get(b.id)?.dinh_muc || 0),
-            render: (_: any, record: HocSinh) => profileMap.get(record.id)?.dinh_muc?.toLocaleString() || '-',
+            key: 'so_tien',
+            sorter: (a: any, b: any) => (profileMap.get(a.id)?.so_tien || 0) - (profileMap.get(b.id)?.so_tien || 0),
+            render: (_: any, record: HocSinh) => profileMap.get(record.id)?.so_tien?.toLocaleString() || '-',
         },
         {
             title: 'Thành tiền (VNĐ)',
             key: 'thanh_tien',
             sorter: (a: any, b: any) => {
-                const pA = profileMap.get(a.id);
-                const pB = profileMap.get(b.id);
-                const valA = (pA?.khoang_cach || 0) * (pA?.dinh_muc || 0);
-                const valB = (pB?.khoang_cach || 0) * (pB?.dinh_muc || 0);
+                // For now, Total Amount = Support Amount (so_tien)
+                // In previous logic it was Distance * Rate. Now we just use so_tien from DB which is already calculated.
+                const valA = profileMap.get(a.id)?.so_tien || 0;
+                const valB = profileMap.get(b.id)?.so_tien || 0;
                 return valA - valB;
             },
             render: (_: any, record: HocSinh) => {
                 const p = profileMap.get(record.id);
                 if (!p) return '-';
-                return ((p.khoang_cach || 0) * (p.dinh_muc || 0)).toLocaleString();
+                return (p.so_tien || 0).toLocaleString();
             },
         },
         {
@@ -169,7 +175,7 @@ const Transport: React.FC = () => {
                     {canImport && (
                         <Tooltip title="Import từ CSV">
                             <Button
-                                icon={<FileExcelOutlined />}
+                                icon={<FileTextOutlined />}
                                 onClick={() => setIsImportModalVisible(true)}
                             />
                         </Tooltip>
@@ -186,12 +192,11 @@ const Transport: React.FC = () => {
                         style={{ width: 300 }}
                         allowClear
                     />
-                    <Select
-                        placeholder="Lọc theo lớp"
-                        style={{ width: 150 }}
-                        allowClear
-                        onChange={value => setSelectedClass(value)}
-                        options={classes.map(c => ({ label: c, value: c }))}
+                    <ClassSelect
+                        style={{ minWidth: 150, maxWidth: 300 }}
+                        value={selectedClass}
+                        mode="multiple"
+                        onChange={(value) => setSelectedClass(value as string[])}
                     />
                 </div>
                 <Table

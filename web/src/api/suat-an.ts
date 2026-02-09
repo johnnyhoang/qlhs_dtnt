@@ -3,7 +3,7 @@ import type { HocSinhSuatAnStatus, LoaiSuatAn } from '../types/suat-an';
 
 export const layTrangThaiSuatAn = async (params: {
     ngay: string;
-    lop?: string;
+    lop?: string | string[];
     search?: string;
 }): Promise<HocSinhSuatAnStatus[]> => {
     const response = await client.get('/suat-an', { params });

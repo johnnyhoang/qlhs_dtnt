@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Row, Col, Statistic, Space } from 'antd';
 import { UserOutlined, SmileOutlined, CarOutlined, DollarOutlined } from '@ant-design/icons';
+import ReportTabs from '../components/reports/ReportTabs';
 
 const Dashboard: React.FC = () => {
     return (
@@ -48,6 +49,10 @@ const Dashboard: React.FC = () => {
                     </Card>
                 </Col>
             </Row>
+
+            <Card title="Báo cáo thống kê" style={{ marginTop: 24, width: '100%' }}>
+                <ReportTabs />
+            </Card>
 
             <Card title="Thông báo hệ thống" style={{ marginTop: 24, width: '100%' }}>
                 <p>Hệ thống quản lý học sinh nội trú đã sẵn sàng hoạt động.</p>

@@ -12,7 +12,18 @@ export const layDanhSachDotThanhToan = async (req: Request, res: Response) => {
 
 export const layChiTietDotThanhToan = async (req: Request, res: Response) => {
     try {
-        const result = await ThanhToanService.layDotThanhToanTheoId(Number(req.params.id));
+        const user = (req as any).user;
+        
+        // Parse lop param
+        let lop: string | string[] = "";
+        const rawLop = req.query.lop;
+        if (typeof rawLop === 'string') {
+            lop = rawLop.includes(',') ? rawLop.split(',') : rawLop;
+        } else if (Array.isArray(rawLop)) {
+            lop = rawLop as string[];
+        }
+
+        const result = await ThanhToanService.layDotThanhToanTheoId(Number(req.params.id), user, lop);
         if (!result) return res.status(404).json({ message: "Khong tim thay dot thanh toan" });
         res.json(result);
     } catch (error) {

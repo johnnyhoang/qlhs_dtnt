@@ -4,10 +4,19 @@ import { SuatAnService } from '../services/suat-an.service';
 export const layTrangThaiSuatAn = async (req: Request, res: Response) => {
     try {
         const ngay = req.query.date as string || new Date().toISOString().split('T')[0];
-        const lop = req.query.className as string;
+        
+        // Parse lop param
+        let lop: string | string[] = "";
+        const rawLop = req.query.className;
+        if (typeof rawLop === 'string') {
+            lop = rawLop.includes(',') ? rawLop.split(',') : rawLop;
+        } else if (Array.isArray(rawLop)) {
+            lop = rawLop as string[];
+        }
         const search = req.query.search as string;
 
-        const result = await SuatAnService.layTrangThaiHangNgay(ngay, lop, search);
+        const user = (req as any).user;
+        const result = await SuatAnService.layTrangThaiHangNgay(ngay, lop, search, user);
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: "Loi khi lay thong tin suat an", error });

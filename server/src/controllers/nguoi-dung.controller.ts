@@ -43,3 +43,15 @@ export const capNhatPhanQuyen = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Loi khi cap nhat phan quyen' });
     }
 };
+
+export const capNhatLopPhuTrach = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { lop_phu_trach } = req.body;
+        
+        await NguoiDungService.updateClassAssignments(Number(id), lop_phu_trach);
+        res.json({ message: 'Cap nhat lop phu trach thanh cong' });
+    } catch (error) {
+        res.status(500).json({ message: 'Loi khi cap nhat lop phu trach' });
+    }
+};
