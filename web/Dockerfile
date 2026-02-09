@@ -11,6 +11,11 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 ARG VITE_GOOGLE_CLIENT_ID
 ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+
+# Force create .env file to ensure Vite picks up variables
+RUN echo "VITE_API_URL=$VITE_API_URL" > .env.production
+RUN echo "VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID" >> .env.production
+
 RUN npm run build
 
 # Production stage

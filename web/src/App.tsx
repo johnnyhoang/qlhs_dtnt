@@ -20,6 +20,7 @@ const queryClient = new QueryClient();
 const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || "311534268252-fjpb2dvc8kpne0hrca4fr9pb5k9sspeh.apps.googleusercontent.com").trim();
 
 console.log('Using Google Client ID:', GOOGLE_CLIENT_ID);
+console.log('API URL:', import.meta.env.VITE_API_URL);
 console.log('Current Origin:', window.location.origin);
 
 const ProtectedRoute = ({ children, module }: { children: React.ReactElement, module?: string }) => {
