@@ -13,8 +13,15 @@ import { authMiddleware, adminOnly, checkModuleAccess } from '../middlewares/aut
 
 const router = Router();
 
+import { AppDataSource } from '../data-source';
+
 router.get('/health', (req, res) => {
-    res.json({ status: 'ok' });
+    const dbStatus = AppDataSource.isInitialized ? 'connected' : 'disconnected';
+    res.json({ 
+        status: 'ok', 
+        database: dbStatus,
+        timestamp: new Date().toISOString()
+    });
 });
 
 router.use('/auth', authRoutes);
