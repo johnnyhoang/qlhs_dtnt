@@ -97,3 +97,16 @@ Các API nhập liệu (`NhapLieuController`) **BẮT BUỘC** phải check quy�
 ## 7. Development Context (Token Saving)
 *   **Không cần implement lại**: Auth Middleware, User Entity cơ bản.
 *   **Cần chú ý**: Khi thêm module mới có field `lop` hoặc quan hệ với `HocSinh`, **phải** copy logic check `assignedClasses` từ `HocSinhService` hoặc `SuatAnService`.
+
+## 8. Production OAuth Configuration
+
+### Google OAuth
+*   **Authorized JavaScript Origins**:
+    *   Local: `http://localhost:5173`
+    *   Production: `https://[frontend-service-url].run.app` (Must be configured in Google Cloud Console > APIs & Services > Credentials).
+*   **Redirect URIs**:
+    *   N/A (If using Popup flow or ID Token verification directly).
+*   **Environment Variables**:
+    *   `GOOGLE_CLIENT_ID` must be consistent between Frontend build and Google Console configuration.
+    *   `JWT_SECRET` in production must be a strong, randomly generated string, distinct from development keys.
+
