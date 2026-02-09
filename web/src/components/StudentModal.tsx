@@ -8,6 +8,7 @@ import { GioiTinh, TrangThaiHocSinh } from '../types/hoc-sinh';
 import type { HocSinh, CreateHocSinhRequest } from '../types/hoc-sinh';
 
 import AuditFooter from './AuditFooter';
+import vietnamData from '../assets/vietnam-data.json';
 
 interface StudentModalProps {
     visible: boolean;
@@ -27,6 +28,24 @@ const StudentModal: React.FC<StudentModalProps> = ({
     onSave
 }) => {
     const [form] = Form.useForm();
+    const [selectedProvince, setSelectedProvince] = React.useState<string | undefined>();
+    const [selectedDistrict, setSelectedDistrict] = React.useState<string | undefined>();
+
+    // Derived location data
+    const provinceOptions = useMemo(() => vietnamData.map((p: any) => ({ label: p.Name, value: p.Name, id: p.Id })), []);
+
+    const districtOptions = useMemo(() => {
+        if (!selectedProvince) return [];
+        const province = vietnamData.find((p: any) => p.Name === selectedProvince);
+        return province?.Districts.map((d: any) => ({ label: d.Name, value: d.Name, id: d.Id })) || [];
+    }, [selectedProvince]);
+
+    const wardOptions = useMemo(() => {
+        if (!selectedProvince || !selectedDistrict) return [];
+        const province = vietnamData.find((p: any) => p.Name === selectedProvince);
+        const district = province?.Districts.find((d: any) => d.Name === selectedDistrict);
+        return district?.Wards.map((w: any) => ({ label: w.Name, value: w.Name })) || [];
+    }, [selectedProvince, selectedDistrict]);
 
     // Fetch Master Data
     const { data: categories } = useQuery({
@@ -43,11 +62,11 @@ const StudentModal: React.FC<StudentModalProps> = ({
             .map(item => ({ label: item.ten, value: item.ten })); // Backend expects string name for now, update to ID if needed later
     };
 
-    const classOptions = useMemo(() => getOptions(LoaiDanhMuc.LOP, '2025'), [categories]);
+    const classOptions = useMemo(() => getOptions(LoaiDanhMuc.LOP), [categories]);
     const ethnicityOptions = useMemo(() => getOptions(LoaiDanhMuc.DAN_TOC), [categories]);
     const religionOptions = useMemo(() => getOptions(LoaiDanhMuc.TON_GIAO), [categories]);
     // const bankOptions = useMemo(() => getOptions(LoaiDanhMuc.NGAN_HANG), [categories]); // Keep as input or select? Input used in UI currently but could be select.
-    const provinceOptions = useMemo(() => getOptions(LoaiDanhMuc.TINH), [categories]);
+    // const provinceOptions = useMemo(() => getOptions(LoaiDanhMuc.TINH), [categories]); // OLD: from DB
     // const wardOptions = useMemo(() => getOptions(LoaiDanhMuc.PHUONG_XA), [categories]); // Dependent on district? For now just list all or filter if possible.
 
     useEffect(() => {
@@ -57,8 +76,12 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     ...student,
                     ngay_sinh: student.ngay_sinh ? dayjs(student.ngay_sinh) : undefined
                 });
+                setSelectedProvince(student.tinh);
+                setSelectedDistrict(student.quan_huyen);
             } else {
                 form.resetFields();
+                setSelectedProvince(undefined);
+                setSelectedDistrict(undefined);
             }
         }
     }, [visible, student, form]);
@@ -209,15 +232,6 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     </Col>
                     <Col span={8}>
                         <Form.Item
-                            name="phuong_xa"
-                            label="Phường/Xã"
-                        >
-                            <Input placeholder="Nhập phường/xã" />
-                            {/* Future: Convert to Select using wardOptions if available */}
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item
                             name="tinh"
                             label="Tỉnh/Thành phố"
                         >
@@ -226,12 +240,50 @@ const StudentModal: React.FC<StudentModalProps> = ({
                                 showSearch
                                 allowClear
                                 options={provinceOptions}
+                                onChange={(value) => {
+                                    setSelectedProvince(value);
+                                    setSelectedDistrict(undefined);
+                                    form.setFieldsValue({ quan_huyen: undefined, phuong_xa: undefined });
+                                }}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
+                            name="quan_huyen"
+                            label="Quận/Huyện"
+                        >
+                            <Select
+                                placeholder="Chọn quận/huyện"
+                                showSearch
+                                allowClear
+                                options={districtOptions}
+                                disabled={!selectedProvince}
+                                onChange={(value) => {
+                                    setSelectedDistrict(value);
+                                    form.setFieldsValue({ phuong_xa: undefined });
+                                }}
                             />
                         </Form.Item>
                     </Col>
                 </Row>
 
                 <Row gutter={16}>
+                    <Col span={8}>
+                        <Form.Item
+                            name="phuong_xa"
+                            label="Phường/Xã"
+                            rules={[{ required: true, message: 'Vui lòng chọn phường/xã' }]}
+                        >
+                            <Select
+                                placeholder="Chọn phường/xã"
+                                showSearch
+                                allowClear
+                                options={wardOptions}
+                                disabled={!selectedDistrict}
+                            />
+                        </Form.Item>
+                    </Col>
                     <Col span={8}>
                         <Form.Item
                             name="dan_toc"
@@ -257,9 +309,6 @@ const StudentModal: React.FC<StudentModalProps> = ({
                                 options={religionOptions}
                             />
                         </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        {/* Placeholder for 3rd column alignment or extra field */}
                     </Col>
                 </Row>
 

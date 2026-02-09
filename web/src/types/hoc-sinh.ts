@@ -26,6 +26,7 @@ export interface HocSinh {
     // Address Information
     dia_chi?: string;
     phuong_xa?: string;
+    quan_huyen?: string;
     tinh?: string;
     // Banking Information
     so_tai_khoan?: string;
@@ -56,6 +57,7 @@ export interface CreateHocSinhRequest {
     // Address Information
     dia_chi?: string;
     phuong_xa?: string;
+    quan_huyen?: string;
     tinh?: string;
     // Banking Information
     so_tai_khoan?: string;
