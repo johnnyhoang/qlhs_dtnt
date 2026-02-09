@@ -24,6 +24,8 @@ app.get('/', (req, res) => {
   res.send('QLHS API is running');
 });
 
+export let lastDbError: any = null;
+
 const startServer = async () => {
   const port = Number(process.env.PORT) || 8080;
   
@@ -35,8 +37,10 @@ const startServer = async () => {
     console.log("Initializing Data Source...");
     await AppDataSource.initialize();
     console.log("Data Source has been initialized!");
+    lastDbError = null;
   } catch (err) {
     console.error("Error during Data Source initialization:", err);
+    lastDbError = err;
     // In production, we might want to keep the process running so logs are accessible
     // rather than immediate exit 1 which triggers restarts.
   }

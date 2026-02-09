@@ -15,11 +15,14 @@ const router = Router();
 
 import { AppDataSource } from '../data-source';
 
+import { lastDbError } from '../index';
+
 router.get('/health', (req, res) => {
     const dbStatus = AppDataSource.isInitialized ? 'connected' : 'disconnected';
     res.json({ 
         status: 'ok', 
         database: dbStatus,
+        error: !AppDataSource.isInitialized ? (lastDbError?.message || lastDbError || 'Unknown error') : null,
         timestamp: new Date().toISOString()
     });
 });
