@@ -14,12 +14,16 @@ import { DanhMucMaster } from "./entities/DanhMucMaster";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
-    host: CONFIG.DB.HOST,
-    port: CONFIG.DB.PORT,
+    // For Cloud Run, use socketPath if provided, otherwise use host/port
+    ...(CONFIG.DB.SOCKET_PATH ? {
+        socketPath: CONFIG.DB.SOCKET_PATH,
+    } : {
+        host: CONFIG.DB.HOST,
+        port: Number(CONFIG.DB.PORT) || 3306,
+    }),
     username: CONFIG.DB.USERNAME,
     password: CONFIG.DB.PASSWORD,
     database: CONFIG.DB.NAME,
-    socketPath: CONFIG.DB.SOCKET_PATH,
     synchronize: true, // Auto create tables for dev
     logging: false,
     entities: [

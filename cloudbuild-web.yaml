@@ -1,0 +1,56 @@
+steps:
+  # Build frontend (web) image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/qlhs-web:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/qlhs-web:latest'
+      - '-f'
+      - 'web/Dockerfile'
+      - '--build-arg'
+      - 'VITE_API_URL=$_VITE_API_URL'
+      - '--build-arg'
+      - 'VITE_GOOGLE_CLIENT_ID=$_GOOGLE_CLIENT_ID'
+      - './web'
+    id: 'build-web'
+
+  # Push frontend image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/qlhs-web:$COMMIT_SHA'
+    id: 'push-web'
+    waitFor: ['build-web']
+
+  # Deploy frontend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'qlhs-web'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/qlhs-web:$COMMIT_SHA'
+      - '--region'
+      - 'asia-southeast1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+    id: 'deploy-web'
+    waitFor: ['push-web']
+
+images:
+  - 'gcr.io/$PROJECT_ID/qlhs-web:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/qlhs-web:latest'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _VITE_API_URL: 'https://qlhs-server-311534268252.asia-southeast1.run.app/api'
+  _GOOGLE_CLIENT_ID: '311534268252-fjpb2dvc8kpne0hrca4fr9pb5k9sspeh.apps.googleusercontent.com'

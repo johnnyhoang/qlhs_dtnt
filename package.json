@@ -1,0 +1,16 @@
+{
+  "name": "qlhs-dtnt-root",
+  "version": "1.0.0",
+  "description": "Root for QLHS-DTNT Monorepo",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:web": "cd web && npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
+    "pr:master": "git checkout master && git pull origin master && git merge develop && git push origin master && git checkout develop",
+    "install:all": "cd server && npm install && cd ../web && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
