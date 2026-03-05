@@ -9,6 +9,8 @@ export const googleLogin = async (req: Request, res: Response) => {
     const { idToken } = req.body;
 
     try {
+        console.log('Verifying Google token with Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Exists (starts with ' + process.env.GOOGLE_CLIENT_ID.substring(0, 10) + '...)' : 'MISSING');
+
         const ticket = await client.verifyIdToken({
             idToken,
             audience: process.env.GOOGLE_CLIENT_ID,
@@ -16,6 +18,7 @@ export const googleLogin = async (req: Request, res: Response) => {
 
         const payload = ticket.getPayload();
         if (!payload || !payload.email) {
+            console.error('Invalid Google token payload:', payload);
             return res.status(400).json({ message: 'Invalid token payload' });
         }
 
@@ -26,6 +29,7 @@ export const googleLogin = async (req: Request, res: Response) => {
         );
 
         if (!user.kich_hoat) {
+            console.warn('Login attempt for disabled user:', payload.email);
             return res.status(403).json({ message: 'Account is disabled' });
         }
 
@@ -46,9 +50,16 @@ export const googleLogin = async (req: Request, res: Response) => {
                 danh_sach_quyen: user.danh_sach_quyen
             } 
         });
-    } catch (error) {
-        console.error('Google Login Error:', error);
-        res.status(401).json({ message: 'Google authentication failed' });
+    } catch (error: any) {
+        console.error('Detailed Google Login Error:', {
+            message: error.message,
+            stack: error.stack,
+            clientId: process.env.GOOGLE_CLIENT_ID?.substring(0, 10) + '...'
+        });
+        res.status(401).json({ 
+            message: 'Google authentication failed',
+            details: error.message // Sending back error message for easier debugging
+        });
     }
 };
 
