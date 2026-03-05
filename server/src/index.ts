@@ -10,6 +10,8 @@ const app = express();
 app.use(cors({
   origin: [
     'https://qlhs-web-311534268252.asia-southeast1.run.app',
+    'https://qlhs-web.vercel.app',
+    /\.vercel\.app$/, // Allow all Vercel preview deployments
     'http://localhost:5173',
     'http://localhost:8080',
     'http://localhost:3500'
@@ -27,12 +29,6 @@ app.get('/', (req, res) => {
 export let lastDbError: any = null;
 
 const startServer = async () => {
-  const port = Number(process.env.PORT) || 8080;
-  
-  const server = app.listen(port, "0.0.0.0", () => {
-    console.log(`Server is listening on port ${port}`);
-  });
-
   try {
     console.log("Initializing Data Source...");
     await AppDataSource.initialize();
@@ -41,25 +37,27 @@ const startServer = async () => {
   } catch (err) {
     console.error("Error during Data Source initialization:", err);
     lastDbError = err;
-    // In production, we might want to keep the process running so logs are accessible
-    // rather than immediate exit 1 which triggers restarts.
   }
 
-  process.on('SIGINT', () => {
-    console.log(`SIGINT received. Closing server...`);
-    server.close(() => {
-      console.log('Server closed');
-      process.exit(0);
+  // Only listen on port if not in Vercel environment
+  if (process.env.VERCEL !== '1') {
+    const port = Number(process.env.PORT) || 8080;
+    const server = app.listen(port, "0.0.0.0", () => {
+      console.log(`Server is listening on port ${port}`);
     });
-  });
 
-  process.on('uncaughtException', (err) => {
-    console.error(`Uncaught Exception:`, err);
-  });
-
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error(`Unhandled Rejection at:`, promise, 'reason:', reason);
-  });
+    process.on('SIGINT', () => {
+      console.log(`SIGINT received. Closing server...`);
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+  }
 };
 
+// Start initialization but don't block Vercel export
 startServer();
+
+// Export for Vercel
+export default app;

@@ -13,17 +13,17 @@ import { PhanQuyen } from "./entities/PhanQuyen";
 import { DanhMucMaster } from "./entities/DanhMucMaster";
 
 export const AppDataSource = new DataSource({
-    type: "mysql",
-    // For Cloud Run, use socketPath if provided, otherwise use host/port
-    ...(CONFIG.DB.SOCKET_PATH ? {
-        socketPath: CONFIG.DB.SOCKET_PATH,
+    type: "postgres",
+    ...(CONFIG.DB.DATABASE_URL ? {
+        url: CONFIG.DB.DATABASE_URL,
+        ssl: CONFIG.DB.DATABASE_URL.includes("supabase.com") ? { rejectUnauthorized: false } : undefined
     } : {
         host: CONFIG.DB.HOST,
-        port: Number(CONFIG.DB.PORT) || 3306,
+        port: Number(CONFIG.DB.PORT) || 5432,
+        username: CONFIG.DB.USERNAME,
+        password: CONFIG.DB.PASSWORD,
+        database: CONFIG.DB.NAME,
     }),
-    username: CONFIG.DB.USERNAME,
-    password: CONFIG.DB.PASSWORD,
-    database: CONFIG.DB.NAME,
     synchronize: true, // Auto create tables for dev
     logging: false,
     entities: [

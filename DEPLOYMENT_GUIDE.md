@@ -73,4 +73,31 @@ gcloud services enable \
 *   **Port**: Cả hai service đều được cấu hình chạy trên port chuẩn **8080**.
 
 ---
+# Hướng dẫn Deploy lên Vercel (Khuyên dùng cho Backend + Frontend tách biệt)
+
+Vercel là lựa chọn tuyệt vời để deploy monorepo này một cách nhanh chóng. Chúng ta sẽ deploy `server` và `web` thành 2 dự án riêng biệt trên Vercel.
+
+## 1. Deploy Backend (Server)
+
+1.  **Tạo dự án mới** trên Vercel Dashboard.
+2.  Kết nối với repository và chọn thư mục gốc là `server`.
+3.  **Cấu hình biến môi trường**:
+    *   `DATABASE_URL`: Connection string từ Supabase (hoặc Postgres khác).
+    *   `JWT_SECRET`: Chuỗi bí mật cho JWT.
+4.  Vercel sẽ tự động nhận diện `vercel.json` và deploy code dưới dạng Serverless Functions.
+
+## 2. Deploy Frontend (Web)
+
+1.  **Tạo một dự án Vercel khác**.
+2.  Chọn cùng repository nhưng đặt thư mục gốc là `web`.
+3.  **Cấu hình biến môi trường**:
+    *   `VITE_API_URL`: URL của backend vừa deploy (ví dụ: `https://qlhs-server.vercel.app/api`).
+    *   `VITE_GOOGLE_CLIENT_ID`: Google Client ID của bạn.
+4.  Cài đặt build command là `vite build` và output directory là `dist`.
+
+## 3. Cấu hình CORS (Nếu cần)
+
+Nếu URL frontend của bạn khác với danh sách trong `server/src/index.ts`, hãy cập nhật mảng `origin` trong file đó để cho phép frontend gọi API.
+
+---
 *Chúc bạn deploy thành công!*
