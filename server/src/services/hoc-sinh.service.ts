@@ -2,10 +2,11 @@ import { AppDataSource } from "../data-source";
 import { HocSinh } from "../entities/HocSinh";
 import { Like, In } from "typeorm";
 
-const hocSinhRepository = AppDataSource.getRepository(HocSinh);
+const getRepo = () => AppDataSource.getRepository(HocSinh);
 
 export const HocSinhService = {
     getAll: async (page = 1, pageSize = 10, search = "", lop: string | string[] = "", user?: any) => {
+        const repo = getRepo();
         const skip = (page - 1) * pageSize;
         const where: any = {};
         
@@ -40,7 +41,7 @@ export const HocSinhService = {
              where.ho_ten = Like(`%${search}%`);
         }
 
-        const [hoc_sinh_list, total] = await hocSinhRepository.findAndCount({
+        const [hoc_sinh_list, total] = await repo.findAndCount({
             where,
             skip,
             take: pageSize,
@@ -58,7 +59,8 @@ export const HocSinhService = {
     },
 
     getById: async (id: string, user?: any) => {
-        const hoc_sinh = await hocSinhRepository.findOneBy({ id });
+        const repo = getRepo();
+        const hoc_sinh = await repo.findOneBy({ id });
         if (!hoc_sinh) return null;
 
         if (user && user.vai_tro === "TEACHER") {
@@ -71,18 +73,20 @@ export const HocSinhService = {
     },
 
     create: async (data: Partial<HocSinh>, user?: any) => {
+        const repo = getRepo();
         if (user && user.vai_tro === "TEACHER") {
              const assignedClasses: string[] = user.lop_phu_trach || [];
              if (data.lop && !assignedClasses.includes(data.lop)) {
                  throw new Error("Không có quyền thêm học sinh vào lớp này");
              }
         }
-        const hoc_sinh = hocSinhRepository.create({ ...data, nguoi_cap_nhat_id: user?.id });
-        return await hocSinhRepository.save(hoc_sinh);
+        const hoc_sinh = repo.create({ ...data, nguoi_cap_nhat_id: user?.id });
+        return await repo.save(hoc_sinh);
     },
 
     update: async (id: string, data: Partial<HocSinh>, user?: any) => {
-        const hoc_sinh = await hocSinhRepository.findOneBy({ id });
+        const repo = getRepo();
+        const hoc_sinh = await repo.findOneBy({ id });
         if (!hoc_sinh) return null;
 
         if (user && user.vai_tro === "TEACHER") {
@@ -97,13 +101,14 @@ export const HocSinhService = {
              }
         }
 
-        hocSinhRepository.merge(hoc_sinh, { ...data, nguoi_cap_nhat_id: user?.id });
-        return await hocSinhRepository.save(hoc_sinh);
+        repo.merge(hoc_sinh, { ...data, nguoi_cap_nhat_id: user?.id });
+        return await repo.save(hoc_sinh);
     },
 
     delete: async (id: string, user?: any) => {
+        const repo = getRepo();
         if (user && user.vai_tro === "TEACHER") {
-            const hoc_sinh = await hocSinhRepository.findOneBy({ id });
+            const hoc_sinh = await repo.findOneBy({ id });
             if (hoc_sinh) {
                 const assignedClasses: string[] = user.lop_phu_trach || [];
                 if (!assignedClasses.includes(hoc_sinh.lop)) {
@@ -111,13 +116,14 @@ export const HocSinhService = {
                 }
             }
         }
-        return await hocSinhRepository.delete(id);
+        return await repo.delete(id);
     },
 
     upsertByMaHocSinh: async (data: Partial<HocSinh>, user?: any) => {
+        const repo = getRepo();
         if (!data.ma_hoc_sinh) throw new Error("Mã học sinh là bắt buộc");
         
-        const existing = await hocSinhRepository.findOneBy({ ma_hoc_sinh: data.ma_hoc_sinh });
+        const existing = await repo.findOneBy({ ma_hoc_sinh: data.ma_hoc_sinh });
         
         if (user && user.vai_tro === "TEACHER") {
              const assignedClasses: string[] = user.lop_phu_trach || [];
@@ -132,21 +138,22 @@ export const HocSinhService = {
         }
 
         if (existing) {
-            hocSinhRepository.merge(existing, { ...data, nguoi_cap_nhat_id: user?.id });
-            return await hocSinhRepository.save(existing);
+            repo.merge(existing, { ...data, nguoi_cap_nhat_id: user?.id });
+            return await repo.save(existing);
         } else {
-            const hoc_sinh = hocSinhRepository.create({ ...data, nguoi_cap_nhat_id: user?.id });
-            return await hocSinhRepository.save(hoc_sinh);
+            const hoc_sinh = repo.create({ ...data, nguoi_cap_nhat_id: user?.id });
+            return await repo.save(hoc_sinh);
         }
     },
 
     getClasses: async (user?: any) => {
+        const repo = getRepo();
         if (user && user.vai_tro === "TEACHER") {
             const assignedClasses: string[] = user.lop_phu_trach || [];
             return assignedClasses.sort();
         }
 
-        const classes = await hocSinhRepository
+        const classes = await repo
             .createQueryBuilder("hoc_sinh")
             .select("DISTINCT hoc_sinh.lop", "lop")
             .orderBy("hoc_sinh.lop", "ASC")
