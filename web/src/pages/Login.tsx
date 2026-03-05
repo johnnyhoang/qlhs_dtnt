@@ -24,12 +24,13 @@ const Login: React.FC = () => {
             const errorData = error.response?.data;
             const status = error.response?.status;
             const apiUrl = error.config?.url;
+            const errorMsg = errorData?.details || errorData?.message || error.message || 'Lỗi không xác định';
 
             notification.error({
                 message: 'Đăng nhập thất bại',
                 description: (
                     <div style={{ fontSize: '12px' }}>
-                        <p><strong>Lỗi:</strong> {errorData?.details || errorData?.message || error.message || 'Lỗi không xác định'}</p>
+                        <p><strong>Lỗi:</strong> {errorMsg}</p>
                         {status && <p><strong>Status:</strong> {status}</p>}
                         {apiUrl && <p><strong>API:</strong> {apiUrl}</p>}
                         <p style={{ marginTop: '8px', color: '#888' }}>Mở Console (F12) để xem chi tiết Object.</p>
@@ -38,6 +39,10 @@ const Login: React.FC = () => {
                 duration: 0, // Stay open until closed manually
                 placement: 'top'
             });
+
+            // Fallback for debugging: alert will NOT close and stops execution
+            alert(`LOGIN ERROR:\nMsg: ${errorMsg}\nStatus: ${status}\nAPI: ${apiUrl}`);
+
             // Log to console in a way that's easy to see even after refresh if possible
             console.error('--- DEBUG LOGIN ERROR ---');
             console.dir(error);
