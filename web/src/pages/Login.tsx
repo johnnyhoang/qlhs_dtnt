@@ -29,14 +29,18 @@ const Login: React.FC = () => {
                 message: 'Đăng nhập thất bại',
                 description: (
                     <div style={{ fontSize: '12px' }}>
-                        <p><strong>Lỗi:</strong> {errorData?.message || error.message || 'Lỗi không xác định'}</p>
+                        <p><strong>Lỗi:</strong> {errorData?.details || errorData?.message || error.message || 'Lỗi không xác định'}</p>
                         {status && <p><strong>Status:</strong> {status}</p>}
                         {apiUrl && <p><strong>API:</strong> {apiUrl}</p>}
+                        <p style={{ marginTop: '8px', color: '#888' }}>Mở Console (F12) để xem chi tiết Object.</p>
                     </div>
                 ),
-                duration: 10, // Show longer for debugging
+                duration: 0, // Stay open until closed manually
                 placement: 'top'
             });
+            // Log to console in a way that's easy to see even after refresh if possible
+            console.error('--- DEBUG LOGIN ERROR ---');
+            console.dir(error);
         }
     };
 
