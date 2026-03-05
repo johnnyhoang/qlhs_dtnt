@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, message, Typography, Space } from 'antd';
+import { Card, notification, Typography, Space } from 'antd';
 import { GoogleLogin } from '@react-oauth/google';
 import { googleLogin } from '../api/auth';
 import { useNavigate } from 'react-router-dom';
@@ -14,11 +14,29 @@ const Login: React.FC = () => {
             const { token, user } = await googleLogin(credentialResponse.credential);
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
-            message.success('Đăng nhập thành công');
+            notification.success({
+                message: 'Đăng nhập thành công',
+                placement: 'top'
+            });
             navigate('/');
         } catch (error: any) {
             console.error('Login error:', error);
-            message.error(error.response?.data?.message || 'Đăng nhập thất bại');
+            const errorData = error.response?.data;
+            const status = error.response?.status;
+            const apiUrl = error.config?.url;
+
+            notification.error({
+                message: 'Đăng nhập thất bại',
+                description: (
+                    <div style={{ fontSize: '12px' }}>
+                        <p><strong>Lỗi:</strong> {errorData?.message || error.message || 'Lỗi không xác định'}</p>
+                        {status && <p><strong>Status:</strong> {status}</p>}
+                        {apiUrl && <p><strong>API:</strong> {apiUrl}</p>}
+                    </div>
+                ),
+                duration: 10, // Show longer for debugging
+                placement: 'top'
+            });
         }
     };
 
@@ -42,7 +60,11 @@ const Login: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
                         <GoogleLogin
                             onSuccess={handleGoogleSuccess}
-                            onError={() => message.error('Google Sign-In failed')}
+                            onError={() => notification.error({
+                                message: 'Google Sign-In failed',
+                                description: 'Không thể kết nối với dịch vụ xác thực của Google.',
+                                placement: 'top'
+                            })}
                             theme="filled_blue"
                             shape="pill"
                         />
