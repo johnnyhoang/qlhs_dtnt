@@ -1,19 +1,17 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: qlhs_mysql
+  postgres:
+    image: postgres:15
+    container_name: qlhs_postgres
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: qlhs_db
-      MYSQL_USER: qlhs_user
-      MYSQL_PASSWORD: B1g.h13u
+      POSTGRES_USER: qlhs_user
+      POSTGRES_PASSWORD: B1g.h13u
+      POSTGRES_DB: qlhs_db
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password
+      - postgres_data:/var/lib/postgresql/data
 
   server:
     build: ./server
@@ -21,14 +19,10 @@ services:
     ports:
       - "3500:3500"
     environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_USERNAME=root
-      - DB_PASSWORD=rootpassword
-      - DB_NAME=qlhs_db
+      - DATABASE_URL=postgresql://qlhs_user:B1g.h13u@postgres:5432/qlhs_db
       - PORT=3500
     depends_on:
-      - mysql
+      - postgres
     volumes:
       - ./server:/app
       - /app/node_modules
@@ -47,4 +41,4 @@ services:
       - /app/node_modules
 
 volumes:
-  mysql_data:
+  postgres_data:
