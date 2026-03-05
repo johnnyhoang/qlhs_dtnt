@@ -4,13 +4,15 @@ import { HocSinh, TrangThaiHocSinh } from "../entities/HocSinh";
 import { DinhMucXe } from "../entities/DinhMucXe";
 import { Between, In } from "typeorm";
 
-const suatAnRepository = AppDataSource.getRepository(SuatAn);
-const hocSinhRepository = AppDataSource.getRepository(HocSinh);
-const dinhMucXeRepository = AppDataSource.getRepository(DinhMucXe);
+const getSARepo = () => AppDataSource.getRepository(SuatAn);
+const getHSRepo = () => AppDataSource.getRepository(HocSinh);
+const getDMXRepo = () => AppDataSource.getRepository(DinhMucXe);
 
 export const ThongKeService = {
     // Thống kê cắt phần ăn theo lớp và ngày
     getMealCutoffByClassAndWeek: async (startDate: string, endDate: string, user?: any, classes: string[] = []) => {
+        const hsRepo = getHSRepo();
+        const saRepo = getSARepo();
         const where: any = { trang_thai: TrangThaiHocSinh.DANG_HOC };
         let assignedClasses: string[] = [];
 
@@ -38,13 +40,13 @@ export const ThongKeService = {
         }
 
         // Get all active students
-        const students = await hocSinhRepository.find({
+        const students = await hsRepo.find({
             where,
             order: { lop: "ASC", ho_ten: "ASC" }
         });
 
         // Get all meal records for the date range
-        const mealRecords = await suatAnRepository.find({
+        const mealRecords = await saRepo.find({
             where: {
                 ngay: Between(startDate, endDate),
                 bao_cat: true
@@ -98,6 +100,8 @@ export const ThongKeService = {
 
     // Thống kê suất ăn theo tháng
     getMonthlyMealStatistics: async (month: number, year: number, user?: any, classes: string[] = []) => {
+        const hsRepo = getHSRepo();
+        const saRepo = getSARepo();
         // Calculate date range for the month
         const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
         const lastDay = new Date(year, month, 0).getDate();
@@ -138,7 +142,7 @@ export const ThongKeService = {
         }
 
         // Get total active students
-        const totalStudents = await hocSinhRepository.count({
+        const totalStudents = await hsRepo.count({
             where: whereStudent
         });
 
@@ -154,7 +158,7 @@ export const ThongKeService = {
 
         // Get all meal cut records for the month
         let cutRecords: SuatAn[] = [];
-        const mealQuery = suatAnRepository.createQueryBuilder("suat_an")
+        const mealQuery = saRepo.createQueryBuilder("suat_an")
             .innerJoin("hoc_sinh", "hs", "hs.id = suat_an.hoc_sinh_id")
             .where("suat_an.ngay BETWEEN :startDate AND :endDate", { startDate, endDate })
             .andWhere("suat_an.bao_cat = :bao_cat", { bao_cat: true });
@@ -206,6 +210,8 @@ export const ThongKeService = {
 
     // Thống kê vận chuyển theo lớp
     getTransportStatisticsByClass: async (startDate: string = "", endDate: string = "", user?: any, classes: string[] = []) => {
+        const hsRepo = getHSRepo();
+        const dmxRepo = getDMXRepo();
         const where: any = { trang_thai: TrangThaiHocSinh.DANG_HOC };
         let assignedClasses: string[] = [];
 
@@ -232,7 +238,7 @@ export const ThongKeService = {
              where.lop = In(assignedClasses);
         }
 
-        const students = await hocSinhRepository.find({
+        const students = await hsRepo.find({
             where,
             order: { lop: "ASC" }
         });
@@ -242,7 +248,7 @@ export const ThongKeService = {
         let transportRecords: DinhMucXe[] = [];
         
         if (studentIds.length > 0) {
-            transportRecords = await dinhMucXeRepository.createQueryBuilder("dinh_muc_xe")
+            transportRecords = await dmxRepo.createQueryBuilder("dinh_muc_xe")
                 .where("dinh_muc_xe.hoc_sinh_id IN (:...studentIds)", { studentIds })
                 .getMany();
         }

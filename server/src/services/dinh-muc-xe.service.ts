@@ -1,11 +1,12 @@
 import { AppDataSource } from "../data-source";
 import { DinhMucXe } from "../entities/DinhMucXe";
 
-const dinhMucXeRepository = AppDataSource.getRepository(DinhMucXe);
+const getRepo = () => AppDataSource.getRepository(DinhMucXe);
 
 export const DinhMucXeService = {
     getAll: async (user?: any, lop: string | string[] = "") => {
-        const query = dinhMucXeRepository.createQueryBuilder("dinh_muc_xe")
+        const repo = getRepo();
+        const query = repo.createQueryBuilder("dinh_muc_xe")
             .leftJoinAndSelect("dinh_muc_xe.hoc_sinh", "hoc_sinh")
             .leftJoinAndSelect("dinh_muc_xe.nguoi_cap_nhat", "nguoi_cap_nhat");
 
@@ -35,7 +36,7 @@ export const DinhMucXeService = {
     },
 
     getByHocSinhId: async (hoc_sinh_id: string) => {
-        return await dinhMucXeRepository.findOne({
+        return await getRepo().findOne({
             where: { hoc_sinh_id },
             relations: ["hoc_sinh"]
         });
@@ -48,7 +49,8 @@ export const DinhMucXeService = {
     },
 
     luuDinhMuc: async (hoc_sinh_id: string, data: Partial<DinhMucXe>, userId?: number) => {
-        let dinh_muc = await dinhMucXeRepository.findOneBy({ hoc_sinh_id });
+        const repo = getRepo();
+        let dinh_muc = await repo.findOneBy({ hoc_sinh_id });
         
         let so_tien = data.so_tien;
         if (data.khoang_cach !== undefined) {
@@ -58,14 +60,14 @@ export const DinhMucXeService = {
         }
 
         if (dinh_muc) {
-            dinhMucXeRepository.merge(dinh_muc, { ...data, so_tien, nguoi_cap_nhat_id: userId });
+            repo.merge(dinh_muc, { ...data, so_tien, nguoi_cap_nhat_id: userId });
         } else {
-            dinh_muc = dinhMucXeRepository.create({ ...data, so_tien, hoc_sinh_id, nguoi_cap_nhat_id: userId });
+            dinh_muc = repo.create({ ...data, so_tien, hoc_sinh_id, nguoi_cap_nhat_id: userId });
         }
-        return await dinhMucXeRepository.save(dinh_muc);
+        return await repo.save(dinh_muc);
     },
 
     xoaDinhMuc: async (id: number) => {
-        return await dinhMucXeRepository.delete(id);
+        return await getRepo().delete(id);
     }
 };

@@ -1,11 +1,12 @@
 import { AppDataSource } from "../data-source";
 import { BaoHiem } from "../entities/BaoHiem";
 
-const baoHiemRepository = AppDataSource.getRepository(BaoHiem);
+const getRepo = () => AppDataSource.getRepository(BaoHiem);
 
 export const BaoHiemService = {
     getAll: async (user?: any, lop: string | string[] = "") => {
-        const query = baoHiemRepository.createQueryBuilder("bao_hiem")
+        const repo = getRepo();
+        const query = repo.createQueryBuilder("bao_hiem")
             .leftJoinAndSelect("bao_hiem.hoc_sinh", "hoc_sinh")
             .leftJoinAndSelect("bao_hiem.nguoi_cap_nhat", "nguoi_cap_nhat");
 
@@ -35,23 +36,24 @@ export const BaoHiemService = {
     },
 
     getByHocSinhId: async (hoc_sinh_id: string) => {
-        return await baoHiemRepository.findOne({
+        return await getRepo().findOne({
             where: { hoc_sinh_id },
             relations: ["hoc_sinh"]
         });
     },
 
     luuHoSo: async (hoc_sinh_id: string, data: Partial<BaoHiem>, userId?: number) => {
-        let ho_so = await baoHiemRepository.findOneBy({ hoc_sinh_id });
+        const repo = getRepo();
+        let ho_so = await repo.findOneBy({ hoc_sinh_id });
         if (ho_so) {
-            baoHiemRepository.merge(ho_so, { ...data, nguoi_cap_nhat_id: userId });
+            repo.merge(ho_so, { ...data, nguoi_cap_nhat_id: userId });
         } else {
-            ho_so = baoHiemRepository.create({ ...data, hoc_sinh_id, nguoi_cap_nhat_id: userId });
+            ho_so = repo.create({ ...data, hoc_sinh_id, nguoi_cap_nhat_id: userId });
         }
-        return await baoHiemRepository.save(ho_so);
+        return await repo.save(ho_so);
     },
 
     xoaHoSo: async (id: number) => {
-        return await baoHiemRepository.delete(id);
+        return await getRepo().delete(id);
     }
 };

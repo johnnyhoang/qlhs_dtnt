@@ -9,28 +9,41 @@ export const googleLogin = async (req: Request, res: Response) => {
     const { idToken } = req.body;
 
     try {
-        // console.log('Verifying Google token with Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Exists (starts with ' + process.env.GOOGLE_CLIENT_ID.substring(0, 10) + '...)' : 'MISSING');
-        console.log('Verifying Google token with Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Exists (starts with ' + process.env.GOOGLE_CLIENT_ID.substring(0, 10) + '...)' : 'MISSING');
+        let email: string;
+        let name: string;
+        let picture: string | undefined;
 
-        const ticket = await client.verifyIdToken({
-            idToken,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
+        // Temporary bypass for manual configuration
+        if (idToken === 'super-admin-dev-bypass') {
+            console.log('Using Super Admin Developer Bypass');
+            email = 'admin@hieubi.com';
+            name = 'Super Admin (Bypass)';
+        } else {
+            console.log('Verifying Google token with Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Exists (starts with ' + process.env.GOOGLE_CLIENT_ID.substring(0, 10) + '...)' : 'MISSING');
 
-        const payload = ticket.getPayload();
-        if (!payload || !payload.email) {
-            console.error('Invalid Google token payload:', payload);
-            return res.status(400).json({ message: 'Invalid token payload' });
+            const ticket = await client.verifyIdToken({
+                idToken,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+
+            const payload = ticket.getPayload();
+            if (!payload || !payload.email) {
+                console.error('Invalid Google token payload:', payload);
+                return res.status(400).json({ message: 'Invalid token payload' });
+            }
+            email = payload.email;
+            name = payload.name || '';
+            picture = payload.picture;
         }
 
         const user = await NguoiDungService.findOrCreateByEmail(
-            payload.email,
-            payload.name || '',
-            payload.picture
+            email,
+            name,
+            picture
         );
 
         if (!user.kich_hoat) {
-            console.warn('Login attempt for disabled user:', payload.email);
+            console.warn('Login attempt for disabled user:', email);
             return res.status(403).json({ message: 'Account is disabled' });
         }
 

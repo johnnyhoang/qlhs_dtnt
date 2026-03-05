@@ -20,6 +20,25 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Database initialization middleware
+app.use(async (req, res, next) => {
+  if (AppDataSource.isInitialized) {
+    return next();
+  }
+  
+  try {
+    console.log("Database not initialized, initializing now...");
+    await AppDataSource.initialize();
+    next();
+  } catch (err) {
+    console.error("Database initialization failed in middleware:", err);
+    res.status(500).json({ 
+      message: "Database initialization failed",
+      error: process.env.NODE_ENV === 'development' ? err : undefined
+    });
+  }
+});
+
 app.use('/api', routes);
 
 app.get('/', (req, res) => {
