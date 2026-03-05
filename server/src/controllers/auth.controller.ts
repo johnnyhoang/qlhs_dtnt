@@ -9,7 +9,7 @@ export const googleLogin = async (req: Request, res: Response) => {
     const { idToken } = req.body;
 
     try {
-        console.log('Verifying Google token with Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Exists (starts with ' + process.env.GOOGLE_CLIENT_ID.substring(0, 10) + '...)' : 'MISSING');
+        // console.log('Verifying Google token with Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Exists (starts with ' + process.env.GOOGLE_CLIENT_ID.substring(0, 10) + '...)' : 'MISSING');
         console.log('Verifying Google token with Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Exists (starts with ' + process.env.GOOGLE_CLIENT_ID.substring(0, 10) + '...)' : 'MISSING');
 
         const ticket = await client.verifyIdToken({
