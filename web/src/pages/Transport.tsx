@@ -8,9 +8,12 @@ import type { HocSinh } from '../types/hoc-sinh';
 import type { DinhMucXe } from '../types/dinh-muc-xe';
 import ImportModal from '../components/ImportModal';
 import AuditFooter from '../components/AuditFooter';
+import MobileList from '../components/MobileList';
 import dayjs from 'dayjs';
 import ClassSelect from '../components/ClassSelect';
 import ExportButton from '../components/ExportButton';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { Grid } from 'antd';
 
 const Transport: React.FC = () => {
     const [searchText, setSearchText] = useState('');
@@ -18,6 +21,7 @@ const Transport: React.FC = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingStudent, setEditingStudent] = useState<HocSinh | null>(null);
     const [form] = Form.useForm();
+    const screens = Grid.useBreakpoint();
 
     const queryClient = useQueryClient();
 
@@ -215,38 +219,82 @@ const Transport: React.FC = () => {
                         onChange={(value) => setSelectedClass(value as string[])}
                     />
                 </div>
-                <Table
-                    columns={columns}
-                    dataSource={filteredData}
-                    rowKey="id"
-                    loading={isLoadingStudents || isLoadingProfiles}
-                    size="small"
-                    scroll={{ x: 1000 }}
-                    expandable={{
-                        expandedRowRender: (record) => {
-                            const p = profileMap.get(record.id);
-                            if (!p) return <div style={{ padding: '8px 40px' }}>Chưa có hồ sơ hỗ trợ</div>;
-                            return (
-                                <div style={{ padding: '8px 40px' }}>
-                                    <p><b>Hình thức di chuyển:</b> {p.phuong_tien || '-'}</p>
-                                    <p><b>Địa chỉ xã mới:</b> {p.dia_chi_xa_moi || '-'}</p>
-                                    <p><b>Xã thuộc diện hỗ trợ:</b> {p.xa_huong_tro_cap || '-'}</p>
-                                    <p><b>Điểm dừng xe buýt:</b> {p.ten_diem_dung || '-'}</p>
-                                    <p className="mobile-only"><b>Người cập nhật:</b> {p.nguoi_cap_nhat?.ho_ten || '-'}</p>
-                                    <p className="mobile-only"><b>Ngày cập nhật:</b> {p.updatedAt ? dayjs(p.updatedAt).format('DD/MM/YYYY HH:mm') : '-'}</p>
-                                </div>
-                            );
-                        },
-                        rowExpandable: (record) => !!profileMap.get(record.id),
-                    }}
-                />
+                <div className="desktop-only">
+                    {isLoadingStudents || isLoadingProfiles ? (
+                        <SkeletonLoader type="table" />
+                    ) : (
+                        <Table
+                            columns={columns}
+                            dataSource={filteredData}
+                            rowKey="id"
+                            size="small"
+                            scroll={{ x: 1000 }}
+                            expandable={{
+                                expandedRowRender: (record) => {
+                                    const p = profileMap.get(record.id);
+                                    if (!p) return <div style={{ padding: '8px 40px' }}>Chưa có hồ sơ hỗ trợ</div>;
+                                    return (
+                                        <div style={{ padding: '8px 40px' }}>
+                                            <p><b>Hình thức di chuyển:</b> {p.phuong_tien || '-'}</p>
+                                            <p><b>Địa chỉ xã mới:</b> {p.dia_chi_xa_moi || '-'}</p>
+                                            <p><b>Xã thuộc diện hỗ trợ:</b> {p.xa_huong_tro_cap || '-'}</p>
+                                            <p><b>Điểm dừng xe buýt:</b> {p.ten_diem_dung || '-'}</p>
+                                            <p className="mobile-only"><b>Người cập nhật:</b> {p.nguoi_cap_nhat?.ho_ten || '-'}</p>
+                                            <p className="mobile-only"><b>Ngày cập nhật:</b> {p.updatedAt ? dayjs(p.updatedAt).format('DD/MM/YYYY HH:mm') : '-'}</p>
+                                        </div>
+                                    );
+                                },
+                                rowExpandable: (record) => !!profileMap.get(record.id),
+                            }}
+                            onRow={(record) => ({
+                                onClick: () => handleEdit(record, profileMap.get(record.id)),
+                                style: { cursor: 'pointer' }
+                            })}
+                        />
+                    )}
+                </div>
+
+                <div className="mobile-only">
+                    {isLoadingStudents || isLoadingProfiles ? (
+                        <SkeletonLoader type="list" />
+                    ) : (
+                        <MobileList
+                            dataSource={filteredData}
+                            onRowClick={(record) => handleEdit(record, profileMap.get(record.id))}
+                            renderItem={(record) => {
+                                const p = profileMap.get(record.id);
+                                return (
+                                    <div>
+                                        <div className="mobile-card-row">
+                                            <span style={{ fontWeight: 600, fontSize: '1.1em' }}>{record.ho_ten}</span>
+                                            <span className="mobile-card-value">Lớp: {record.lop}</span>
+                                        </div>
+                                        <div className="mobile-card-row">
+                                            <span className="mobile-card-label">Khoảng cách:</span>
+                                            <span className="mobile-card-value">{p?.khoang_cach ? `${p.khoang_cach} km` : '-'}</span>
+                                        </div>
+                                        <div className="mobile-card-row">
+                                            <span className="mobile-card-label">Định mức:</span>
+                                            <span className="mobile-card-value" style={{ color: '#fa8c16' }}>
+                                                {p?.so_tien ? `${p.so_tien.toLocaleString()} đ` : '-'}
+                                            </span>
+                                        </div>
+                                        <div style={{ marginTop: 8, fontSize: '0.85em', color: '#999' }}>
+                                            {p?.ngan_hang || '-'} - {p?.so_tai_khoan || '-'}
+                                        </div>
+                                    </div>
+                                );
+                            }}
+                        />
+                    )}
+                </div>
             </Card>
 
             <Drawer
                 title={`${canEdit ? 'Hồ sơ hỗ trợ' : 'Xem hồ sơ'}: ${editingStudent?.ho_ten}`}
                 open={isModalVisible}
                 onClose={() => setIsModalVisible(false)}
-                width={500}
+                width={screens.xs ? '100%' : 500}
                 extra={
                     canEdit && (
                         <Space>
@@ -319,7 +367,7 @@ const Transport: React.FC = () => {
                 endpoint="/nhap-lieu/dinh-muc-xe-csv"
                 description="Hệ thống cập nhật định mức km và thông tin ngân hàng. Cột cần có: 'ma_hoc_sinh', 'khoang_cach', 'ngan_hang', 'stk'."
             />
-        </Space>
+        </Space >
     );
 };
 export default Transport;

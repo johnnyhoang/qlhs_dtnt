@@ -12,6 +12,7 @@ import {
     DatabaseOutlined
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import BottomNav from '../components/BottomNav';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -89,17 +90,19 @@ const MainLayout: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh', width: '100%' }}>
-            <Sider collapsible breakpoint="lg">
-                <div style={{ height: 32, margin: 16, background: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
-                    QLHS DTNT
-                </div>
-                <Menu
-                    theme="dark"
-                    mode="inline"
-                    selectedKeys={[location.pathname]}
-                    items={menuItems}
-                />
-            </Sider>
+            {!screens.xs && (
+                <Sider collapsible breakpoint="lg">
+                    <div style={{ height: 32, margin: 16, background: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                        QLHS DTNT
+                    </div>
+                    <Menu
+                        theme="dark"
+                        mode="inline"
+                        selectedKeys={[location.pathname]}
+                        items={menuItems}
+                    />
+                </Sider>
+            )}
             <Layout className="site-layout">
                 <Header style={{ padding: '0 16px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div />
@@ -128,6 +131,7 @@ const MainLayout: React.FC = () => {
                     </div>
                 </Content>
             </Layout>
+            <BottomNav hasAccess={hasAccess} />
         </Layout>
     );
 };

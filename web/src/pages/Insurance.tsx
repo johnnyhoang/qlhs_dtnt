@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Input, DatePicker, Checkbox, Tag, message, Tooltip, Space } from 'antd';
+import { Table, Card, Button, Form, Input, DatePicker, Checkbox, Tag, message, Tooltip, Space, Drawer, Grid } from 'antd';
 import { EditOutlined, CheckCircleOutlined, CloseCircleOutlined, FileTextOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -11,6 +11,8 @@ import type { BaoHiem } from '../types/bao-hiem';
 import ImportModal from '../components/ImportModal';
 import AuditFooter from '../components/AuditFooter';
 import ExportButton from '../components/ExportButton';
+import MobileList from '../components/MobileList';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 const Insurance: React.FC = () => {
     const [searchText, setSearchText] = useState('');
@@ -25,6 +27,7 @@ const Insurance: React.FC = () => {
     />
     const [editingStudent, setEditingStudent] = useState<HocSinh | null>(null);
     const [form] = Form.useForm();
+    const screens = Grid.useBreakpoint();
 
     const queryClient = useQueryClient();
 
@@ -204,24 +207,76 @@ const Insurance: React.FC = () => {
                         onChange={(value) => setSelectedClass(value as string[])}
                     />
                 </div>
-                <Table
-                    columns={columns}
-                    dataSource={filteredData}
-                    rowKey="id"
-                    loading={isLoadingStudents || isLoadingProfiles}
-                    scroll={{ x: 'max-content' }}
-                />
+                <div className="desktop-only">
+                    {isLoadingStudents || isLoadingProfiles ? (
+                        <SkeletonLoader type="table" />
+                    ) : (
+                        <Table
+                            columns={columns}
+                            dataSource={filteredData}
+                            rowKey="id"
+                            scroll={{ x: 'max-content' }}
+                            onRow={(record) => ({
+                                onClick: () => handleEdit(record, profileMap.get(record.id)),
+                                style: { cursor: 'pointer' }
+                            })}
+                        />
+                    )}
+                </div>
+                <div className="mobile-only">
+                    {isLoadingStudents || isLoadingProfiles ? (
+                        <SkeletonLoader type="list" />
+                    ) : (
+                        <MobileList
+                            dataSource={filteredData}
+                            onRowClick={(record) => handleEdit(record, profileMap.get(record.id))}
+                            renderItem={(record) => {
+                                const p = profileMap.get(record.id);
+                                return (
+                                    <div>
+                                        <div className="mobile-card-row">
+                                            <span style={{ fontWeight: 600, fontSize: '1.1em' }}>{record.ho_ten}</span>
+                                            <span className="mobile-card-value">{record.lop}</span>
+                                        </div>
+                                        <div className="mobile-card-row">
+                                            <span className="mobile-card-label">Số thẻ:</span>
+                                            <span className="mobile-card-value">{p?.so_the || '-'}</span>
+                                        </div>
+                                        <div className="mobile-card-row">
+                                            <span className="mobile-card-label">Hạn dùng:</span>
+                                            <span className="mobile-card-value">
+                                                {p?.han_su_dung ? dayjs(p.han_su_dung).format('DD/MM/YYYY') : '-'}
+                                            </span>
+                                        </div>
+                                        <div style={{ marginTop: 8 }}>
+                                            {p?.da_nop_anh ?
+                                                <Tag icon={<CheckCircleOutlined />} color="success">Đã nộp ảnh</Tag> :
+                                                <Tag icon={<CloseCircleOutlined />} color="error">Chưa nộp ảnh</Tag>
+                                            }
+                                        </div>
+                                    </div>
+                                );
+                            }}
+                        />
+                    )}
+                </div>
             </Space>
 
-            <Modal
+            <Drawer
                 title={`${canEdit ? 'Thông tin BHYT' : 'Xem thông tin BHYT'}: ${editingStudent?.ho_ten}`}
                 open={isModalVisible}
-                onOk={canEdit ? handleSave : () => setIsModalVisible(false)}
-                okText={canEdit ? 'Lưu' : 'Đóng'}
-                onCancel={() => setIsModalVisible(false)}
-                confirmLoading={upsertMutation.isPending}
-                width={800}
-                footer={canEdit ? undefined : <Button onClick={() => setIsModalVisible(false)}>Đóng</Button>}
+                onClose={() => setIsModalVisible(false)}
+                width={screens.xs ? '100%' : 720}
+                extra={
+                    canEdit && (
+                        <Space>
+                            <Button onClick={() => setIsModalVisible(false)}>Hủy</Button>
+                            <Button type="primary" onClick={handleSave} loading={upsertMutation.isPending}>
+                                Lưu
+                            </Button>
+                        </Space>
+                    )
+                }
             >
                 <Form form={form} layout="vertical" disabled={!canEdit}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -283,7 +338,7 @@ const Insurance: React.FC = () => {
                         updatedBy={profileMap.get(editingStudent?.id || '')?.nguoi_cap_nhat?.ho_ten}
                     />
                 </Form>
-            </Modal>
+            </Drawer>
 
             <ImportModal
                 visible={isImportModalVisible}

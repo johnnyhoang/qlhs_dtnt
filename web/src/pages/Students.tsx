@@ -7,6 +7,8 @@ import { TrangThaiHocSinh, GioiTinh } from '../types/hoc-sinh';
 import type { HocSinh } from '../types/hoc-sinh';
 import StudentModal from '../components/StudentModal';
 import ImportModal from '../components/ImportModal';
+import MobileList from '../components/MobileList';
+import SkeletonLoader from '../components/SkeletonLoader';
 import dayjs from 'dayjs';
 import ClassSelect from '../components/ClassSelect';
 import ExportButton from '../components/ExportButton';
@@ -254,38 +256,95 @@ const Students: React.FC = () => {
                     />
                 </div>
 
-                <Table
-                    columns={columns}
-                    dataSource={data?.data}
-                    rowKey="id"
-                    loading={isLoading}
-                    size="small"
-                    scroll={{ x: 1000 }}
-                    expandable={{
-                        expandedRowRender: (record) => (
-                            <div style={{ padding: '8px 40px' }}>
-                                <p><b>Địa chỉ:</b> {record.dia_chi || '-'}, {record.phuong_xa || '-'}, {record.quan_huyen || '-'}, {record.tinh || '-'}</p>
-                                <p><b>Số điện thoại:</b> {record.so_dien_thoai || '-'}</p>
-                                <p><b>Ngân hàng:</b> {record.ngan_hang || '-'} - {record.so_tai_khoan || '-'}</p>
-                                <p className="mobile-only"><b>Người cập nhật:</b> {record.nguoi_cap_nhat?.ho_ten || '-'}</p>
-                                <p className="mobile-only"><b>Ngày cập nhật:</b> {record.updatedAt ? dayjs(record.updatedAt).format('DD/MM/YYYY HH:mm') : '-'}</p>
-                            </div>
-                        ),
-                        rowExpandable: () => true,
-                    }}
-                    pagination={{
-                        current: page,
-                        pageSize: pageSize,
-                        total: data?.total,
-                        showSizeChanger: true,
-                        showTotal: (total) => `Tổng ${total} mục`,
-                        onChange: (p, ps) => {
-                            setPage(p);
-                            setPageSize(ps);
-                        },
-                    }}
-                />
+                <div className="desktop-only">
+                    {isLoading ? (
+                        <SkeletonLoader type="table" />
+                    ) : (
+                        <Table
+                            columns={columns}
+                            dataSource={data?.data}
+                            rowKey="id"
+                            size="small"
+                            scroll={{ x: 1000 }}
+                            expandable={{
+                                expandedRowRender: (record) => (
+                                    <div style={{ padding: '8px 40px' }}>
+                                        <p><b>Địa chỉ:</b> {record.dia_chi || '-'}, {record.phuong_xa || '-'}, {record.quan_huyen || '-'}, {record.tinh || '-'}</p>
+                                        <p><b>Số điện thoại:</b> {record.so_dien_thoai || '-'}</p>
+                                        <p><b>Ngân hàng:</b> {record.ngan_hang || '-'} - {record.so_tai_khoan || '-'}</p>
+                                        <p className="mobile-only"><b>Người cập nhật:</b> {record.nguoi_cap_nhat?.ho_ten || '-'}</p>
+                                        <p className="mobile-only"><b>Ngày cập nhật:</b> {record.updatedAt ? dayjs(record.updatedAt).format('DD/MM/YYYY HH:mm') : '-'}</p>
+                                    </div>
+                                ),
+                                rowExpandable: () => true,
+                            }}
+                            pagination={{
+                                current: page,
+                                pageSize: pageSize,
+                                total: data?.total,
+                                showSizeChanger: true,
+                                showTotal: (total) => `Tổng ${total} mục`,
+                                onChange: (p, ps) => {
+                                    setPage(p);
+                                    setPageSize(ps);
+                                },
+                            }}
+                            onRow={(record) => ({
+                                onClick: () => handleEdit(record),
+                                style: { cursor: 'pointer' }
+                            })}
+                        />
+                    )}
+                </div>
+
+                <div className="mobile-only">
+                    {isLoading ? (
+                        <SkeletonLoader type="list" />
+                    ) : (
+                        <MobileList
+                            dataSource={data?.data}
+                            loading={isLoading}
+                            onRowClick={handleEdit}
+                            renderItem={(record) => (
+                                <div style={{ position: 'relative' }}>
+                                    <div className="mobile-card-row">
+                                        <span style={{ fontWeight: 600, fontSize: '1.1em' }}>{record.ho_ten}</span>
+                                        <Tag color={record.trang_thai === TrangThaiHocSinh.DANG_HOC ? 'success' : 'error'}>
+                                            {record.trang_thai === TrangThaiHocSinh.DANG_HOC ? 'Đang học' : 'Đã nghỉ'}
+                                        </Tag>
+                                    </div>
+                                    <div className="mobile-card-row">
+                                        <span className="mobile-card-label">Mã HS: {record.ma_hoc_sinh}</span>
+                                        <span className="mobile-card-value">Lớp: {record.lop}</span>
+                                    </div>
+                                    <div style={{ marginTop: 8, fontSize: '0.9em', color: '#666' }}>
+                                        <Space size="middle">
+                                            <span>{record.gioi_tinh === GioiTinh.NAM ? 'Nam' : 'Nữ'}</span>
+                                            <span>{record.ngay_sinh ? dayjs(record.ngay_sinh).format('DD/MM/YYYY') : '-'}</span>
+                                        </Space>
+                                    </div>
+                                    <div style={{ marginTop: 4, fontSize: '0.85em', color: '#999' }}>
+                                        SĐT: {record.so_dien_thoai || '-'}
+                                    </div>
+                                </div>
+                            )}
+                        />
+                    )}
+                </div>
             </Card>
+
+            {
+                canEdit && (
+                    <Button
+                        type="primary"
+                        shape="circle"
+                        icon={<PlusOutlined />}
+                        size="large"
+                        className="fab-button mobile-only"
+                        onClick={handleAdd}
+                    />
+                )
+            }
 
             <StudentModal
                 visible={isModalVisible}

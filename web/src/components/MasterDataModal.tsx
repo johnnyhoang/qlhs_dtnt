@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, Checkbox, InputNumber, message } from 'antd';
+import { Drawer, Form, Input, Select, Checkbox, InputNumber, message, Space, Button, Grid } from 'antd';
 import { TenLoaiDanhMuc } from '../types/danh-muc-master';
 import type { DanhMucMaster, CreateDanhMucRequest } from '../types/danh-muc-master';
 import AuditFooter from './AuditFooter';
@@ -24,6 +24,7 @@ const MasterDataModal: React.FC<MasterDataModalProps> = ({
     defaultCategory
 }) => {
     const [form] = Form.useForm();
+    const screens = Grid.useBreakpoint();
 
     useEffect(() => {
         if (visible) {
@@ -50,14 +51,19 @@ const MasterDataModal: React.FC<MasterDataModalProps> = ({
     };
 
     return (
-        <Modal
+        <Drawer
             title={item ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
             open={visible}
-            onOk={handleSubmit}
-            onCancel={onCancel}
-            confirmLoading={loading}
-            width={600}
-            destroyOnHidden
+            onClose={onCancel}
+            width={screens.xs ? '100%' : 600}
+            extra={
+                <Space>
+                    <Button onClick={onCancel}>Hủy</Button>
+                    <Button type="primary" onClick={handleSubmit} loading={loading}>
+                        Lưu
+                    </Button>
+                </Space>
+            }
         >
             <Form
                 form={form}
@@ -121,7 +127,7 @@ const MasterDataModal: React.FC<MasterDataModalProps> = ({
                     updatedBy={item?.nguoi_cap_nhat?.ho_ten}
                 />
             </Form>
-        </Modal>
+        </Drawer>
     );
 };
 

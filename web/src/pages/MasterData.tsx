@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Card, Tabs, Table, Button, Space, message, Popconfirm, Tag, Input, Tooltip } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, FileTextOutlined, SearchOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import MobileList from '../components/MobileList';
 import { layDanhSachDanhMuc, taoDanhMuc, capNhatDanhMuc, xoaDanhMuc } from '../api/danh-muc-master';
 import { LoaiDanhMuc, TenLoaiDanhMuc } from '../types/danh-muc-master';
 import type { DanhMucMaster, CreateDanhMucRequest } from '../types/danh-muc-master';
@@ -191,14 +192,33 @@ const MasterData: React.FC = () => {
                         </Button>
                     </Space>
                 </div>
-                <Table
-                    columns={columns}
-                    dataSource={data?.data}
-                    rowKey="id"
-                    loading={isLoading}
-                    pagination={false}
-                    scroll={{ x: 'max-content' }}
-                />
+                <div className="desktop-only">
+                    <Table
+                        columns={columns}
+                        dataSource={data?.data}
+                        rowKey="id"
+                        loading={isLoading}
+                        pagination={false}
+                        scroll={{ x: 'max-content' }}
+                        onRow={(record) => ({
+                            onClick: () => handleEdit(record),
+                            style: { cursor: 'pointer' }
+                        })}
+                    />
+                </div>
+                <div className="mobile-only">
+                    <MobileList
+                        dataSource={data?.data}
+                        loading={isLoading}
+                        onRowClick={handleEdit}
+                        renderItem={(record) => (
+                            <div className="mobile-card-row">
+                                <span style={{ fontWeight: 600 }}>{record.ten}</span>
+                                <span className="mobile-card-value">{record.ma}</span>
+                            </div>
+                        )}
+                    />
+                </div>
             </Space>
         ),
     }));
@@ -209,6 +229,15 @@ const MasterData: React.FC = () => {
                 activeKey={activeTab}
                 onChange={setActiveTab}
                 items={tabItems}
+            />
+
+            <Button
+                type="primary"
+                shape="circle"
+                icon={<PlusOutlined />}
+                size="large"
+                className="fab-button mobile-only"
+                onClick={handleAdd}
             />
 
             <MasterDataModal

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { Drawer, Form, Input, Select, DatePicker, message, Row, Col, Space, Button, Divider } from 'antd';
+import { Drawer, Form, Input, Select, DatePicker, message, Row, Col, Space, Button, Divider, Grid } from 'antd';
 // ... (imports remain same)
 import dayjs from 'dayjs';
 import { useQuery } from '@tanstack/react-query';
@@ -31,6 +31,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
     const [form] = Form.useForm();
     const [selectedProvince, setSelectedProvince] = React.useState<string | undefined>();
     const [selectedDistrict, setSelectedDistrict] = React.useState<string | undefined>();
+    const screens = Grid.useBreakpoint();
 
     // Derived location data
     const provinceOptions = useMemo(() => vietnamData.map((p: any) => ({ label: p.Name, value: p.Name, id: p.Id })), []);
@@ -104,7 +105,8 @@ const StudentModal: React.FC<StudentModalProps> = ({
             title={student ? "Chỉnh sửa học sinh" : "Thêm học sinh mới"}
             open={visible}
             onClose={onCancel}
-            width={720}
+            width={screens.xs ? '100%' : 720}
+            styles={{ body: { paddingBottom: 80 } }}
             extra={
                 <Space>
                     <Button onClick={onCancel}>Hủy</Button>

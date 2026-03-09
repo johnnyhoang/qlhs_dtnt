@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Table, Card, Button, Modal, Form, Select, Input, InputNumber, message, Tooltip, Space } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Table, Card, Button, Modal, Form, Select, Input, InputNumber, message, Tooltip, Space, Tag, Drawer, Grid } from 'antd';
 import { PlusOutlined, EyeOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -8,12 +8,17 @@ import type { DotThanhToan, KhoanThanhToan } from '../types/thanh-toan';
 import ImportModal from '../components/ImportModal';
 import ClassSelect from '../components/ClassSelect';
 import ExportButton from '../components/ExportButton';
+import MobileList from '../components/MobileList';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 const Payments: React.FC = () => {
     const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
     const [detailsBatchId, setDetailsBatchId] = useState<number | null>(null);
     const [filterClass, setFilterClass] = useState<string[]>([]);
     const [form] = Form.useForm();
+    const [filteredData, setFilteredData] = useState<DotThanhToan[]>([]);
+    const screens = Grid.useBreakpoint();
+
 
     const queryClient = useQueryClient();
 
@@ -21,6 +26,12 @@ const Payments: React.FC = () => {
         queryKey: ['thanh-toan-batches'],
         queryFn: layDanhSachDotThanhToan,
     });
+
+    useEffect(() => {
+        if (batches) {
+            setFilteredData(batches);
+        }
+    }, [batches]);
 
     const { data: batchDetails, isLoading: isLoadingDetails } = useQuery({
         queryKey: ['thanh-toan-batch-details', detailsBatchId, filterClass],
@@ -140,13 +151,61 @@ const Payments: React.FC = () => {
                 </Button>
             )
         }>
-            <Table
-                columns={columns}
-                dataSource={batches}
-                rowKey="id"
-                loading={isLoading}
-                scroll={{ x: 'max-content' }}
-            />
+            <div className="desktop-only">
+                {isLoading ? (
+                    <SkeletonLoader type="table" />
+                ) : (
+                    <Table
+                        columns={columns}
+                        dataSource={filteredData}
+                        rowKey="id"
+                        scroll={{ x: 'max-content' }}
+                        onRow={(record) => ({
+                            onClick: () => setDetailsBatchId(record.id),
+                            style: { cursor: 'pointer' }
+                        })}
+                    />
+                )}
+            </div>
+
+            <div className="mobile-only">
+                {isLoading ? (
+                    <SkeletonLoader type="list" />
+                ) : (
+                    <MobileList
+                        dataSource={filteredData}
+                        onRowClick={(record) => setDetailsBatchId(record.id)}
+                        renderItem={(record: DotThanhToan) => (
+                            <div>
+                                <div className="mobile-card-row">
+                                    <span style={{ fontWeight: 600 }}>{record.ghi_chu || `Đợt tháng ${record.thang}/${record.nam}`}</span>
+                                    {/* Assuming 'loai' and 'ten_dot', 'tong_tien', 'so_luong_hoc_sinh' are not directly available on DotThanhToan,
+                                    using placeholder or adapting to available fields.
+                                    The provided diff's MobileList renderItem uses fields not directly present in DotThanhToan type.
+                                    I'm adapting it to use available fields from DotThanhToan.
+                                */}
+                                    <Tag color={'blue'}>
+                                        Chi trả
+                                    </Tag>
+                                </div>
+                                <div className="mobile-card-row">
+                                    <span className="mobile-card-label">Tháng/Năm:</span>
+                                    <span className="mobile-card-value">{record.thang}/{record.nam}</span>
+                                </div>
+                                <div className="mobile-card-row">
+                                    <span className="mobile-card-label">Ghi chú:</span>
+                                    <span className="mobile-card-value" style={{ fontWeight: 600 }}>
+                                        {record.ghi_chu || '-'}
+                                    </span>
+                                </div>
+                                <div style={{ marginTop: 8, fontSize: '0.85em', color: '#999' }}>
+                                    Ngày tạo: {dayjs(record.createdAt).format('DD/MM/YYYY')}
+                                </div>
+                            </div>
+                        )}
+                    />
+                )}
+            </div>
 
             <Modal
                 title="Tạo đợt chi trả mới"
@@ -174,22 +233,23 @@ const Payments: React.FC = () => {
                 </Form>
             </Modal>
 
-            <Modal
+            <Drawer
                 title={
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: 32 }}>
-                        <span>Chi tiết đợt chi trả: Tháng {batchDetails?.thang}/{batchDetails?.nam}</span>
-                        <Space>
+                    <div style={{ display: 'flex', flexDirection: screens.xs ? 'column' : 'row', justifyContent: 'space-between', alignItems: screens.xs ? 'flex-start' : 'center', gap: '8px' }}>
+                        <span>Thang {batchDetails?.thang}/{batchDetails?.nam}</span>
+                        <Space wrap>
                             <ClassSelect
-                                style={{ minWidth: 150, maxWidth: 300 }}
+                                style={{ minWidth: 120 }}
                                 mode="multiple"
-                                placeholder="Lọc theo lớp"
+                                placeholder="Lọc lớp"
                                 value={filterClass}
                                 onChange={(val) => setFilterClass(val as string[])}
                             />
                             {canImport && (
                                 <Space>
-                                    <Tooltip title="Import từ CSV">
+                                    <Tooltip title="Import">
                                         <Button
+                                            size="small"
                                             icon={<FileTextOutlined />}
                                             onClick={() => setIsImportModalVisible(true)}
                                         />
@@ -205,12 +265,11 @@ const Payments: React.FC = () => {
                     </div>
                 }
                 open={!!detailsBatchId}
-                onCancel={() => {
+                onClose={() => {
                     setDetailsBatchId(null);
                     setFilterClass([]);
                 }}
-                footer={null}
-                width={1000}
+                width={screens.xs ? '100%' : 1000}
             >
                 <Table
                     columns={detailColumns}
@@ -218,9 +277,9 @@ const Payments: React.FC = () => {
                     rowKey="id"
                     loading={isLoadingDetails}
                     pagination={{ pageSize: 10 }}
-                    scroll={{ x: 'max-content' }}
+                    scroll={{ x: 800 }}
                 />
-            </Modal>
+            </Drawer>
 
             <ImportModal
                 visible={isImportModalVisible}

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
-import { Table, Card, Switch, Select, Button, Modal, Checkbox, message } from 'antd';
+import { Table, Card, Switch, Select, Button, Modal, Checkbox, message, Tag, Input, Space } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import MobileList from '../components/MobileList';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layDanhSachNguoiDung, capNhatTrangThaiNguoiDung, capNhatPhanQuyen, capNhatLopPhuTrach } from '../api/nguoi-dung';
 import { layDanhMucTheoLoai } from '../api/danh-muc-master';
@@ -11,12 +13,19 @@ import ExportButton from '../components/ExportButton';
 const Users: React.FC = () => {
     const [permissionModal, setPermissionModal] = useState<{ visible: boolean, user: NguoiDung | null }>({ visible: false, user: null });
     const [selectedPermissions, setSelectedPermissions] = useState<any[]>([]);
+    const [searchText, setSearchText] = useState('');
     const queryClient = useQueryClient();
 
     const { data: users, isLoading } = useQuery({
         queryKey: ['users'],
         queryFn: layDanhSachNguoiDung
     });
+
+    const filteredUsers = users?.filter(user =>
+        user.ho_ten.toLowerCase().includes(searchText.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchText.toLowerCase()) ||
+        user.vai_tro.toLowerCase().includes(searchText.toLowerCase())
+    ) || [];
 
     const statusMutation = useMutation({
         mutationFn: ({ id, data }: { id: number, data: any }) => capNhatTrangThaiNguoiDung(id, data),
@@ -137,19 +146,55 @@ const Users: React.FC = () => {
         <Card
             title="Quản lý Người dùng và Phân quyền"
             extra={
-                <ExportButton
-                    endpoint="/nguoi-dung/export"
-                    filename={`nguoi_dung_${dayjs().format('YYYYMMDD')}.csv`}
-                />
+                <Space>
+                    <Input
+                        placeholder="Tìm kiếm người dùng..."
+                        prefix={<SearchOutlined />}
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        style={{ width: 200 }}
+                    />
+                    <ExportButton
+                        endpoint="/nguoi-dung/export"
+                        filename={`nguoi_dung_${dayjs().format('YYYYMMDD')}.csv`}
+                    />
+                </Space>
             }
         >
-            <Table
-                dataSource={users}
-                columns={columns}
-                rowKey="id"
-                loading={isLoading}
-                scroll={{ x: 'max-content' }}
-            />
+            <div className="desktop-only">
+                <Table
+                    dataSource={filteredUsers}
+                    columns={columns}
+                    rowKey="id"
+                    loading={isLoading}
+                    scroll={{ x: 'max-content' }}
+                    onRow={(record) => ({
+                        onClick: record.vai_tro !== 'ADMIN' ? () => handleOpenPermissions(record) : undefined,
+                        style: record.vai_tro !== 'ADMIN' ? { cursor: 'pointer' } : {}
+                    })}
+                />
+            </div>
+            <div className="mobile-only">
+                <MobileList
+                    dataSource={filteredUsers}
+                    loading={isLoading}
+                    onRowClick={(record) => record.vai_tro !== 'ADMIN' ? handleOpenPermissions(record) : undefined}
+                    renderItem={(record) => (
+                        <div>
+                            <div className="mobile-card-row">
+                                <span style={{ fontWeight: 600, fontSize: '1.1em' }}>{record.ho_ten}</span>
+                                <Tag color={record.vai_tro === 'ADMIN' ? 'red' : record.vai_tro === 'TEACHER' ? 'green' : 'blue'}>
+                                    {record.vai_tro}
+                                </Tag>
+                            </div>
+                            <div className="mobile-card-row">
+                                <span className="mobile-card-label">Email:</span>
+                                <span className="mobile-card-value">{record.email || '-'}</span>
+                            </div>
+                        </div>
+                    )}
+                />
+            </div>
 
             <Modal
                 title={`Phân quyền module: ${permissionModal.user?.ho_ten}`}
