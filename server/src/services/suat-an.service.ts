@@ -2,13 +2,15 @@ import { AppDataSource } from "../data-source";
 import { SuatAn, LoaiSuatAn } from "../entities/SuatAn";
 import { HocSinh, TrangThaiHocSinh } from "../entities/HocSinh";
 
-const suatAnRepository = AppDataSource.getRepository(SuatAn);
-const hocSinhRepository = AppDataSource.getRepository(HocSinh);
+const getSuatAnRepo = () => AppDataSource.getRepository(SuatAn);
+const getHocSinhRepo = () => AppDataSource.getRepository(HocSinh);
 
 export const SuatAnService = {
     layTrangThaiHangNgay: async (ngay: string, lop: string | string[] = "", search?: string, user?: any) => {
+        const hsRepo = getHocSinhRepo();
+        const saRepo = getSuatAnRepo();
         // Lay tat ca hoc sinh dang hoc
-        const query = hocSinhRepository.createQueryBuilder("hoc_sinh")
+        const query = hsRepo.createQueryBuilder("hoc_sinh")
             .where("hoc_sinh.trang_thai = :trang_thai", { trang_thai: TrangThaiHocSinh.DANG_HOC });
 
         // Normalize lop to array
@@ -44,7 +46,7 @@ export const SuatAnService = {
         const hoc_sinh_list = await query.orderBy("hoc_sinh.ho_ten", "ASC").getMany();
 
         // Lay thong tin suat an cho ngay do
-        const records = await suatAnRepository.find({
+        const records = await saRepo.find({
             where: { ngay },
             relations: ["nguoi_cap_nhat"]
         });
@@ -71,7 +73,8 @@ export const SuatAnService = {
     },
 
     doiTrangThaiBaoCat: async (hoc_sinh_id: string, ngay: string, loai_suat_an: LoaiSuatAn, bao_cat: boolean, userId?: number, ghi_chu?: string) => {
-        let record = await suatAnRepository.findOne({
+        const repo = getSuatAnRepo();
+        let record = await repo.findOne({
             where: { hoc_sinh_id, ngay, loai_suat_an }
         });
 
@@ -79,9 +82,9 @@ export const SuatAnService = {
             record.bao_cat = bao_cat;
             record.nguoi_cap_nhat_id = userId as any;
             if (ghi_chu !== undefined) record.ghi_chu = ghi_chu;
-            return await suatAnRepository.save(record);
+            return await repo.save(record);
         } else {
-            record = suatAnRepository.create({
+            record = repo.create({
                 hoc_sinh_id,
                 ngay,
                 loai_suat_an,
@@ -89,7 +92,7 @@ export const SuatAnService = {
                 ghi_chu,
                 nguoi_cap_nhat_id: userId
             });
-            return await suatAnRepository.save(record);
+            return await repo.save(record);
         }
     }
 };

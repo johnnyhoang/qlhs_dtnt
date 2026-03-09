@@ -19,7 +19,7 @@ This document serves as the complete technical specification, knowledge base, an
 ### Backend
 - **Language**: TypeScript
 - **Framework**: Node.js with Express.js
-- **Database**: MySQL 8.0
+- **Database**: PostgreSQL 15 (Supabase)
 - **ORM**: TypeORM
 - **Authentication**: JWT-based (Session/Cookie) with RBAC.
 - **Libraries**: `zod` (validation), `multer` (file uploads), `csv-parse`, `google-auth-library`.
@@ -32,29 +32,26 @@ This document serves as the complete technical specification, knowledge base, an
 - **Build Tool**: Vite
 
 ### DevOps
-- **Docker**: Used for local development (MySQL) and containerizing services.
-- **CI/CD**: Google Cloud Build via `cloudbuild.yaml` and `cloudbuild-web.yaml`.
-- **Cloud Provider**: Google Cloud Platform (GCP).
-    - **Compute**: Cloud Run (Managed).
-    - **Database**: Cloud SQL (MySQL).
+- **Docker**: Used for local development (PostgreSQL) and containerizing services.
+- **CI/CD**: Google Cloud Build (GCP) or Vercel (Recommended).
+- **Cloud Provider**: GCP (Cloud Run) or Vercel (Serverless).
+- **Database**: Supabase (PostgreSQL).
 - **Monitoring / Logging**: Standard GCP Cloud Logging.
 
 ## 3. System Architecture
 - **High-level Architecture**: Monorepo with two main services: `server` (REST API) and `web` (Single Page Application).
-- **Request Flow**: Frontend (React) -> Load Balancer (Cloud Run) -> Backend (Express) -> Cloud SQL.
+- **Request Flow**: Frontend (React) -> Load Balancer (Cloud Run) -> Backend (Express) -> Supabase PostgreSQL.
 - **Authentication Flow**:
     1.  User enters credentials or uses Google OAuth.
     2.  Backend verifies and issues a JWT stored in local storage/cookies.
     3.  Frontend injects `Bearer` token into Axios requests via a central client.
-- **Deployment Architecture (GCP)**:
-    - `qlhs-server`: Cloud Run service exposed via public URL.
-    - `qlhs-web`: Cloud Run service serving the Nginx-containerized static build.
-    - `qlhs-db-instance`: Cloud SQL instance connected via Unix Socket in production.
+- **Deployment Architecture**:
+    - **Vercel (Recommended)**: Serverless functions for Backend, Static hosting for Frontend.
+    - **GCP**: Cloud Run services for both Backend and Frontend.
 - **Diagram Description**:
-    - [User Browser] --(HTTPS)--> [Cloud Run (Web)]
-    - [Cloud Run (Web)] --(API Calls)--> [Cloud Run (Server)]
-    - [Cloud Run (Server)] --(Unix Socket)--> [Cloud SQL (MySQL)]
-    - [Cloud Build] --(Deploys To)--> [Cloud Run Services]
+    - [User Browser] --(HTTPS)--> [Vercel (Web)] --(API Calls)--> [Vercel (Server)]
+    - [Vercel (Server)] --(TCP)--> [Supabase (PostgreSQL)]
+    - [GCP Cloud Build] --(Deploys To)--> [Cloud Run]
 
 ## 4. Folder Structure Explanation
 - **`/server`**: Backend API.
@@ -127,19 +124,16 @@ This document serves as the complete technical specification, knowledge base, an
 
 ## 10. Configuration & Environment Variables
 - `PORT`: Server port (Default 8080).
-- `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`: Database credentials.
-- `DB_SOCKET_PATH`: Unix socket for Cloud SQL connection.
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME`: Database credentials (Local).
+- `DATABASE_URL`: Full connection string for PostgreSQL (Production/Supabase).
 - `JWT_SECRET`: Secret key for JWT signing.
 - `GOOGLE_CLIENT_ID`: OAuth client ID.
 - `VITE_API_URL`: Frontend build-time variable pointing to backend API.
 
-## 11. Deployment Guide (Google Cloud)
-1.  **Build Services**: Use `gcloud builds submit --config cloudbuild.yaml .`
-2.  **Environment Setup**:
-    - Inject `_DB_PASS`, `_JWT_SECRET`, `_INSTANCE_CONNECTION_NAME` via Cloud Build substitutions.
-3.  **Cloud Run Configuration**:
-    - Both `server` and `web` listener on PORT 8080.
-    - Server requires `--add-cloudsql-instances` to connect to DB.
+## 11. Deployment Guide
+- **Vercel**: Deploy `server` and `web` as separate projects. Use `vercel.json` configurations provided in each directory.
+- **Google Cloud**: Use `gcloud builds submit --config cloudbuild.yaml .`
+- See [DEPLOYMENT_GUIDE.md](file:///d:/Hoa%20Hoang/hieubi/qlhs-dtnt/DEPLOYMENT_GUIDE.md) for full steps.
 
 ## 12. Existing Documentation Summary
 - **PROJECT_MEMORY.md**: Central source of truth for design decisions and roadmap.
@@ -168,7 +162,7 @@ This document serves as the complete technical specification, knowledge base, an
 - **Refactoring**: Always check `authentication_authorization_spec.md` before changing any Permission/Access logic.
 - **New Features**: Ensure every new module follows the `Controller -> Service -> Entity` pattern and includes the `user` context for filtering.
 - **Testing**: Maintain standard port 8080 for all services.
-- **Safe Mode**: Never modify `AppDataSource.initialize()` without ensuring proper database socket handling.
+- **Safe Mode**: Never modify `AppDataSource.initialize()` without ensuring proper database URL handling.
 
 ## 17. Appendix
 - **Master Data Categories**: `DANTOC`, `TONGIAO`, `TINH`, `HUYEN`, `XA`, `NGANHANG`.

@@ -2,10 +2,11 @@ import { AppDataSource } from "../data-source";
 import { DanhMucMaster } from "../entities/DanhMucMaster";
 import { Like } from "typeorm";
 
-const danhMucRepository = AppDataSource.getRepository(DanhMucMaster);
+const getRepo = () => AppDataSource.getRepository(DanhMucMaster);
 
 export const DanhMucMasterService = {
     getAll: async (page = 1, pageSize = 10, loai_danh_muc = "", search = "") => {
+        const repo = getRepo();
         const skip = (page - 1) * pageSize;
         const where: any = {};
 
@@ -17,7 +18,7 @@ export const DanhMucMasterService = {
             where.ten = Like(`%${search}%`);
         }
 
-        const [data, total] = await danhMucRepository.findAndCount({
+        const [data, total] = await repo.findAndCount({
             where,
             skip,
             take: pageSize,
@@ -35,58 +36,61 @@ export const DanhMucMasterService = {
     },
 
     getByCategory: async (loai_danh_muc: string) => {
-        return await danhMucRepository.find({
+        return await getRepo().find({
             where: { loai_danh_muc, kich_hoat: true },
             order: { thu_tu: "ASC", ten: "ASC" }
         });
     },
 
     getById: async (id: string) => {
-        return await danhMucRepository.findOneBy({ id });
+        return await getRepo().findOneBy({ id });
     },
 
     create: async (data: Partial<DanhMucMaster>, userId?: number) => {
-        const item = danhMucRepository.create({ ...data, nguoi_cap_nhat_id: userId });
-        return await danhMucRepository.save(item);
+        const repo = getRepo();
+        const item = repo.create({ ...data, nguoi_cap_nhat_id: userId });
+        return await repo.save(item);
     },
 
     update: async (id: string, data: Partial<DanhMucMaster>, userId?: number) => {
-        const item = await danhMucRepository.findOneBy({ id });
+        const repo = getRepo();
+        const item = await repo.findOneBy({ id });
         if (!item) return null;
-        danhMucRepository.merge(item, { ...data, nguoi_cap_nhat_id: userId });
-        return await danhMucRepository.save(item);
+        repo.merge(item, { ...data, nguoi_cap_nhat_id: userId });
+        return await repo.save(item);
     },
 
     delete: async (id: string) => {
-        return await danhMucRepository.delete(id);
+        return await getRepo().delete(id);
     },
 
     upsertBatch: async (loai_danh_muc: string, items: Partial<DanhMucMaster>[], userId?: number) => {
+        const repo = getRepo();
         const results = [];
         for (const item of items) {
             // Try to find existing by category and code or name
             let existing = null;
             if (item.ma) {
-                existing = await danhMucRepository.findOne({
+                existing = await repo.findOne({
                     where: { loai_danh_muc, ma: item.ma }
                 });
             }
             if (!existing && item.ten) {
-                existing = await danhMucRepository.findOne({
+                existing = await repo.findOne({
                     where: { loai_danh_muc, ten: item.ten }
                 });
             }
 
             if (existing) {
-                danhMucRepository.merge(existing, { ...item, nguoi_cap_nhat_id: userId });
-                results.push(await danhMucRepository.save(existing));
+                repo.merge(existing, { ...item, nguoi_cap_nhat_id: userId });
+                results.push(await repo.save(existing));
             } else {
-                const newItem = danhMucRepository.create({ 
+                const newItem = repo.create({ 
                     ...item, 
                     loai_danh_muc,
                     nguoi_cap_nhat_id: userId 
                 });
-                results.push(await danhMucRepository.save(newItem));
+                results.push(await repo.save(newItem));
             }
         }
         return results;
