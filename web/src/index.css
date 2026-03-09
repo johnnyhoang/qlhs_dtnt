@@ -97,3 +97,47 @@ h3 {
     padding: 12px !important;
   }
 }
+
+/* Custom Utility Classes */
+.responsive-toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 576px) {
+  .responsive-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .responsive-toolbar > * {
+    width: 100% !important;
+  }
+}
+
+.desktop-only {
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+}
+
+.mobile-only {
+  @media (min-width: 769px) {
+    display: none !important;
+  }
+}
+
+/* High density table improvements */
+.ant-table-small .ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+}
+
+.ant-table-cell-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

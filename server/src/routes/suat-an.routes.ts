@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { layTrangThaiSuatAn, baoCatSuatAn } from '../controllers/suat-an.controller';
+import { layTrangThaiSuatAn, baoCatSuatAn, xuatCSVSuatAn } from '../controllers/suat-an.controller';
 import { authMiddleware, checkModuleAccess } from '../middlewares/auth.middleware';
 
 const router = Router();

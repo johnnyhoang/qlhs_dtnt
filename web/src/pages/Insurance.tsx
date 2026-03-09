@@ -10,6 +10,7 @@ import type { HocSinh } from '../types/hoc-sinh';
 import type { BaoHiem } from '../types/bao-hiem';
 import ImportModal from '../components/ImportModal';
 import AuditFooter from '../components/AuditFooter';
+import ExportButton from '../components/ExportButton';
 
 const Insurance: React.FC = () => {
     const [searchText, setSearchText] = useState('');
@@ -179,6 +180,11 @@ const Insurance: React.FC = () => {
                             />
                         </Tooltip>
                     )}
+                    <ExportButton
+                        endpoint="/bao-hiem/export"
+                        filename={`bao_hiem_${dayjs().format('YYYYMMDD')}.csv`}
+                        params={{ lop: selectedClass.join(',') }}
+                    />
                 </Space>
             }
         >
@@ -290,7 +296,7 @@ const Insurance: React.FC = () => {
                 endpoint="/nhap-lieu/bao-hiem-csv"
                 description="Hệ thống cập nhật thông tin thẻ BHYT. Cột cần có: 'ma_hoc_sinh', 'so_the', 'han_dung' (dd/mm/yyyy), 'noi_dk'."
             />
-        </Card>
+        </Card >
     );
 };
 

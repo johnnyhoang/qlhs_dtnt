@@ -6,7 +6,8 @@ const hocSinhRepository = AppDataSource.getRepository(HocSinh);
 
 export const HocSinhService = {
     getAll: async (page = 1, pageSize = 10, search = "", lop: string | string[] = "", user?: any) => {
-        const skip = (page - 1) * pageSize;
+        const skip = pageSize === -1 ? 0 : (page - 1) * pageSize;
+        const take = pageSize === -1 ? undefined : pageSize;
         const where: any = {};
         
         // Normalize lop to array if it's a string
@@ -43,7 +44,7 @@ export const HocSinhService = {
         const [hoc_sinh_list, total] = await hocSinhRepository.findAndCount({
             where,
             skip,
-            take: pageSize,
+            take,
             order: { ho_ten: "ASC" },
             relations: ["nguoi_cap_nhat"]
         });

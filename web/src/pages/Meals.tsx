@@ -8,6 +8,7 @@ import { layTrangThaiSuatAn, baoCatSuatAn } from '../api/suat-an';
 import { LoaiSuatAn } from '../types/suat-an';
 import type { HocSinhSuatAnStatus } from '../types/suat-an';
 import ImportModal from '../components/ImportModal';
+import ExportButton from '../components/ExportButton';
 
 const Meals: React.FC = () => {
     const [ngay, setNgay] = useState(dayjs().format('YYYY-MM-DD'));
@@ -148,6 +149,13 @@ const Meals: React.FC = () => {
                 )
             }
         >
+            <div style={{ position: 'absolute', top: 16, right: canImport ? 100 : 16 }}>
+                <ExportButton
+                    endpoint="/suat-an/export"
+                    filename={`bao_cao_suat_an_${ngay}.csv`}
+                    params={{ date: ngay, className: lop.join(','), search: searchText }}
+                />
+            </div>
             <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                     <DatePicker

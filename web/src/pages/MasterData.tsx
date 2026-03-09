@@ -7,6 +7,8 @@ import { LoaiDanhMuc, TenLoaiDanhMuc } from '../types/danh-muc-master';
 import type { DanhMucMaster, CreateDanhMucRequest } from '../types/danh-muc-master';
 import MasterDataModal from '../components/MasterDataModal';
 import ImportModal from '../components/ImportModal';
+import ExportButton from '../components/ExportButton';
+import dayjs from 'dayjs';
 
 const MasterData: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>(LoaiDanhMuc.NOI_KHAM_BENH);
@@ -175,6 +177,11 @@ const MasterData: React.FC = () => {
                                 onClick={() => setIsImportModalVisible(true)}
                             />
                         </Tooltip>
+                        <ExportButton
+                            endpoint="/danh-muc-master/export"
+                            filename={`danh_muc_${activeTab}_${dayjs().format('YYYYMMDD')}.csv`}
+                            params={{ loai_danh_muc: activeTab, search: searchText }}
+                        />
                         <Button
                             type="primary"
                             icon={<PlusOutlined />}

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
-import { Modal, Form, Input, Select, DatePicker, message, Row, Col } from 'antd';
+import { Drawer, Form, Input, Select, DatePicker, message, Row, Col, Space, Button, Divider } from 'antd';
+// ... (imports remain same)
 import dayjs from 'dayjs';
 import { useQuery } from '@tanstack/react-query';
 import { layDanhSachDanhMuc } from '../api/danh-muc-master';
@@ -59,15 +60,12 @@ const StudentModal: React.FC<StudentModalProps> = ({
         return categories.data
             .filter(item => item.loai_danh_muc === type && item.kich_hoat)
             .filter(item => !filterNote || item.ghi_chu?.includes(filterNote))
-            .map(item => ({ label: item.ten, value: item.ten })); // Backend expects string name for now, update to ID if needed later
+            .map(item => ({ label: item.ten, value: item.ten }));
     };
 
     const classOptions = useMemo(() => getOptions(LoaiDanhMuc.LOP), [categories]);
     const ethnicityOptions = useMemo(() => getOptions(LoaiDanhMuc.DAN_TOC), [categories]);
     const religionOptions = useMemo(() => getOptions(LoaiDanhMuc.TON_GIAO), [categories]);
-    // const bankOptions = useMemo(() => getOptions(LoaiDanhMuc.NGAN_HANG), [categories]); // Keep as input or select? Input used in UI currently but could be select.
-    // const provinceOptions = useMemo(() => getOptions(LoaiDanhMuc.TINH), [categories]); // OLD: from DB
-    // const wardOptions = useMemo(() => getOptions(LoaiDanhMuc.PHUONG_XA), [categories]); // Dependent on district? For now just list all or filter if possible.
 
     useEffect(() => {
         if (visible) {
@@ -102,23 +100,28 @@ const StudentModal: React.FC<StudentModalProps> = ({
     };
 
     return (
-        <Modal
+        <Drawer
             title={student ? "Chỉnh sửa học sinh" : "Thêm học sinh mới"}
             open={visible}
-            onOk={handleSubmit}
-            onCancel={onCancel}
-            confirmLoading={loading}
-            width={900}
-            destroyOnHidden
+            onClose={onCancel}
+            width={720}
+            extra={
+                <Space>
+                    <Button onClick={onCancel}>Hủy</Button>
+                    <Button type="primary" onClick={handleSubmit} loading={loading}>
+                        Lưu
+                    </Button>
+                </Space>
+            }
         >
             <Form
                 form={form}
                 layout="vertical"
                 initialValues={{ trang_thai: TrangThaiHocSinh.DANG_HOC, gioi_tinh: GioiTinh.NAM }}
             >
-                {/* --- Row 1: Basic Info (3 Cols) --- */}
+                <Divider orientation="left">Thông tin cơ bản</Divider>
                 <Row gutter={16}>
-                    <Col span={8}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item
                             name="ma_hoc_sinh"
                             label="Mã học sinh"
@@ -127,7 +130,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             <Input placeholder="HS001" />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item
                             name="ho_ten"
                             label="Họ và tên"
@@ -136,7 +139,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             <Input placeholder="Nguyễn Văn A" />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item
                             name="lop"
                             label="Lớp"
@@ -149,11 +152,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             />
                         </Form.Item>
                     </Col>
-                </Row>
-
-                {/* --- Row 2: Personal Details (3 Cols) --- */}
-                <Row gutter={16}>
-                    <Col span={8}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item
                             name="ngay_sinh"
                             label="Ngày sinh"
@@ -161,7 +160,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="Chọn ngày" />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={12} sm={12} md={8}>
                         <Form.Item
                             name="gioi_tinh"
                             label="Giới tính"
@@ -173,7 +172,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             </Select>
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={12} sm={12} md={8}>
                         <Form.Item
                             name="trang_thai"
                             label="Trạng thái"
@@ -184,11 +183,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             </Select>
                         </Form.Item>
                     </Col>
-                </Row>
-
-                {/* --- Row 3: Identifiers (3 Cols) --- */}
-                <Row gutter={16}>
-                    <Col span={8}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item
                             name="cccd"
                             label="CCCD/Định danh"
@@ -196,18 +191,16 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             <Input placeholder="Số định danh" />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item
                             name="so_dien_thoai"
                             label="Số điện thoại"
-                            rules={[
-                                { pattern: /^[0-9]{10,11}$/, message: 'SDT không hợp lệ' }
-                            ]}
+                            rules={[{ pattern: /^[0-9]{10,11}$/, message: 'SDT không hợp lệ' }]}
                         >
                             <Input placeholder="Số điện thoại" />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item
                             name="ma_moet"
                             label="Mã MOET"
@@ -217,24 +210,10 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     </Col>
                 </Row>
 
-                {/* --- Section: Address --- */}
-                <div style={{ marginTop: '8px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
-                    Thông tin địa chỉ & Cá nhân
-                </div>
+                <Divider orientation="left">Địa chỉ & Cá nhân</Divider>
                 <Row gutter={16}>
-                    <Col span={8}>
-                        <Form.Item
-                            name="dia_chi"
-                            label="Địa chỉ cụ thể"
-                        >
-                            <Input placeholder="Số nhà, đường" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item
-                            name="tinh"
-                            label="Tỉnh/Thành phố"
-                        >
+                    <Col xs={24} sm={24} md={8}>
+                        <Form.Item name="tinh" label="Tỉnh/Thành phố">
                             <Select
                                 placeholder="Chọn tỉnh/TP"
                                 showSearch
@@ -248,11 +227,8 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
-                        <Form.Item
-                            name="quan_huyen"
-                            label="Quận/Huyện"
-                        >
+                    <Col xs={24} sm={12} md={8}>
+                        <Form.Item name="quan_huyen" label="Quận/Huyện">
                             <Select
                                 placeholder="Chọn quận/huyện"
                                 showSearch
@@ -266,10 +242,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             />
                         </Form.Item>
                     </Col>
-                </Row>
-
-                <Row gutter={16}>
-                    <Col span={8}>
+                    <Col xs={24} sm={12} md={8}>
                         <Form.Item
                             name="phuong_xa"
                             label="Phường/Xã"
@@ -284,76 +257,46 @@ const StudentModal: React.FC<StudentModalProps> = ({
                             />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
-                        <Form.Item
-                            name="dan_toc"
-                            label="Dân tộc"
-                        >
-                            <Select
-                                placeholder="Chọn dân tộc"
-                                showSearch
-                                allowClear
-                                options={ethnicityOptions}
-                            />
+                    <Col xs={24} sm={24} md={24}>
+                        <Form.Item name="dia_chi" label="Số nhà, tên đường (Thôn/Xóm)">
+                            <Input placeholder="Ví dụ: Số 10, đường ABC" />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
-                        <Form.Item
-                            name="ton_giao"
-                            label="Tôn giáo"
-                        >
-                            <Select
-                                placeholder="Chọn tôn giáo"
-                                showSearch
-                                allowClear
-                                options={religionOptions}
-                            />
+                    <Col xs={12} sm={12} md={12}>
+                        <Form.Item name="dan_toc" label="Dân tộc">
+                            <Select placeholder="Chọn dân tộc" showSearch allowClear options={ethnicityOptions} />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={12} sm={12} md={12}>
+                        <Form.Item name="ton_giao" label="Tôn giáo">
+                            <Select placeholder="Chọn tôn giáo" showSearch allowClear options={religionOptions} />
                         </Form.Item>
                     </Col>
                 </Row>
 
-
-                {/* --- Section: Banking --- */}
-                <div style={{ marginTop: '8px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
-                    Thông tin ngân hàng
-                </div>
+                <Divider orientation="left">Thông tin ngân hàng</Divider>
                 <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item
-                            name="ngan_hang"
-                            label="Ngân hàng"
-                        >
+                    <Col xs={24} sm={12} md={12}>
+                        <Form.Item name="ngan_hang" label="Ngân hàng">
                             <Input placeholder="Tên ngân hàng" />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="so_tai_khoan"
-                            label="Số tài khoản"
-                        >
+                    <Col xs={24} sm={12} md={12}>
+                        <Form.Item name="so_tai_khoan" label="Số tài khoản">
                             <Input placeholder="Số tài khoản" />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                {/* --- Section: Notes --- */}
-                <div style={{ marginTop: '8px', marginBottom: '8px', fontWeight: 600, color: '#1890ff' }}>
-                    Ghi chú & Lý lịch
-                </div>
+                <Divider orientation="left">Ghi chú & Lý lịch</Divider>
                 <Row gutter={16}>
-                    <Col span={12}>
-                        <Form.Item
-                            name="ghi_chu"
-                            label="Ghi chú"
-                        >
+                    <Col span={24}>
+                        <Form.Item name="ghi_chu" label="Ghi chú">
                             <Input.TextArea rows={2} placeholder="Ghi chú..." />
                         </Form.Item>
                     </Col>
-                    <Col span={12}>
-                        <Form.Item
-                            name="ly_lich"
-                            label="Lý lịch"
-                        >
+                    <Col span={24}>
+                        <Form.Item name="ly_lich" label="Lý lịch">
                             <Input.TextArea rows={2} placeholder="Tiểu sử..." />
                         </Form.Item>
                     </Col>
@@ -365,7 +308,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     updatedBy={student?.nguoi_cap_nhat?.ho_ten}
                 />
             </Form>
-        </Modal>
+        </Drawer>
     );
 };
 

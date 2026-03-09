@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import dayjs from 'dayjs';
 import { Table, Card, Switch, Select, Button, Modal, Checkbox, message } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layDanhSachNguoiDung, capNhatTrangThaiNguoiDung, capNhatPhanQuyen, capNhatLopPhuTrach } from '../api/nguoi-dung';
 import { layDanhMucTheoLoai } from '../api/danh-muc-master';
 import { LoaiDanhMuc } from '../types/danh-muc-master';
 import type { NguoiDung } from '../api/auth';
+import ExportButton from '../components/ExportButton';
 
 const Users: React.FC = () => {
     const [permissionModal, setPermissionModal] = useState<{ visible: boolean, user: NguoiDung | null }>({ visible: false, user: null });
@@ -132,7 +134,15 @@ const Users: React.FC = () => {
     ];
 
     return (
-        <Card title="Quản lý Người dùng và Phân quyền">
+        <Card
+            title="Quản lý Người dùng và Phân quyền"
+            extra={
+                <ExportButton
+                    endpoint="/nguoi-dung/export"
+                    filename={`nguoi_dung_${dayjs().format('YYYYMMDD')}.csv`}
+                />
+            }
+        >
             <Table
                 dataSource={users}
                 columns={columns}

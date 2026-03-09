@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { NguoiDungService } from '../services/nguoi-dung.service';
+import { convertToCSV } from '../utils/csv.util';
+import dayjs from 'dayjs';
 import { AppDataSource } from '../data-source';
 import { NguoiDung } from '../entities/NguoiDung';
 
@@ -53,5 +55,36 @@ export const capNhatLopPhuTrach = async (req: Request, res: Response) => {
         res.json({ message: 'Cap nhat lop phu trach thanh cong' });
     } catch (error) {
         res.status(500).json({ message: 'Loi khi cap nhat lop phu trach' });
+    }
+};
+
+export const xuatCSVNguoiDung = async (req: Request, res: Response) => {
+    try {
+        const data = await NguoiDungService.getAllUsers();
+
+        const columns = [
+            { key: 'ho_ten', header: 'Họ và tên' },
+            { key: 'email', header: 'Email' },
+            { key: 'vai_tro', header: 'Vai trò' },
+            { key: 'kich_hoat', header: 'Trạng thái' },
+            { key: 'lop_phu_trach', header: 'Lớp phụ trách' },
+            { key: 'updatedAt', header: 'Ngày cập nhật' },
+        ];
+
+        const formattedData = data.map((item: any) => ({
+            ...item,
+            kich_hoat: item.kich_hoat ? 'Hoạt động' : 'Khóa',
+            lop_phu_trach: Array.isArray(item.lop_phu_trach) ? item.lop_phu_trach.join(', ') : '',
+            updatedAt: item.updatedAt ? dayjs(item.updatedAt).format('DD/MM/YYYY HH:mm') : '',
+        }));
+
+        const csv = convertToCSV(formattedData, columns);
+        const filename = `nguoi_dung_${dayjs().format('YYYYMMDD')}.csv`;
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+        res.send(csv);
+    } catch (error) {
+        res.status(500).json({ message: "Loi khi xuat CSV nguoi dung", error });
     }
 };

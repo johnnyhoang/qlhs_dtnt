@@ -5,7 +5,8 @@ import {
     taoHocSinh, 
     capNhatHocSinh, 
     xoaHocSinh,
-    layDanhSachLop
+    layDanhSachLop,
+    xuatCSVHocSinh
 } from '../controllers/hoc-sinh.controller';
 import { authMiddleware, checkModuleAccess } from '../middlewares/auth.middleware';
 
@@ -14,6 +15,7 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get('/danh-muc-lop', checkModuleAccess('hoc-sinh'), layDanhSachLop);
+router.get('/export', checkModuleAccess('hoc-sinh'), xuatCSVHocSinh);
 router.get('/', checkModuleAccess('hoc-sinh'), layDanhSachHocSinh);
 router.get('/:id', checkModuleAccess('hoc-sinh'), layHocSinhTheoId);
 router.post('/', checkModuleAccess('hoc-sinh', true), taoHocSinh);

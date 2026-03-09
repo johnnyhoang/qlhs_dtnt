@@ -7,6 +7,7 @@ import { layDanhSachDotThanhToan, layChiTietDotThanhToan, taoDotThanhToanMoi } f
 import type { DotThanhToan, KhoanThanhToan } from '../types/thanh-toan';
 import ImportModal from '../components/ImportModal';
 import ClassSelect from '../components/ClassSelect';
+import ExportButton from '../components/ExportButton';
 
 const Payments: React.FC = () => {
     const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -186,12 +187,19 @@ const Payments: React.FC = () => {
                                 onChange={(val) => setFilterClass(val as string[])}
                             />
                             {canImport && (
-                                <Tooltip title="Import từ CSV">
-                                    <Button
-                                        icon={<FileTextOutlined />}
-                                        onClick={() => setIsImportModalVisible(true)}
+                                <Space>
+                                    <Tooltip title="Import từ CSV">
+                                        <Button
+                                            icon={<FileTextOutlined />}
+                                            onClick={() => setIsImportModalVisible(true)}
+                                        />
+                                    </Tooltip>
+                                    <ExportButton
+                                        endpoint={`/thanh-toan/${detailsBatchId}/export`}
+                                        filename={`thanh_toan_thang_${batchDetails?.thang}_${batchDetails?.nam}_${dayjs().format('YYYYMMDD')}.csv`}
+                                        params={{ lop: filterClass.join(',') }}
                                     />
-                                </Tooltip>
+                                </Space>
                             )}
                         </Space>
                     </div>
