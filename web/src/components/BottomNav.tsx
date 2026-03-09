@@ -1,12 +1,11 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Space } from 'antd';
+import { Layout } from 'antd';
 import {
     DashboardOutlined,
     UserOutlined,
     TableOutlined,
-    DollarCircleOutlined,
-    MenuOutlined
+    DollarCircleOutlined
 } from '@ant-design/icons';
 
 const { Footer } = Layout;
