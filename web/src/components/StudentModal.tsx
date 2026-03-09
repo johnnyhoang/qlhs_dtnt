@@ -119,7 +119,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                 layout="vertical"
                 initialValues={{ trang_thai: TrangThaiHocSinh.DANG_HOC, gioi_tinh: GioiTinh.NAM }}
             >
-                <Divider orientation="left">Thông tin cơ bản</Divider>
+                <Divider titlePlacement="left">Thông tin cơ bản</Divider>
                 <Row gutter={16}>
                     <Col xs={24} sm={12} md={8}>
                         <Form.Item
@@ -210,7 +210,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     </Col>
                 </Row>
 
-                <Divider orientation="left">Địa chỉ & Cá nhân</Divider>
+                <Divider titlePlacement="left">Địa chỉ & Cá nhân</Divider>
                 <Row gutter={16}>
                     <Col xs={24} sm={24} md={8}>
                         <Form.Item name="tinh" label="Tỉnh/Thành phố">
@@ -274,7 +274,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     </Col>
                 </Row>
 
-                <Divider orientation="left">Thông tin ngân hàng</Divider>
+                <Divider titlePlacement="left">Thông tin ngân hàng</Divider>
                 <Row gutter={16}>
                     <Col xs={24} sm={12} md={12}>
                         <Form.Item name="ngan_hang" label="Ngân hàng">
@@ -288,7 +288,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     </Col>
                 </Row>
 
-                <Divider orientation="left">Ghi chú & Lý lịch</Divider>
+                <Divider titlePlacement="left">Ghi chú & Lý lịch</Divider>
                 <Row gutter={16}>
                     <Col span={24}>
                         <Form.Item name="ghi_chu" label="Ghi chú">
