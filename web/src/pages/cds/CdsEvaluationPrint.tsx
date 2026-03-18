@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -9,6 +9,7 @@ const { Text } = Typography;
 
 const CdsEvaluationPrint: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const reportRef = useRef<HTMLDivElement>(null);
 
     const { data: criteria, isLoading: loadingC } = useQuery({
         queryKey: ['cds-criteria'],
@@ -57,6 +58,23 @@ const CdsEvaluationPrint: React.FC = () => {
     const today = dayjs();
     const finalName = evaluation.submitter_name || evaluation.user?.ho_ten;
 
+    const handleExportWord = () => {
+        if (!reportRef.current) return;
+        
+        const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Bao Cao CDS</title></head><body>";
+        const footer = "</body></html>";
+        const content = reportRef.current.innerHTML;
+        const sourceHTML = header + content + footer;
+        
+        const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+        const fileDownload = document.createElement("a");
+        document.body.appendChild(fileDownload);
+        fileDownload.href = source;
+        fileDownload.download = `Bao_Cao_CDS_${evaluation.period?.year}.doc`;
+        fileDownload.click();
+        document.body.removeChild(fileDownload);
+    };
+
     return (
         <div style={{ backgroundColor: '#fff', padding: '20px', maxWidth: '900px', margin: '0 auto', color: '#000', fontFamily: '"Times New Roman", Times, serif' }} className="print-container">
             <style>
@@ -73,87 +91,92 @@ const CdsEvaluationPrint: React.FC = () => {
                 `}
             </style>
             
-            <table style={{ width: '100%', border: 'none', marginBottom: '20px' }}>
-                <tbody>
-                    <tr>
-                        <td style={{ border: 'none', textAlign: 'center', width: '40%', verticalAlign: 'top' }}>
-                            <p style={{ margin: 0, fontWeight: 'bold' }}>BỘ GIÁO DỤC VÀ ĐÀO TẠO</p>
-                            <p style={{ margin: 0, fontWeight: 'bold', textDecoration: 'underline' }}>SỞ GIÁO DỤC & ĐT</p>
-                        </td>
-                        <td style={{ border: 'none', textAlign: 'center', width: '60%', verticalAlign: 'top' }}>
-                            <p style={{ margin: 0, fontWeight: 'bold' }}>CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
-                            <p style={{ margin: 0, fontWeight: 'bold', textDecoration: 'underline' }}>Độc lập - Tự do - Hạnh phúc</p>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '30px' }} ref={reportRef}>
+                
+                <table style={{ width: '100%', border: 'none', marginBottom: '20px' }}>
+                    <tbody>
+                        <tr>
+                            <td style={{ border: 'none', textAlign: 'center', width: '40%', verticalAlign: 'top' }}>
+                                <p style={{ margin: 0, fontWeight: 'bold' }}>BỘ GIÁO DỤC VÀ ĐÀO TẠO</p>
+                                <p style={{ margin: 0, fontWeight: 'bold', textDecoration: 'underline' }}>SỞ GIÁO DỤC & ĐT</p>
+                            </td>
+                            <td style={{ border: 'none', textAlign: 'center', width: '60%', verticalAlign: 'top' }}>
+                                <p style={{ margin: 0, fontWeight: 'bold' }}>CỘNG HOÀ XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+                                <p style={{ margin: 0, fontWeight: 'bold', textDecoration: 'underline' }}>Độc lập - Tự do - Hạnh phúc</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
-            <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '30px' }}>
-                <h2 style={{ margin: 0 }}>PHIẾU ĐÁNH GIÁ MỨC ĐỘ CHUYỂN ĐỔI SỐ</h2>
-                <h4 style={{ margin: '5px 0' }}>CƠ SỞ GIÁO DỤC PHỔ THÔNG VÀ GDTX</h4>
-                <p style={{ fontStyle: 'italic', margin: 0 }}>Năm học: {evaluation.period?.year}</p>
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-                <p><strong>Người nộp / Chịu trách nhiệm:</strong> {finalName}</p>
-                <p><strong>Ngày nộp hồ sơ:</strong> {dayjs(evaluation.updatedAt).format('DD/MM/YYYY HH:mm')} 
-                    <span style={{ marginLeft: 30, fontStyle: 'italic' }}>({evaluation.status === 'SUBMITTED' ? 'Bản chính thức' : 'Bản nháp'})</span>
-                </p>
-            </div>
-
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', fontSize: '14px' }}>
-                <thead>
-                    <tr style={{ backgroundColor: '#f0f0f0' }}>
-                        <th style={{ width: '45%' }}>Tiêu chí</th>
-                        <th style={{ width: '10%', textAlign: 'center' }}>Điểm<br/>Tối đa</th>
-                        <th style={{ width: '15%', textAlign: 'center' }}>Trường<br/>Đánh giá</th>
-                        <th style={{ width: '30%' }}>Hồ sơ / Minh chứng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colSpan={4} style={{ fontWeight: 'bold', backgroundColor: '#e6e6e6' }}>I. CHUYỂN ĐỔI SỐ TRONG DẠY, HỌC VÀ KIỂM TRA ĐÁNH GIÁ</td>
-                    </tr>
-                    {renderRows(group1)}
-                    <tr>
-                        <td colSpan={2} style={{ fontWeight: 'bold', textAlign: 'right', paddingRight: '20px' }}>Cộng điểm Nhóm I:</td>
-                        <td colSpan={2} style={{ fontWeight: 'bold', color: '#b90000' }}>{evaluation.total_score_group1} / 100 điểm</td>
-                    </tr>
-
-                    <tr>
-                        <td colSpan={4} style={{ fontWeight: 'bold', backgroundColor: '#e6e6e6', paddingTop: '15px' }}>II. CHUYỂN ĐỔI SỐ TRONG QUẢN TRỊ CƠ SỞ GIÁO DỤC</td>
-                    </tr>
-                    {renderRows(group2)}
-                    <tr>
-                        <td colSpan={2} style={{ fontWeight: 'bold', textAlign: 'right', paddingRight: '20px' }}>Cộng điểm Nhóm II:</td>
-                        <td colSpan={2} style={{ fontWeight: 'bold', color: '#b90000' }}>{evaluation.total_score_group2} / 100 điểm</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div style={{ padding: '15px', border: '2px solid #000', marginBottom: '30px' }}>
-                <Text strong style={{ fontSize: '16px' }}>KẾT LUẬN MỨC ĐỘ ĐÁP ỨNG: </Text>
-                <Text strong style={{ fontSize: '18px', color: '#b90000', marginLeft: '10px' }}>
-                    MỨC {evaluation.level}
-                    {evaluation.level === 3 && ' (Tốt)'}
-                    {evaluation.level === 2 && ' (Cơ bản)'}
-                    {evaluation.level === 1 && ' (Chưa đáp ứng)'}
-                </Text>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                <div style={{ width: '40%' }}>
-                    {/* Chữ ký Hiệu trưởng (Có thể code thêm block cho Hiệu trưởng) */}
+                <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '30px' }}>
+                    <h2 style={{ margin: 0 }}>PHIẾU ĐÁNH GIÁ MỨC ĐỘ CHUYỂN ĐỔI SỐ</h2>
+                    <h4 style={{ margin: '5px 0' }}>CƠ SỞ GIÁO DỤC PHỔ THÔNG VÀ GDTX</h4>
+                    <p style={{ fontStyle: 'italic', margin: 0 }}>Năm học: {evaluation.period?.year}</p>
                 </div>
-                <div style={{ width: '40%', textAlign: 'center' }}>
-                    <p style={{ fontStyle: 'italic', margin: 0 }}>........, ngày {today.format('DD')} tháng {today.format('MM')} năm {today.format('YYYY')}</p>
-                    <p style={{ fontWeight: 'bold', margin: '5px 0 80px 0' }}>Người tạo phiếu</p>
-                    <p style={{ fontWeight: 'bold', fontSize: '16px' }}>{finalName}</p>
+
+                <div style={{ marginBottom: '20px', textAlign: 'left' }}>
+                    <p><strong>Người nộp / Chịu trách nhiệm:</strong> {finalName}</p>
+                    <p><strong>Ngày nộp hồ sơ:</strong> {dayjs(evaluation.updatedAt).format('DD/MM/YYYY HH:mm')} 
+                        <span style={{ marginLeft: 30, fontStyle: 'italic' }}>({evaluation.status === 'SUBMITTED' ? 'Bản chính thức' : 'Bản nháp'})</span>
+                    </p>
                 </div>
+
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', fontSize: '14px' }}>
+                    <thead>
+                        <tr style={{ backgroundColor: '#f0f0f0' }}>
+                            <th style={{ width: '45%', border: '1px solid #000', padding: '6px 8px' }}>Tiêu chí</th>
+                            <th style={{ width: '10%', textAlign: 'center', border: '1px solid #000', padding: '6px 8px' }}>Điểm<br/>Tối đa</th>
+                            <th style={{ width: '15%', textAlign: 'center', border: '1px solid #000', padding: '6px 8px' }}>Trường<br/>Đánh giá</th>
+                            <th style={{ width: '30%', border: '1px solid #000', padding: '6px 8px' }}>Hồ sơ / Minh chứng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colSpan={4} style={{ fontWeight: 'bold', backgroundColor: '#e6e6e6', padding: '6px 8px', border: '1px solid #000' }}>I. CHUYỂN ĐỔI SỐ TRONG DẠY, HỌC VÀ KIỂM TRA ĐÁNH GIÁ</td>
+                        </tr>
+                        {renderRows(group1)}
+                        <tr>
+                            <td colSpan={2} style={{ fontWeight: 'bold', textAlign: 'right', paddingRight: '20px', padding: '6px 8px', border: '1px solid #000' }}>Cộng điểm Nhóm I:</td>
+                            <td colSpan={2} style={{ fontWeight: 'bold', color: '#b90000', padding: '6px 8px', border: '1px solid #000' }}>{evaluation.total_score_group1} / 100 điểm</td>
+                        </tr>
+
+                        <tr>
+                            <td colSpan={4} style={{ fontWeight: 'bold', backgroundColor: '#e6e6e6', paddingTop: '15px', padding: '6px 8px', border: '1px solid #000' }}>II. CHUYỂN ĐỔI SỐ TRONG QUẢN TRỊ CƠ SỞ GIÁO DỤC</td>
+                        </tr>
+                        {renderRows(group2)}
+                        <tr>
+                            <td colSpan={2} style={{ fontWeight: 'bold', textAlign: 'right', paddingRight: '20px', padding: '6px 8px', border: '1px solid #000' }}>Cộng điểm Nhóm II:</td>
+                            <td colSpan={2} style={{ fontWeight: 'bold', color: '#b90000', padding: '6px 8px', border: '1px solid #000' }}>{evaluation.total_score_group2} / 100 điểm</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style={{ padding: '15px', border: '2px solid #000', marginBottom: '30px', textAlign: 'left' }}>
+                    <Text strong style={{ fontSize: '16px' }}>KẾT LUẬN MỨC ĐỘ ĐÁP ỨNG: </Text>
+                    <Text strong style={{ fontSize: '18px', color: '#b90000', marginLeft: '10px' }}>
+                        MỨC {evaluation.level}
+                        {evaluation.level === 3 && ' (Tốt)'}
+                        {evaluation.level === 2 && ' (Cơ bản)'}
+                        {evaluation.level === 1 && ' (Chưa đáp ứng)'}
+                    </Text>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                    <div style={{ width: '40%' }}>
+                        {/* Chữ ký Hiệu trưởng (Có thể code thêm block cho Hiệu trưởng) */}
+                    </div>
+                    <div style={{ width: '40%', textAlign: 'center' }}>
+                        <p style={{ fontStyle: 'italic', margin: 0 }}>........, ngày {today.format('DD')} tháng {today.format('MM')} năm {today.format('YYYY')}</p>
+                        <p style={{ fontWeight: 'bold', margin: '5px 0 80px 0' }}>Người tạo phiếu</p>
+                        <p style={{ fontWeight: 'bold', fontSize: '16px' }}>{finalName}</p>
+                    </div>
+                </div>
+
             </div>
             
-            <div style={{ textAlign: 'center', marginTop: '40px', paddingBottom: '40px' }} className="no-print">
-                <Button type="primary" size="large" onClick={() => window.print()} style={{ minWidth: 200, height: 50, fontSize: 18 }}>In File PDF / In Giấy</Button>
+            <div style={{ textAlign: 'center', marginTop: '20px', paddingBottom: '40px', display: 'flex', gap: '16px', justifyContent: 'center' }} className="no-print">
+                <Button size="large" onClick={handleExportWord} style={{ minWidth: 150, height: 45, fontWeight: 'bold', color: '#1890ff', borderColor: '#1890ff' }}>Tải file Word (.doc)</Button>
+                <Button type="primary" size="large" onClick={() => window.print()} style={{ minWidth: 150, height: 45, fontWeight: 'bold' }}>In File PDF / Gọi Máy in</Button>
             </div>
         </div>
     );
