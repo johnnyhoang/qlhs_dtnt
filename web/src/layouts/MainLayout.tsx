@@ -3,6 +3,7 @@ import { Layout, Menu, Button, Avatar, Space, Typography, Grid } from 'antd';
 import {
     UserOutlined,
     DashboardOutlined,
+    FundProjectionScreenOutlined,
     TableOutlined,
     LogoutOutlined,
     CarOutlined,
@@ -85,6 +86,15 @@ const MainLayout: React.FC = () => {
             icon: <TeamOutlined />,
             label: 'Quản lý người dùng',
             onClick: () => navigate('/nguoi-dung')
+        },
+        {
+            key: '/cds',
+            icon: <FundProjectionScreenOutlined />,
+            label: 'Chuyển đổi số',
+            children: [
+                { key: '/cds/dashboard', label: 'Tổng quan', onClick: () => navigate('/cds/dashboard') },
+                { key: '/cds/evaluations', label: 'Tự đánh giá', onClick: () => navigate('/cds/evaluations') }
+            ]
         }
     ].filter(Boolean);
 

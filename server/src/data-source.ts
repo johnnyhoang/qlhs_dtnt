@@ -11,7 +11,10 @@ import { DonGiaXe } from "./entities/DonGiaXe";
 import { NguoiDung } from "./entities/NguoiDung";
 import { PhanQuyen } from "./entities/PhanQuyen";
 import { DanhMucMaster } from "./entities/DanhMucMaster";
-
+import { CdsEvaluationPeriod } from "./entities/CdsEvaluationPeriod";
+import { CdsCriterion } from "./entities/CdsCriterion";
+import { CdsEvaluation } from "./entities/CdsEvaluation";
+import { CdsEvaluationDetail } from "./entities/CdsEvaluationDetail";
 export const AppDataSource = new DataSource({
     type: "postgres",
     ...(CONFIG.DB.DATABASE_URL ? {
@@ -36,7 +39,11 @@ export const AppDataSource = new DataSource({
         DonGiaXe,
         NguoiDung,
         PhanQuyen,
-        DanhMucMaster
+        DanhMucMaster,
+        CdsEvaluationPeriod,
+        CdsCriterion,
+        CdsEvaluation,
+        CdsEvaluationDetail
     ],
     migrations: [__dirname + "/migrations/*.ts"],
     subscribers: [],

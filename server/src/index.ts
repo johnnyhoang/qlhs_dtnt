@@ -3,6 +3,7 @@ import cors from 'cors';
 import { AppDataSource } from './data-source';
 import { CONFIG } from './config';
 import routes from './routes';
+import { seedCdsCriteria } from './utils/cds-seeder';
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(async (req, res, next) => {
   try {
     console.log("Database not initialized, initializing now...");
     await AppDataSource.initialize();
+    await seedCdsCriteria();
     next();
   } catch (err) {
     console.error("Database initialization failed in middleware:", err);
@@ -51,6 +53,7 @@ const startServer = async () => {
   try {
     console.log("Initializing Data Source...");
     await AppDataSource.initialize();
+    await seedCdsCriteria();
     console.log("Data Source has been initialized!");
     lastDbError = null;
   } catch (err) {

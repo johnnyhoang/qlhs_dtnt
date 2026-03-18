@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout } from 'antd';
 import {
     DashboardOutlined,
+    FundProjectionScreenOutlined,
     UserOutlined,
     TableOutlined,
     DollarCircleOutlined
@@ -42,6 +43,12 @@ const BottomNav: React.FC<BottomNavProps> = ({ hasAccess }) => {
             icon: <DollarCircleOutlined />,
             label: 'Tiền',
             path: '/thanh-toan'
+        },
+        {
+            key: '/cds/dashboard',
+            icon: <FundProjectionScreenOutlined />,
+            label: 'CĐS',
+            path: '/cds/dashboard'
         }
     ].filter(Boolean) as any[];
 
