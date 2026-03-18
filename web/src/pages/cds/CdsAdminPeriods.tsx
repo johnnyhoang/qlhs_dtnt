@@ -3,13 +3,15 @@ import { Card, Table, Button, Space, Typography, Tag, Modal, Form, Input, DatePi
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { getCdsPeriods, createCdsPeriod } from '../../api/cds-evaluation';
+import { getCdsPeriods, createCdsPeriod, updateCdsPeriod } from '../../api/cds-evaluation';
+import { EditOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 
 const CdsAdminPeriods: React.FC = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [editingPeriod, setEditingPeriod] = useState<any>(null);
     const [form] = Form.useForm();
     const queryClient = useQueryClient();
 
@@ -31,13 +33,37 @@ const CdsAdminPeriods: React.FC = () => {
         }
     });
 
-    const handleCreate = (values: any) => {
+    const updateMutation = useMutation({
+        mutationFn: (values: any) => updateCdsPeriod(editingPeriod.id, values),
+        onSuccess: () => {
+            message.success('Đã cập nhật Kỳ đánh giá thành công!');
+            setIsModalVisible(false);
+            setEditingPeriod(null);
+            form.resetFields();
+            queryClient.invalidateQueries({ queryKey: ['cds-periods'] });
+        },
+        onError: (error: any) => {
+            message.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật kỳ đánh giá');
+        }
+    });
+
+    const handleFinish = (values: any) => {
         const payload = {
             year: values.year,
             start_date: values.dates[0].format('YYYY-MM-DD'),
             end_date: values.dates[1].format('YYYY-MM-DD')
         };
-        createMutation.mutate(payload);
+        if (editingPeriod) updateMutation.mutate(payload);
+        else createMutation.mutate(payload);
+    };
+
+    const handleEditClick = (record: any) => {
+        setEditingPeriod(record);
+        form.setFieldsValue({
+            year: record.year,
+            dates: [dayjs(record.start_date), dayjs(record.end_date)]
+        });
+        setIsModalVisible(true);
     };
 
     const columns = [
@@ -70,6 +96,19 @@ const CdsAdminPeriods: React.FC = () => {
                 if (now.isAfter(end)) return <Tag color="error">Đã khoá form</Tag>;
                 return <Tag color="success">Đang cho phép điểm</Tag>;
             }
+        },
+        {
+            title: 'Thao tác',
+            key: 'action',
+            width: 80,
+            render: (_: any, record: any) => (
+                <Button 
+                    type="primary" 
+                    shape="circle" 
+                    icon={<EditOutlined />} 
+                    onClick={() => handleEditClick(record)} 
+                />
+            )
         }
     ];
 
@@ -95,16 +134,20 @@ const CdsAdminPeriods: React.FC = () => {
             </Card>
 
             <Modal
-                title={<h3>Thiết lập Kỳ Đánh giá mới</h3>}
+                title={<h3>{editingPeriod ? 'Cập nhật Kỳ Đánh giá' : 'Thiết lập Kỳ Đánh giá mới'}</h3>}
                 open={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
+                onCancel={() => {
+                    setIsModalVisible(false);
+                    setEditingPeriod(null);
+                    form.resetFields();
+                }}
                 onOk={() => form.submit()}
-                confirmLoading={createMutation.isPending}
+                confirmLoading={createMutation.isPending || updateMutation.isPending}
                 okText="Lưu kỳ đánh giá"
                 cancelText="Huỷ"
                 centered
             >
-                <Form form={form} layout="vertical" onFinish={handleCreate}>
+                <Form form={form} layout="vertical" onFinish={handleFinish}>
                     <Form.Item 
                         name="year" 
                         label={<span style={{ fontWeight: 500 }}>Tên kỳ đánh giá (Ví dụ: Năm học 2024-2025)</span>} 

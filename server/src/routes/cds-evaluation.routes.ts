@@ -6,6 +6,7 @@ const router = Router();
 router.get('/criteria', CdsEvaluationController.getCriteria);
 router.get('/periods', CdsEvaluationController.getPeriods);
 router.post('/periods', CdsEvaluationController.createPeriod);
+router.put('/periods/:id', CdsEvaluationController.updatePeriod);
 router.get('/dashboard', CdsEvaluationController.getDashboardStats);
 router.get('/', CdsEvaluationController.getMyEvaluations);
 router.get('/:id', CdsEvaluationController.getEvaluationById);

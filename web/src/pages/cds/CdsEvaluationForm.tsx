@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Card, Form, Input, Button, Tabs, message, Space, Typography, Tag, Row, Col, Divider } from 'antd';
+import { Card, Form, Input, Button, Tabs, message, Space, Typography, Tag, Row, Col, Divider, Select } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCdsCriteria, getCdsEvaluationById, createCdsEvaluation, updateCdsEvaluation, getCdsPeriods } from '../../api/cds-evaluation';
@@ -35,20 +35,24 @@ const CdsEvaluationForm: React.FC = () => {
         if (isEdit && evaluation && criteria) {
             const initialValues: any = {};
             initialValues.submitter_name = evaluation.submitter_name || evaluation.user?.ho_ten;
+            initialValues.periodId = evaluation.period?.id;
             evaluation.details.forEach((d: any) => {
                 initialValues[`score_${d.criterion.id}`] = d.score;
                 initialValues[`link_${d.criterion.id}`] = d.evidence_link;
                 initialValues[`note_${d.criterion.id}`] = d.note;
             });
             form.setFieldsValue(initialValues);
-        } else if (!isEdit) {
+        } else if (!isEdit && periods && periods.length > 0) {
             const userJson = localStorage.getItem('user');
             if (userJson) {
                 const user = JSON.parse(userJson);
-                form.setFieldsValue({ submitter_name: user.ho_ten });
+                form.setFieldsValue({ 
+                    submitter_name: user.ho_ten,
+                    periodId: periods[0].id
+                });
             }
         }
-    }, [isEdit, evaluation, criteria, form]);
+    }, [isEdit, evaluation, criteria, periods, form]);
 
     const mutation = useMutation({
         mutationFn: (data: any) => {
@@ -91,7 +95,7 @@ const CdsEvaluationForm: React.FC = () => {
         }
 
         const payload = {
-            periodId: isEdit ? evaluation.period.id : periods[0].id,
+            periodId: values.periodId,
             status,
             details
         };
@@ -200,7 +204,7 @@ const CdsEvaluationForm: React.FC = () => {
                 <Divider style={{ margin: '8px 0' }} />
 
                 <Form form={form} layout="vertical">
-                    <Row>
+                    <Row gutter={16}>
                         <Col span={24} md={12}>
                             <Form.Item 
                                 name="submitter_name" 
@@ -208,6 +212,19 @@ const CdsEvaluationForm: React.FC = () => {
                                 rules={[{ required: true, message: 'Vui lòng nhập tên người nộp phiếu' }]}
                             >
                                 <Input size="large" placeholder="Nhập họ và tên..." disabled={isReadOnly} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={24} md={12}>
+                            <Form.Item 
+                                name="periodId" 
+                                label={<span style={{ fontWeight: 500 }}>Kỳ đánh giá (Năm học)</span>}
+                                rules={[{ required: true, message: 'Vui lòng chọn kỳ đánh giá' }]}
+                            >
+                                <Select size="large" placeholder="Chọn năm học..." disabled={isReadOnly}>
+                                    {periods?.map((p: any) => (
+                                        <Select.Option key={p.id} value={p.id}>{p.year}</Select.Option>
+                                    ))}
+                                </Select>
                             </Form.Item>
                         </Col>
                     </Row>

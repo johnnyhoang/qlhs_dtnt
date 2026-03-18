@@ -43,6 +43,22 @@ export const CdsEvaluationController = {
     }
   },
 
+  // Cập nhật kỳ đánh giá (dành cho Admin)
+  async updatePeriod(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id as string, 10);
+      const repo = AppDataSource.getRepository(CdsEvaluationPeriod);
+      const existing = await repo.findOneBy({ id });
+      if (!existing) return res.status(404).json({ message: "Not found" });
+      
+      Object.assign(existing, req.body);
+      await repo.save(existing);
+      res.json(existing);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
   // Lấy danh sách phiếu của User hiện tại
   async getMyEvaluations(req: Request, res: Response) {
     try {
@@ -153,11 +169,14 @@ export const CdsEvaluationController = {
       const evalRepo = AppDataSource.getRepository(CdsEvaluation);
       const detailRepo = AppDataSource.getRepository(CdsEvaluationDetail);
 
-      const existingEval = await evalRepo.findOne({ where: { id } });
+      const existingEval = await evalRepo.findOne({ where: { id }, relations: ['period'] });
       if (!existingEval) return res.status(404).json({ message: "Not found" });
 
       if (status) existingEval.status = status;
       if (req.body.submitter_name !== undefined) existingEval.submitter_name = req.body.submitter_name;
+      if (req.body.periodId) {
+        existingEval.period = { id: req.body.periodId } as any;
+      }
 
       let scoreGroup1 = 0;
       let scoreGroup2 = 0;
