@@ -11,5 +11,6 @@ router.get('/', CdsEvaluationController.getMyEvaluations);
 router.get('/:id', CdsEvaluationController.getEvaluationById);
 router.post('/', CdsEvaluationController.createEvaluation);
 router.put('/:id', CdsEvaluationController.updateEvaluation);
+router.delete('/:id', CdsEvaluationController.deleteEvaluation);
 
 export default router;

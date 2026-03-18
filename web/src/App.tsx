@@ -15,6 +15,8 @@ import MainLayout from './layouts/MainLayout';
 import CdsDashboard from './pages/cds/CdsDashboard';
 import CdsEvaluations from './pages/cds/CdsEvaluations';
 import CdsEvaluationForm from './pages/cds/CdsEvaluationForm';
+import CdsAdminPeriods from './pages/cds/CdsAdminPeriods';
+import CdsEvaluationPrint from './pages/cds/CdsEvaluationPrint';
 
 const queryClient = new QueryClient();
 
@@ -114,10 +116,12 @@ const App: React.FC = () => {
                   <Route path="thanh-toan" element={<ProtectedRoute module="thanh-toan"><Payments /></ProtectedRoute>} />
                   <Route path="danh-muc-master" element={<AdminRoute><MasterData /></AdminRoute>} />
                   <Route path="nguoi-dung" element={<AdminRoute><Users /></AdminRoute>} />
-                  <Route path="cds/dashboard" element={<ProtectedRoute><CdsDashboard /></ProtectedRoute>} />
-                  <Route path="cds/evaluations" element={<ProtectedRoute><CdsEvaluations /></ProtectedRoute>} />
-                  <Route path="cds/evaluations/new" element={<ProtectedRoute><CdsEvaluationForm /></ProtectedRoute>} />
-                  <Route path="cds/evaluations/:id" element={<ProtectedRoute><CdsEvaluationForm /></ProtectedRoute>} />
+                  <Route path="cds/dashboard" element={<CdsDashboard />} />
+                  <Route path="cds/evaluations" element={<CdsEvaluations />} />
+                  <Route path="cds/evaluations/new" element={<CdsEvaluationForm />} />
+                  <Route path="cds/evaluations/:id" element={<CdsEvaluationForm />} />
+                  <Route path="cds/evaluations/print/:id" element={<CdsEvaluationPrint />} />
+                  <Route path="cds/admin/periods" element={<AdminRoute><CdsAdminPeriods /></AdminRoute>} />
                 </Route>
               </Routes>
             </BrowserRouter>

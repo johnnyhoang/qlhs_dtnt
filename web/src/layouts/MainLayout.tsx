@@ -103,8 +103,14 @@ const MainLayout: React.FC = () => {
             icon: <FundProjectionScreenOutlined />,
             label: 'Danh sách phiếu',
             onClick: () => navigate('/cds/evaluations')
+        },
+        user?.vai_tro === 'ADMIN' && {
+            key: '/cds/admin/periods',
+            icon: <DatabaseOutlined />,
+            label: 'Quản lý Kỳ đánh giá (Admin)',
+            onClick: () => navigate('/cds/admin/periods')
         }
-    ];
+    ].filter(Boolean);
 
     const menuItems = isCdsApp ? cdsMenuItems : qlhsMenuItems;
 

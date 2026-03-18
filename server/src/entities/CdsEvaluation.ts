@@ -26,6 +26,9 @@ export class CdsEvaluation {
     total_score_group2!: number;
 
     @Column({ nullable: true })
+    submitter_name!: string;
+
+    @Column({ nullable: true })
     level!: number; // 1 (Chưa đáp ứng), 2 (Cơ bản), 3 (Tốt)
 
     @OneToMany(() => CdsEvaluationDetail, (detail) => detail.evaluation)

@@ -46,12 +46,22 @@ export const CdsEvaluationController = {
   // Lấy danh sách phiếu của User hiện tại
   async getMyEvaluations(req: Request, res: Response) {
     try {
-      const userId = (req as any).user.id;
-      const evals = await AppDataSource.getRepository(CdsEvaluation).find({
-        where: { user: { id: userId } },
-        relations: ['period'],
-        order: { createdAt: 'DESC' }
-      });
+      const user = (req as any).user;
+      const repo = AppDataSource.getRepository(CdsEvaluation);
+      let evals;
+      
+      if (user.vai_tro === 'ADMIN') {
+        evals = await repo.find({
+          relations: ['period', 'user'],
+          order: { createdAt: 'DESC' }
+        });
+      } else {
+        evals = await repo.find({
+          where: { user: { id: user.id } },
+          relations: ['period', 'user'],
+          order: { createdAt: 'DESC' }
+        });
+      }
       res.json(evals);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -64,7 +74,7 @@ export const CdsEvaluationController = {
       const id = parseInt(req.params.id as string, 10);
       const evalData = await AppDataSource.getRepository(CdsEvaluation).findOne({
         where: { id },
-        relations: ['period', 'details', 'details.criterion']
+        relations: ['period', 'user', 'details', 'details.criterion']
       });
       if (!evalData) return res.status(404).json({ message: "Not found" });
       res.json(evalData);
@@ -91,7 +101,8 @@ export const CdsEvaluationController = {
       const newEval = evalRepo.create({
         user: { id: userId },
         period: { id: periodId },
-        status: status || 'DRAFT'
+        status: status || 'DRAFT',
+        submitter_name: req.body.submitter_name || (req as any).user.ho_ten
       });
       
       const savedEval = await evalRepo.save(newEval);
@@ -146,6 +157,7 @@ export const CdsEvaluationController = {
       if (!existingEval) return res.status(404).json({ message: "Not found" });
 
       if (status) existingEval.status = status;
+      if (req.body.submitter_name !== undefined) existingEval.submitter_name = req.body.submitter_name;
 
       let scoreGroup1 = 0;
       let scoreGroup2 = 0;
@@ -210,6 +222,31 @@ export const CdsEvaluationController = {
         averageGroup1: Number(averageGroup1.toFixed(2)),
         averageGroup2: Number(averageGroup2.toFixed(2))
       });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  // Xoá phiếu đánh giá (Chỉ Admin hoặc Chủ sở hữu phiếu mới được xoá)
+  async deleteEvaluation(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id as string, 10);
+      const user = (req as any).user;
+      
+      const evalRepo = AppDataSource.getRepository(CdsEvaluation);
+      const detailRepo = AppDataSource.getRepository(CdsEvaluationDetail);
+
+      const existingEval = await evalRepo.findOne({ where: { id }, relations: ['user'] });
+      if (!existingEval) return res.status(404).json({ message: "Not found" });
+
+      if (user.vai_tro !== 'ADMIN' && existingEval.user.id !== user.id) {
+        return res.status(403).json({ message: "Bạn không có quyền xoá phiếu của người khác." });
+      }
+
+      await detailRepo.delete({ evaluation: { id } });
+      await evalRepo.delete(id);
+      
+      res.json({ message: "Đã xoá thành công." });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

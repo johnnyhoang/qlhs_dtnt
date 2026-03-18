@@ -1,10 +1,10 @@
 import React from 'react';
-import { Card, Table, Button, Tag, Typography, Tooltip } from 'antd';
-import { useQuery } from '@tanstack/react-query';
-import { PlusOutlined, EditOutlined, FileSearchOutlined } from '@ant-design/icons';
+import { Card, Table, Button, Tag, Typography, Tooltip, Popconfirm, message, Space } from 'antd';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { PlusOutlined, EditOutlined, FileSearchOutlined, DeleteOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { getCdsEvaluations } from '../../api/cds-evaluation';
+import { getCdsEvaluations, deleteCdsEvaluation } from '../../api/cds-evaluation';
 import SkeletonLoader from '../../components/SkeletonLoader';
 
 const { Title } = Typography;
@@ -17,6 +17,21 @@ const CdsEvaluations: React.FC = () => {
         queryFn: () => getCdsEvaluations()
     });
 
+    const userJson = localStorage.getItem('user');
+    const currentUser = userJson ? JSON.parse(userJson) : null;
+    const queryClient = useQueryClient();
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: number) => deleteCdsEvaluation(id),
+        onSuccess: () => {
+            message.success('Đã xoá phiếu thành công!');
+            queryClient.invalidateQueries({ queryKey: ['cds-evaluations'] });
+        },
+        onError: (error: any) => {
+            message.error(error?.response?.data?.message || 'Lỗi khi xoá phiếu');
+        }
+    });
+
     const columns = [
         {
             title: 'Kỳ đánh giá',
@@ -24,6 +39,13 @@ const CdsEvaluations: React.FC = () => {
             key: 'year',
             width: 150,
             render: (text: string) => <b>{text || 'Năm học hiện hành'}</b>
+        },
+        {
+            title: 'Người điền phiếu',
+            dataIndex: 'submitter_name',
+            key: 'submitter_name',
+            width: 160,
+            render: (text: string, record: any) => <span>{text || record.user?.ho_ten || 'Không rõ'}</span>
         },
         {
             title: 'Tổng điểm hệ Dạy học',
@@ -70,17 +92,39 @@ const CdsEvaluations: React.FC = () => {
             title: 'Thao tác',
             key: 'action',
             fixed: 'right' as const,
-            width: 80,
-            render: (_: any, record: any) => (
-                <Tooltip title={record.status === 'DRAFT' ? 'Tiếp tục điền' : 'Xem báo cáo'}>
-                    <Button 
-                        type="primary" 
-                        shape="circle"
-                        icon={record.status === 'DRAFT' ? <EditOutlined /> : <FileSearchOutlined />} 
-                        onClick={() => navigate(`/cds/evaluations/${record.id}`)}
-                    />
-                </Tooltip>
-            ),
+            width: 160,
+            render: (_: any, record: any) => {
+                const canDelete = currentUser?.vai_tro === 'ADMIN' || currentUser?.id === record.user?.id;
+                return (
+                    <Space size="small">
+                        <Tooltip title={record.status === 'DRAFT' ? 'Tiếp tục điền' : 'Xem báo cáo'}>
+                            <Button 
+                                type="primary" 
+                                shape="circle"
+                                icon={record.status === 'DRAFT' ? <EditOutlined /> : <FileSearchOutlined />} 
+                                onClick={() => navigate(`/cds/evaluations/${record.id}`)}
+                            />
+                        </Tooltip>
+                        
+                        <Tooltip title="In PDF">
+                            <Button 
+                                type="default"
+                                shape="circle"
+                                icon={<PrinterOutlined />}
+                                onClick={() => window.open(`/cds/evaluations/print/${record.id}`, '_blank')}
+                            />
+                        </Tooltip>
+
+                        {canDelete && (
+                            <Popconfirm title="Bạn có chắc là muốn xoá phiếu này không?" onConfirm={() => deleteMutation.mutate(record.id)}>
+                                <Tooltip title="Xoá phiếu">
+                                    <Button type="primary" danger shape="circle" icon={<DeleteOutlined />} loading={deleteMutation.isPending} />
+                                </Tooltip>
+                            </Popconfirm>
+                        )}
+                    </Space>
+                );
+            },
         }
     ];
 

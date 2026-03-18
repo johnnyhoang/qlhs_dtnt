@@ -34,12 +34,19 @@ const CdsEvaluationForm: React.FC = () => {
     useEffect(() => {
         if (isEdit && evaluation && criteria) {
             const initialValues: any = {};
+            initialValues.submitter_name = evaluation.submitter_name || evaluation.user?.ho_ten;
             evaluation.details.forEach((d: any) => {
                 initialValues[`score_${d.criterion.id}`] = d.score;
                 initialValues[`link_${d.criterion.id}`] = d.evidence_link;
                 initialValues[`note_${d.criterion.id}`] = d.note;
             });
             form.setFieldsValue(initialValues);
+        } else if (!isEdit) {
+            const userJson = localStorage.getItem('user');
+            if (userJson) {
+                const user = JSON.parse(userJson);
+                form.setFieldsValue({ submitter_name: user.ho_ten });
+            }
         }
     }, [isEdit, evaluation, criteria, form]);
 
@@ -193,6 +200,18 @@ const CdsEvaluationForm: React.FC = () => {
                 <Divider style={{ margin: '8px 0' }} />
 
                 <Form form={form} layout="vertical">
+                    <Row>
+                        <Col span={24} md={12}>
+                            <Form.Item 
+                                name="submitter_name" 
+                                label={<span style={{ fontWeight: 500 }}>Tên người làm phiếu / Chịu trách nhiệm</span>}
+                                rules={[{ required: true, message: 'Vui lòng nhập tên người nộp phiếu' }]}
+                            >
+                                <Input size="large" placeholder="Nhập họ và tên..." disabled={isReadOnly} />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
                     <Tabs 
                         defaultActiveKey="1"
                         size="large"
