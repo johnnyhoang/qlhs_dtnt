@@ -269,5 +269,62 @@ export const CdsEvaluationController = {
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
+  },
+
+  // Lấy báo cáo tổng hợp một kỳ đánh giá (Trung bình cộng)
+  async getPeriodReport(req: Request, res: Response) {
+    try {
+      const periodId = parseInt(req.params.id as string, 10);
+      const period = await AppDataSource.getRepository(CdsEvaluationPeriod).findOneBy({ id: periodId });
+      if (!period) return res.status(404).json({ message: "Not found period" });
+
+      const evals = await AppDataSource.getRepository(CdsEvaluation).find({
+        where: { period: { id: periodId }, status: 'SUBMITTED' },
+        relations: ['details', 'details.criterion']
+      });
+
+      const submissionCount = evals.length;
+      if (submissionCount === 0) {
+        return res.json({ period, submissionCount: 0, details: [], total_score_group1: 0, total_score_group2: 0, level: 0 });
+      }
+
+      let sumG1 = 0;
+      let sumG2 = 0;
+      const criteriaMap = new Map<number, { criterion: any, scoreSum: number }>();
+
+      for (const e of evals) {
+        sumG1 += Number(e.total_score_group1) || 0;
+        sumG2 += Number(e.total_score_group2) || 0;
+        for (const d of e.details) {
+          if (!criteriaMap.has(d.criterion.id)) {
+             criteriaMap.set(d.criterion.id, { criterion: d.criterion, scoreSum: 0 });
+          }
+          criteriaMap.get(d.criterion.id)!.scoreSum += Number(d.score) || 0;
+        }
+      }
+
+      const avgG1 = Number((sumG1 / submissionCount).toFixed(2));
+      const avgG2 = Number((sumG2 / submissionCount).toFixed(2));
+
+      const details = Array.from(criteriaMap.values()).map(item => ({
+        criterion: item.criterion,
+        score: Number((item.scoreSum / submissionCount).toFixed(2))
+      }));
+
+      let level = 1;
+      if (avgG1 >= 75 && avgG2 >= 75) level = 3;
+      else if (avgG1 >= 50 && avgG2 >= 50) level = 2;
+
+      res.json({
+        period,
+        submissionCount,
+        total_score_group1: avgG1,
+        total_score_group2: avgG2,
+        level,
+        details
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
   }
 };

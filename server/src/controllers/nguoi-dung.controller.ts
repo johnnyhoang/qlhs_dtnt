@@ -17,7 +17,7 @@ export const layDanhSachNguoiDung = async (req: Request, res: Response) => {
 export const capNhatTrangThaiNguoiDung = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { kich_hoat, vai_tro } = req.body;
+        const { kich_hoat, vai_tro, ho_ten, ghi_chu } = req.body;
         
         const repository = AppDataSource.getRepository(NguoiDung);
         const user = await repository.findOne({ where: { id: Number(id) } });
@@ -26,6 +26,8 @@ export const capNhatTrangThaiNguoiDung = async (req: Request, res: Response) => 
         
         if (kich_hoat !== undefined) user.kich_hoat = kich_hoat;
         if (vai_tro !== undefined) user.vai_tro = vai_tro;
+        if (ho_ten !== undefined) user.ho_ten = ho_ten;
+        if (ghi_chu !== undefined) user.ghi_chu = ghi_chu;
         
         await repository.save(user);
         res.json(user);

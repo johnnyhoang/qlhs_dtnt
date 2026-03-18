@@ -14,6 +14,8 @@ const Users: React.FC = () => {
     const [permissionModal, setPermissionModal] = useState<{ visible: boolean, user: NguoiDung | null }>({ visible: false, user: null });
     const [selectedPermissions, setSelectedPermissions] = useState<any[]>([]);
     const [searchText, setSearchText] = useState('');
+    const [editingName, setEditingName] = useState('');
+    const [editingNote, setEditingNote] = useState('');
     const queryClient = useQueryClient();
 
     const { data: users, isLoading } = useQuery({
@@ -41,6 +43,7 @@ const Users: React.FC = () => {
             if (lop_phu_trach) {
                 promises.push(capNhatLopPhuTrach(id, lop_phu_trach));
             }
+            promises.push(capNhatTrangThaiNguoiDung(id, { ho_ten: editingName, ghi_chu: editingNote }));
             return Promise.all(promises);
         },
         onSuccess: () => {
@@ -56,7 +59,8 @@ const Users: React.FC = () => {
         { key: 'dinh-muc-xe', label: 'Định mức xe' },
         { key: 'bao-hiem', label: 'Bảo hiểm' },
         { key: 'thanh-toan', label: 'Thanh toán' },
-        { key: 'nhap-lieu', label: 'Nhập liệu (CSV)' }
+        { key: 'nhap-lieu', label: 'Nhập liệu (CSV)' },
+        { key: 'cds', label: 'Chuyển đổi số' }
     ];
 
     const { data: danhMucLop } = useQuery({
@@ -78,6 +82,8 @@ const Users: React.FC = () => {
             };
         }));
         setSelectedClasses(user.lop_phu_trach || []);
+        setEditingName(user.ho_ten || '');
+        setEditingNote((user as any).ghi_chu || '');
     };
 
     const columns = [
@@ -205,8 +211,17 @@ const Users: React.FC = () => {
                     lop_phu_trach: permissionModal.user?.vai_tro === 'TEACHER' ? selectedClasses : undefined
                 })}
                 onCancel={() => setPermissionModal({ visible: false, user: null })}
-                width={600}
+                width={700}
             >
+                <div style={{ marginBottom: 16 }}>
+                    <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Họ và tên:</div>
+                    <Input value={editingName} onChange={e => setEditingName(e.target.value)} size="large" />
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                    <div style={{ marginBottom: 8, fontWeight: 'bold' }}>Ghi chú về người dùng:</div>
+                    <Input.TextArea value={editingNote} onChange={e => setEditingNote(e.target.value)} rows={2} />
+                </div>
+
                 {permissionModal.user?.vai_tro === 'TEACHER' && (
                     <div style={{ marginBottom: 16 }}>
                         <h4>Lớp phụ trách:</h4>

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getCdsPeriods, createCdsPeriod, updateCdsPeriod } from '../../api/cds-evaluation';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, PrinterOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -100,14 +100,23 @@ const CdsAdminPeriods: React.FC = () => {
         {
             title: 'Thao tác',
             key: 'action',
-            width: 80,
+            width: 120,
             render: (_: any, record: any) => (
-                <Button 
-                    type="primary" 
-                    shape="circle" 
-                    icon={<EditOutlined />} 
-                    onClick={() => handleEditClick(record)} 
-                />
+                <Space>
+                    <Button 
+                        type="primary" 
+                        shape="circle" 
+                        icon={<EditOutlined />} 
+                        onClick={() => handleEditClick(record)} 
+                        title="Sửa kỳ đánh giá"
+                    />
+                    <Button
+                        type="default"
+                        icon={<PrinterOutlined />}
+                        onClick={() => window.open(`/cds/admin/periods/print/${record.id}`, '_blank')}
+                        title="In Báo cáo tổng hợp kỳ"
+                    />
+                </Space>
             )
         }
     ];

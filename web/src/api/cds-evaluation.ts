@@ -20,6 +20,11 @@ export const updateCdsPeriod = async (id: number, payload: { year: string, start
     return data;
 };
 
+export const getCdsPeriodReport = async (id: number): Promise<any> => {
+    const { data } = await axiosClient.get(`/cds-evaluations/periods/${id}/report`);
+    return data;
+};
+
 export const getCdsDashboardStats = async (): Promise<any> => {
     const { data } = await axiosClient.get('/cds-evaluations/dashboard');
     return data;

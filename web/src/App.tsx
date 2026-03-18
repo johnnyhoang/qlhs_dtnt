@@ -17,6 +17,7 @@ import CdsEvaluations from './pages/cds/CdsEvaluations';
 import CdsEvaluationForm from './pages/cds/CdsEvaluationForm';
 import CdsAdminPeriods from './pages/cds/CdsAdminPeriods';
 import CdsEvaluationPrint from './pages/cds/CdsEvaluationPrint';
+import CdsPeriodPrint from './pages/cds/CdsPeriodPrint';
 
 const queryClient = new QueryClient();
 
@@ -116,12 +117,13 @@ const App: React.FC = () => {
                   <Route path="thanh-toan" element={<ProtectedRoute module="thanh-toan"><Payments /></ProtectedRoute>} />
                   <Route path="danh-muc-master" element={<AdminRoute><MasterData /></AdminRoute>} />
                   <Route path="nguoi-dung" element={<AdminRoute><Users /></AdminRoute>} />
-                  <Route path="cds/dashboard" element={<CdsDashboard />} />
-                  <Route path="cds/evaluations" element={<CdsEvaluations />} />
-                  <Route path="cds/evaluations/new" element={<CdsEvaluationForm />} />
-                  <Route path="cds/evaluations/:id" element={<CdsEvaluationForm />} />
-                  <Route path="cds/evaluations/print/:id" element={<CdsEvaluationPrint />} />
+                  <Route path="cds/dashboard" element={<ProtectedRoute module="cds"><CdsDashboard /></ProtectedRoute>} />
+                  <Route path="cds/evaluations" element={<ProtectedRoute module="cds"><CdsEvaluations /></ProtectedRoute>} />
+                  <Route path="cds/evaluations/new" element={<ProtectedRoute module="cds"><CdsEvaluationForm /></ProtectedRoute>} />
+                  <Route path="cds/evaluations/:id" element={<ProtectedRoute module="cds"><CdsEvaluationForm /></ProtectedRoute>} />
+                  <Route path="cds/evaluations/print/:id" element={<ProtectedRoute module="cds"><CdsEvaluationPrint /></ProtectedRoute>} />
                   <Route path="cds/admin/periods" element={<AdminRoute><CdsAdminPeriods /></AdminRoute>} />
+                  <Route path="cds/admin/periods/print/:id" element={<AdminRoute><CdsPeriodPrint /></AdminRoute>} />
                 </Route>
               </Routes>
             </BrowserRouter>

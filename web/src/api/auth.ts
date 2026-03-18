@@ -16,6 +16,7 @@ export interface NguoiDung {
     anh_dai_dien?: string;
     kich_hoat: boolean;
     danh_sach_quyen?: PhanQuyen[];
+    ghi_chu?: string;
 }
 
 export const googleLogin = async (idToken: string) => {

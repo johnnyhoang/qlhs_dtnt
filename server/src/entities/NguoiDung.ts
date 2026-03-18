@@ -21,6 +21,9 @@ export class NguoiDung {
     @Column({ nullable: true })
     anh_dai_dien?: string;
 
+    @Column({ nullable: true })
+    ghi_chu?: string;
+
     @Column({
         type: "enum",
         enum: VaiTro,

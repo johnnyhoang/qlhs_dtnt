@@ -7,6 +7,7 @@ router.get('/criteria', CdsEvaluationController.getCriteria);
 router.get('/periods', CdsEvaluationController.getPeriods);
 router.post('/periods', CdsEvaluationController.createPeriod);
 router.put('/periods/:id', CdsEvaluationController.updatePeriod);
+router.get('/periods/:id/report', CdsEvaluationController.getPeriodReport);
 router.get('/dashboard', CdsEvaluationController.getDashboardStats);
 router.get('/', CdsEvaluationController.getMyEvaluations);
 router.get('/:id', CdsEvaluationController.getEvaluationById);

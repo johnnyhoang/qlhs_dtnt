@@ -132,14 +132,16 @@ const MainLayout: React.FC = () => {
             <Layout className="site-layout">
                 <Header style={{ padding: '0 16px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <Button
-                            type="primary"
-                            ghost
-                            icon={isCdsApp ? <TableOutlined /> : <FundProjectionScreenOutlined />}
-                            onClick={() => navigate(isCdsApp ? '/' : '/cds/dashboard')}
-                        >
-                            {!screens.xs && (isCdsApp ? ' Trở lại Quản lý Học sinh' : ' Chuyển sang CĐS')}
-                        </Button>
+                        {hasAccess('cds') && (
+                            <Button
+                                type="primary"
+                                ghost
+                                icon={isCdsApp ? <TableOutlined /> : <FundProjectionScreenOutlined />}
+                                onClick={() => navigate(isCdsApp ? '/' : '/cds/dashboard')}
+                            >
+                                {!screens.xs && (isCdsApp ? ' Trở lại Quản lý Học sinh' : ' Chuyển sang CĐS')}
+                            </Button>
+                        )}
                     </div>
                     <Space size={screens.xs ? "small" : "large"}>
                         <Space>
