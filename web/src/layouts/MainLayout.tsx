@@ -38,7 +38,9 @@ const MainLayout: React.FC = () => {
         return user?.danh_sach_quyen?.some((p: any) => p.ma_module === moduleName && p.co_quyen_xem);
     };
 
-    const menuItems = [
+    const isCdsApp = location.pathname.startsWith('/cds');
+
+    const qlhsMenuItems = [
         {
             key: '/',
             icon: <DashboardOutlined />,
@@ -86,24 +88,32 @@ const MainLayout: React.FC = () => {
             icon: <TeamOutlined />,
             label: 'Quản lý người dùng',
             onClick: () => navigate('/nguoi-dung')
-        },
-        {
-            key: '/cds',
-            icon: <FundProjectionScreenOutlined />,
-            label: 'Chuyển đổi số',
-            children: [
-                { key: '/cds/dashboard', label: 'Tổng quan', onClick: () => navigate('/cds/dashboard') },
-                { key: '/cds/evaluations', label: 'Tự đánh giá', onClick: () => navigate('/cds/evaluations') }
-            ]
         }
     ].filter(Boolean);
+
+    const cdsMenuItems = [
+        {
+            key: '/cds/dashboard',
+            icon: <DashboardOutlined />,
+            label: 'Tổng quan CĐS',
+            onClick: () => navigate('/cds/dashboard')
+        },
+        {
+            key: '/cds/evaluations',
+            icon: <FundProjectionScreenOutlined />,
+            label: 'Danh sách phiếu',
+            onClick: () => navigate('/cds/evaluations')
+        }
+    ];
+
+    const menuItems = isCdsApp ? cdsMenuItems : qlhsMenuItems;
 
     return (
         <Layout style={{ minHeight: '100vh', width: '100%' }}>
             {!screens.xs && (
                 <Sider collapsible breakpoint="lg">
                     <div style={{ height: 32, margin: 16, background: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
-                        QLHS DTNT
+                        {isCdsApp ? 'MODULE CĐS' : 'QLHS DTNT'}
                     </div>
                     <Menu
                         theme="dark"
@@ -115,7 +125,16 @@ const MainLayout: React.FC = () => {
             )}
             <Layout className="site-layout">
                 <Header style={{ padding: '0 16px', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div />
+                    <div>
+                        <Button
+                            type="primary"
+                            ghost
+                            icon={isCdsApp ? <TableOutlined /> : <FundProjectionScreenOutlined />}
+                            onClick={() => navigate(isCdsApp ? '/' : '/cds/dashboard')}
+                        >
+                            {!screens.xs && (isCdsApp ? ' Trở lại Quản lý Học sinh' : ' Chuyển sang CĐS')}
+                        </Button>
+                    </div>
                     <Space size={screens.xs ? "small" : "large"}>
                         <Space>
                             <Avatar src={user?.anh_dai_dien} icon={<UserOutlined />} />

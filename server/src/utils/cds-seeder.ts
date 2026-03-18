@@ -1,5 +1,6 @@
 import { AppDataSource } from "../data-source";
 import { CdsCriterion } from "../entities/CdsCriterion";
+import { CdsEvaluationPeriod } from "../entities/CdsEvaluationPeriod";
 
 export const CDS_CRITERIA_DATA = [
   // Nhóm 1: Dạy, học
@@ -39,19 +40,53 @@ export const CDS_CRITERIA_DATA = [
 export const seedCdsCriteria = async () => {
     try {
         const repo = AppDataSource.getRepository(CdsCriterion);
+        
+        // Dọn dẹp duplicate (do Vercel Serverless chạy song song khởi tạo nhiều instance cùng lúc)
+        const allCriteria = await repo.find({ order: { id: 'ASC' } });
+        const existingCodes = new Set<string>();
+        let removedCount = 0;
+        
+        for (const c of allCriteria) {
+            if (existingCodes.has(c.code)) {
+                await repo.remove(c); // Xoá dòng trùng lặp giữ lại dòng gốc có id bé nhất
+                removedCount++;
+            } else {
+                existingCodes.add(c.code);
+            }
+        }
+
+        if (removedCount > 0) {
+            console.log(`[CdsSeeder] Đã dọn dẹp ${removedCount} tiêu chí chuyển đổi số bị trùng lặp.`);
+        }
+
         let count = 0;
         for (const item of CDS_CRITERIA_DATA) {
-            const exists = await repo.findOneBy({ code: item.code });
-            if (!exists) {
+            if (!existingCodes.has(item.code)) {
                 const entity = repo.create(item);
                 await repo.save(entity);
                 count++;
             }
         }
+        
         if (count > 0) {
             console.log(`[CdsSeeder] Đã thêm mới ${count} tiêu chí chuyển đổi số.`);
         }
+
+        // Tự động tạo 1 Kỳ đánh giá (Period) mặc định nếu Database chưa có kỳ nào
+        const periodRepo = AppDataSource.getRepository(CdsEvaluationPeriod);
+        const existingPeriod = await periodRepo.count();
+        if (existingPeriod === 0) {
+            const currentYear = new Date().getFullYear();
+            const defaultPeriod = periodRepo.create({
+                year: `${currentYear}-${currentYear + 1}`,
+                start_date: new Date(`${currentYear}-09-01`),
+                end_date: new Date(`${currentYear + 1}-05-31`)
+            });
+            await periodRepo.save(defaultPeriod);
+            console.log(`[CdsSeeder] Đã tự động tạo Kỳ đánh giá mặc định: Năm học ${currentYear}-${currentYear + 1}`);
+        }
+
     } catch (e) {
-        console.error("[CdsSeeder] Lỗi khi tạo dữ liệu tiêu chí: ", e);
+        console.error("[CdsSeeder] Lỗi khi tạo/dọn dẹp dữ liệu tiêu chí và kỳ đánh giá: ", e);
     }
 };

@@ -19,7 +19,9 @@ const BottomNav: React.FC<BottomNavProps> = ({ hasAccess }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const navItems = [
+    const isCdsApp = location.pathname.startsWith('/cds');
+
+    const qlhsNavItems = [
         {
             key: '/',
             icon: <DashboardOutlined />,
@@ -43,14 +45,25 @@ const BottomNav: React.FC<BottomNavProps> = ({ hasAccess }) => {
             icon: <DollarCircleOutlined />,
             label: 'Tiền',
             path: '/thanh-toan'
-        },
-        {
-            key: '/cds/dashboard',
-            icon: <FundProjectionScreenOutlined />,
-            label: 'CĐS',
-            path: '/cds/dashboard'
         }
     ].filter(Boolean) as any[];
+
+    const cdsNavItems = [
+        {
+            key: '/cds/dashboard',
+            icon: <DashboardOutlined />,
+            label: 'Tổng quan',
+            path: '/cds/dashboard'
+        },
+        {
+            key: '/cds/evaluations',
+            icon: <FundProjectionScreenOutlined />,
+            label: 'Phiếu',
+            path: '/cds/evaluations'
+        }
+    ];
+
+    const navItems = isCdsApp ? cdsNavItems : qlhsNavItems;
 
     return (
         <Footer
