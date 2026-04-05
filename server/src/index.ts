@@ -9,14 +9,7 @@ const app = express();
 
 // CORS configuration for production
 app.use(cors({
-  origin: [
-    'https://qlhs-web-311534268252.asia-southeast1.run.app',
-    'https://qlhs-web.vercel.app',
-    /\.vercel\.app$/, // Allow all Vercel preview deployments
-    'http://localhost:5173',
-    'http://localhost:8080',
-    'http://localhost:3500'
-  ],
+  origin: CONFIG.CORS_ORIGINS,
   credentials: true
 }));
 app.use(express.json());
@@ -36,7 +29,7 @@ app.use(async (req, res, next) => {
     console.error("Database initialization failed in middleware:", err);
     res.status(500).json({ 
       message: "Database initialization failed",
-      error: process.env.NODE_ENV === 'development' ? err : undefined
+      error: CONFIG.NODE_ENV === 'development' ? err : undefined
     });
   }
 });
@@ -63,9 +56,8 @@ const startServer = async () => {
 
   // Only listen on port if not in Vercel environment
   if (process.env.VERCEL !== '1') {
-    const port = Number(process.env.PORT) || 8080;
-    const server = app.listen(port, "0.0.0.0", () => {
-      console.log(`Server is listening on port ${port}`);
+    const server = app.listen(CONFIG.PORT, "0.0.0.0", () => {
+      console.log(`Server is listening on port ${CONFIG.PORT}`);
     });
 
     process.on('SIGINT', () => {

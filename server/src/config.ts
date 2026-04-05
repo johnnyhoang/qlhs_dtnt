@@ -1,16 +1,51 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+const parseNumber = (value: string | undefined, fallback: number) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const requireEnv = (name: string) => {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+};
+
+const optionalEnv = (name: string) => process.env[name]?.trim() || undefined;
+
+const parseCorsOrigins = () => {
+  const rawValue = process.env.CORS_ORIGINS;
+
+  if (!rawValue) {
+    return [
+      'http://localhost:5173',
+      'http://localhost:8080',
+      'http://localhost:3500',
+    ];
+  }
+
+  return rawValue
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+};
+
 export const CONFIG = {
-  PORT: process.env.PORT || 8080,
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  PORT: parseNumber(process.env.PORT, 8080),
   DB: {
-    DATABASE_URL: process.env.DATABASE_URL,
-    HOST: process.env.DB_HOST || 'localhost',
-    PORT: Number(process.env.DB_PORT) || 5432,
-    USERNAME: process.env.DB_USER || process.env.DB_USERNAME || 'qlhs_user',
-    PASSWORD: process.env.DB_PASS || process.env.DB_PASSWORD || 'B1g.h13u',
-    NAME: process.env.DB_NAME || 'qlhs_db',
+    DATABASE_URL: optionalEnv('DATABASE_URL'),
+    HOST: optionalEnv('DB_HOST'),
+    PORT: parseNumber(process.env.DB_PORT, 5432),
+    USERNAME: optionalEnv('DB_USER'),
+    PASSWORD: optionalEnv('DB_PASSWORD'),
+    NAME: optionalEnv('DB_NAME'),
+    SSL: process.env.DB_SSL === 'true',
   },
-  JWT_SECRET: process.env.JWT_SECRET || 'super_secret_jwt_key_hieu_hoa',
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+  JWT_SECRET: requireEnv('JWT_SECRET'),
+  GOOGLE_CLIENT_ID: requireEnv('GOOGLE_CLIENT_ID'),
+  CORS_ORIGINS: parseCorsOrigins(),
 };

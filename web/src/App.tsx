@@ -18,24 +18,9 @@ import CdsEvaluationForm from './pages/cds/CdsEvaluationForm';
 import CdsAdminPeriods from './pages/cds/CdsAdminPeriods';
 import CdsEvaluationPrint from './pages/cds/CdsEvaluationPrint';
 import CdsPeriodPrint from './pages/cds/CdsPeriodPrint';
+import { WEB_ENV } from './config/env';
 
 const queryClient = new QueryClient();
-
-let finalGoogleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-if (!finalGoogleClientId) {
-  if (import.meta.env.DEV) {
-    finalGoogleClientId = "311534268252-fjpb2dvc8kpne0hrca4fr9pb5k9sspeh.apps.googleusercontent.com";
-  } else {
-    throw new Error("VITE_GOOGLE_CLIENT_ID is not defined");
-  }
-}
-
-finalGoogleClientId = finalGoogleClientId.trim();
-
-console.log('Using Google Client ID:', finalGoogleClientId);
-console.log('API URL:', import.meta.env.VITE_API_URL);
-console.log('Current Origin:', window.location.origin);
 
 const ProtectedRoute = ({ children, module }: { children: React.ReactElement, module?: string }) => {
   const userJson = localStorage.getItem('user');
@@ -85,7 +70,7 @@ import { AuthProvider } from './contexts/AuthContext';
 
 const App: React.FC = () => {
   return (
-    <GoogleOAuthProvider clientId={finalGoogleClientId}>
+    <GoogleOAuthProvider clientId={WEB_ENV.GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ConfigProvider

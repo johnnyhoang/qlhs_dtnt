@@ -1,17 +1,8 @@
 import axios from 'axios';
-
-let baseURL = import.meta.env.VITE_API_URL;
-
-if (!baseURL) {
-    if (import.meta.env.DEV) {
-        baseURL = 'http://localhost:8080/api';
-    } else {
-        throw new Error("VITE_API_URL is not defined");
-    }
-}
+import { WEB_ENV } from '../config/env';
 
 const client = axios.create({
-    baseURL,
+    baseURL: WEB_ENV.API_URL,
     headers: {
         'Content-Type': 'application/json',
     },

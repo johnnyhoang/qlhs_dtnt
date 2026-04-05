@@ -39,13 +39,6 @@ const Login: React.FC = () => {
                 duration: 0, // Stay open until closed manually
                 placement: 'top'
             });
-
-            // Fallback for debugging: alert will NOT close and stops execution
-            alert(`LOGIN ERROR:\nMsg: ${errorMsg}\nStatus: ${status}\nAPI: ${apiUrl}`);
-
-            // Log to console in a way that's easy to see even after refresh if possible
-            console.error('--- DEBUG LOGIN ERROR ---');
-            console.dir(error);
         }
     };
 
