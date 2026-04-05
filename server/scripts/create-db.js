@@ -10,9 +10,9 @@ async function createDatabase() {
       process.env.DATABASE_URL.replace(`/${dbName}`, '/postgres') : 
       undefined,
     host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432'),
-    user: process.env.DB_USER || process.env.DB_USERNAME || 'postgres',
-    password: process.env.DB_PASS || process.env.DB_PASSWORD || 'B1g.h13u',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD,
     database: 'postgres', // Connect to default db
   });
 

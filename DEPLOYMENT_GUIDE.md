@@ -1,103 +1,83 @@
-# Hướng dẫn Deploy Monorepo lên Google Cloud Run
+# Deployment Guide
 
-Tài liệu này hướng dẫn bạn từng bước để thiết lập và deploy cả backend và frontend lên Google Cloud Platform (GCP).
+This project uses:
+- PostgreSQL on Supabase
+- Express API in `server`
+- Vite web app in `web`
+- Google OAuth with one shared Google Client ID for frontend and backend verification
 
-## 1. Chuẩn bị (GCP Project)
+## Required Environment Variables
 
-1.  **Tạo Project**: Truy cập [GCP Console](https://console.cloud.google.com/) và tạo một project mới (ví dụ: `qlhs-dtnt`).
-2.  **Bật Billing**: Đảm bảo project của bạn đã được liên kết với tài khoản thanh toán.
-3.  **Cài đặt gcloud CLI**: (Tùy chọn) Để quản lý từ terminal cục bộ.
+### Server
+- `NODE_ENV=production`
+- `PORT=8080` on Cloud Run, or `3500` for local development
+- `DATABASE_URL=postgresql://...`
+- `JWT_SECRET=...`
+- `GOOGLE_CLIENT_ID=...`
+- `CORS_ORIGINS=https://your-web-domain,https://your-preview-domain`
+- `ALLOW_VERCEL_PREVIEWS=true|false`
 
-## 2. Kích hoạt các API cần thiết
+### Web
+- `VITE_API_URL=https://your-server-domain/api`
+- `VITE_GOOGLE_CLIENT_ID=...`
 
-Mở Cloud Shell hoặc sử dụng terminal cục bộ để chạy lệnh:
+## Google OAuth Requirements
+
+The same Google OAuth Web Client ID must be configured in:
+- `server` as `GOOGLE_CLIENT_ID`
+- `web` as `VITE_GOOGLE_CLIENT_ID`
+
+In Google Cloud Console, add every frontend origin that can open the login page to `Authorized JavaScript origins`, for example:
+- `http://localhost:5173`
+- `https://qlhs-web-311534268252.asia-southeast1.run.app`
+- `https://qlhs-web.vercel.app`
+- Any custom production domain you use
+
+## Deploy to Cloud Run
+
+Use [cloudbuild.yaml](/d/hieu/qlhs_dtnt/cloudbuild.yaml) to build and deploy both services.
+
+Important substitutions:
+- `_DATABASE_URL`
+- `_JWT_SECRET`
+- `_GOOGLE_CLIENT_ID`
+- `_VITE_API_URL`
+- `_CORS_ORIGINS`
+- `_ALLOW_VERCEL_PREVIEWS`
+
+Backend and frontend are deployed as separate Cloud Run services:
+- `qlhs-server`
+- `qlhs-web`
+
+## Deploy to Vercel
+
+### Server
+- Root directory: `server`
+- Build preset: Node.js / `@vercel/node`
+- Required env:
+  - `DATABASE_URL`
+  - `JWT_SECRET`
+  - `GOOGLE_CLIENT_ID`
+  - `CORS_ORIGINS`
+  - `ALLOW_VERCEL_PREVIEWS=true` if you want preview deployments to call the API
+
+### Web
+- Root directory: `web`
+- Build command: `npm run build`
+- Output directory: `dist`
+- Required env:
+  - `VITE_API_URL`
+  - `VITE_GOOGLE_CLIENT_ID`
+
+## Local Development
+
+Create:
+- [server/.env.example](/d/hieu/qlhs_dtnt/server/.env.example) -> `server/.env`
+- [web/.env.example](/d/hieu/qlhs_dtnt/web/.env.example) -> `web/.env`
+
+Then run:
 
 ```bash
-gcloud services enable \
-    cloudbuild.googleapis.com \
-    run.googleapis.com \
-    containerregistry.googleapis.com \
-    sqladmin.googleapis.com \
-    secretmanager.googleapis.com
+cd server && npm run dev
+cd web && npm run dev
 ```
-
-## 3. Thiết lập Cloud SQL (Database)
-
-1.  Vào **Cloud SQL** > **Create Instance** > **MySQL**.
-2.  Đặt ID instance (ví dụ: `qlhs-db-instance`) và mật khẩu root.
-3.  **Lưu lại Connection Name**: định dạng `project-id:region:instance-id`.
-4.  Tạo database `qlhs_db` và user `qlhs_user` trong instance.
-
-## 4. Cấu hình Quyền (IAM)
-
-Để Cloud Build có thể deploy lên Cloud Run và kết nối SQL, bạn cần cấp quyền cho Service Account của Cloud Build (thường có dạng `PROJECT_NUMBER@cloudbuild.gserviceaccount.com` hoặc `PROJECT_ID@appspot.gserviceaccount.com`):
-
-1.  Vào **IAM & Admin** > **IAM**.
-2.  Tìm Service Account của Cloud Build và thêm các role:
-    *   `Cloud Run Admin`
-    *   `Cloud SQL Client`
-    *   `Service Account User`
-
-## 5. Tạo Cloud Build Trigger
-
-1.  Vào **Cloud Build** > **Triggers** > **Create Trigger**.
-2.  **Source**: Kết nối với repository Git của bạn (GitHub/GitLab).
-3.  **Configuration**: Chọn **Cloud Build configuration file (yaml)** và chỉ đường dẫn tới `cloudbuild.yaml` ở gốc thư mục.
-4.  **Substitution variables**: Đây là bước QUAN TRỌNG NHẤT.
-
-### Các biến Substitution bắt buộc:
-
-| Variable | Giá trị (Ví dụ) | Mô tả |
-| :--- | :--- | :--- |
-| `_DB_PASS` | `mật-khẩu-db` | **[BẮT BUỘC]** Mật khẩu database. |
-| `_JWT_SECRET` | `chuỗi-bí-mật` | **[BẮT BUỘC]** Secret để ký token JWT. |
-| `_INSTANCE_CONNECTION_NAME` | `project:asia-southeast1:instance` | **[BẮT BUỘC]** Tên kết nối Cloud SQL. |
-| `_VITE_API_URL` | `https://qlhs-server-xxx.run.app/api` | URL của backend (sau khi deploy backend lần đầu). |
-| `_GOOGLE_CLIENT_ID` | `xxx.apps.googleusercontent.com` | Google Client ID cho tính năng login. |
-
-> [!TIP]
-> Lần deploy đầu tiên, bạn có thể chưa có `_VITE_API_URL`. Hãy deploy backend trước, lấy URL, sau đó cập nhật trigger và deploy lại.
-
-## 6. Luồng Deploy & Kiểm tra
-
-1.  **Push code**: Mỗi khi bạn push code lên nhánh master, Cloud Build sẽ tự động chạy.
-2.  **Kiểm tra Build**: Vào **Cloud Build** > **History** để xem tiến độ.
-3.  **Kiểm tra Service**:
-    *   Vào **Cloud Run** để xác nhận 2 service `qlhs-server` và `qlhs-web` đã chạy.
-    *   Cửa sổ terminal của backend sẽ hiện: `Server is listening on port 8080`.
-
-## 7. Các lưu ý quan trọng (Production)
-
-*   **Strict Env**: Frontend sẽ báo lỗi ngay lập tức (throw error) nếu thiếu `VITE_API_URL` hoặc `VITE_GOOGLE_CLIENT_ID` trong bản build production.
-*   **CORS**: Đảm bảo URL của frontend đã được thêm vào danh sách `origin` trong `server/src/index.ts`.
-*   **Port**: Cả hai service đều được cấu hình chạy trên port chuẩn **8080**.
-
----
-# Hướng dẫn Deploy lên Vercel (Khuyên dùng cho Backend + Frontend tách biệt)
-
-Vercel là lựa chọn tuyệt vời để deploy monorepo này một cách nhanh chóng. Chúng ta sẽ deploy `server` và `web` thành 2 dự án riêng biệt trên Vercel.
-
-## 1. Deploy Backend (Server)
-
-1.  **Tạo dự án mới** trên Vercel Dashboard.
-2.  Kết nối với repository và chọn thư mục gốc là `server`.
-3.  **Cấu hình biến môi trường**:
-    *   `DATABASE_URL`: Connection string từ Supabase (hoặc Postgres khác).
-    *   `JWT_SECRET`: Chuỗi bí mật cho JWT.
-4.  Vercel sẽ tự động nhận diện `vercel.json` và deploy code dưới dạng Serverless Functions.
-
-## 2. Deploy Frontend (Web)
-
-1.  **Tạo một dự án Vercel khác**.
-2.  Chọn cùng repository nhưng đặt thư mục gốc là `web`.
-3.  **Cấu hình biến môi trường**:
-    *   `VITE_API_URL`: URL của backend vừa deploy (ví dụ: `https://qlhs-server.vercel.app/api`).
-    *   `VITE_GOOGLE_CLIENT_ID`: Google Client ID của bạn.
-4.  Cài đặt build command là `vite build` và output directory là `dist`.
-
-## 3. Cấu hình CORS (Nếu cần)
-
-Nếu URL frontend của bạn khác với danh sách trong `server/src/index.ts`, hãy cập nhật mảng `origin` trong file đó để cho phép frontend gọi API.
-
----
-*Chúc bạn deploy thành công!*

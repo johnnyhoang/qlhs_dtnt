@@ -1,56 +1,45 @@
 # Student Management System (QLHS-DTNT)
 
-A comprehensive management system for ethnic minority boarding schools, covering students, meals, insurance, transport, and payments.
+Student management system for ethnic minority boarding schools.
 
----
+## Stack
+- Frontend: React, Vite, TypeScript, Ant Design
+- Backend: Node.js, Express, TypeScript, TypeORM
+- Database: PostgreSQL on Supabase
+- Deploy: Cloud Run or Vercel
 
-## 📖 Project Knowledge
-For detailed project context, design decisions, tech stack, and roadmap, please refer to **[PROJECT_MEMORY.md](./PROJECT_MEMORY.md)**.
+## Local Setup
 
----
+### Database
+Use Supabase directly, or run local PostgreSQL:
 
-## 🛠 Tech Stack
-- **Frontend**: React (Vite), TypeScript, Ant Design, React Query.
-- **Backend**: Node.js, Express, TypeScript, TypeORM.
-- **Database**: MySQL 8.0.
-- **DevOps**: Docker, Google Cloud Run.
-
----
-
-## 🏛 Architecture
-- **Monorepo**: `/server` (API) and `/web` (SPA).
-- **Service Layer**: Business logic isolated in backend services.
-- **Unified Master Data**: Flexible categorization for reference lists.
-
----
-
-## 🚀 Setup & Running
-
-### 1. Database
-Start MySQL using Docker Compose:
 ```bash
-docker-compose up -d mysql
+docker-compose up -d postgres
 ```
-Ensure you have a local MySQL running and update `server/.env`.
 
-### 2. Backend (Server)
+### Server
+Create `server/.env` from [server/.env.example](/d/hieu/qlhs_dtnt/server/.env.example), then run:
+
 ```bash
 cd server
 npm install
 npm run dev
 ```
-Server runs on port 3500. API: `http://localhost:3500/api`
 
-### 3. Frontend (Web)
+Current local env in this workspace uses `http://localhost:3500/api`.
+
+### Web
+Create `web/.env` from [web/.env.example](/d/hieu/qlhs_dtnt/web/.env.example), then run:
+
 ```bash
 cd web
 npm install
 npm run dev
 ```
-Web runs on `http://localhost:5173`
 
----
+Web runs on `http://localhost:5173`.
 
-## 🔐 Credentials
-- **Admin**: `admin` / `adminpassword`
-- **User**: `user` / `userpassword`
+## Key Rules
+- Database config should use `DATABASE_URL`
+- `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID` must match
+- API CORS is controlled by `CORS_ORIGINS`

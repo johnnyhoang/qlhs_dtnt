@@ -7,9 +7,24 @@ import { seedCdsCriteria } from './utils/cds-seeder';
 
 const app = express();
 
+const isAllowedOrigin = (origin: string) => {
+  if (CONFIG.CORS_ORIGINS.includes(origin)) {
+    return true;
+  }
+
+  return CONFIG.ALLOW_VERCEL_PREVIEWS && origin.endsWith('.vercel.app');
+};
+
 // CORS configuration for production
 app.use(cors({
-  origin: CONFIG.CORS_ORIGINS,
+  origin: (origin, callback) => {
+    if (!origin || isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
   credentials: true
 }));
 app.use(express.json());

@@ -69,6 +69,10 @@ steps:
       - 'JWT_SECRET=$_JWT_SECRET'
       - '--set-env-vars'
       - 'GOOGLE_CLIENT_ID=$_GOOGLE_CLIENT_ID'
+      - '--set-env-vars'
+      - 'CORS_ORIGINS=$_CORS_ORIGINS'
+      - '--set-env-vars'
+      - 'ALLOW_VERCEL_PREVIEWS=$_ALLOW_VERCEL_PREVIEWS'
     id: 'deploy-server'
     waitFor: ['push-server']
 
@@ -108,3 +112,5 @@ substitutions:
   _DATABASE_URL: 'needs_to_be_set_in_trigger' # SECURITY: Set this in Cloud Build Trigger
   _JWT_SECRET: 'needs_to_be_set_in_trigger' # SECURITY: Set this in Cloud Build Trigger
   _GOOGLE_CLIENT_ID: '311534268252-fjpb2dvc8kpne0hrca4fr9pb5k9sspeh.apps.googleusercontent.com'
+  _CORS_ORIGINS: 'https://qlhs-web-311534268252.asia-southeast1.run.app,https://qlhs-web.vercel.app'
+  _ALLOW_VERCEL_PREVIEWS: 'true'
