@@ -33,6 +33,14 @@ export const adminOnly = (req: Request, res: Response, next: NextFunction) => {
     next();
 };
 
+export const editorOrAdmin = (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user;
+    if (user?.vai_tro !== VaiTro.ADMIN && user?.vai_tro !== VaiTro.EDITOR) {
+        return res.status(403).json({ message: 'Access denied: Editors or Admins only' });
+    }
+    next();
+};
+
 export const checkModuleAccess = (moduleName: string, requireWrite = false) => {
     return (req: Request, res: Response, next: NextFunction) => {
         const user = (req as any).user;

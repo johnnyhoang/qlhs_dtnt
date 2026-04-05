@@ -15,6 +15,8 @@ import { CdsEvaluationPeriod } from "./entities/CdsEvaluationPeriod";
 import { CdsCriterion } from "./entities/CdsCriterion";
 import { CdsEvaluation } from "./entities/CdsEvaluation";
 import { CdsEvaluationDetail } from "./entities/CdsEvaluationDetail";
+import { CMSPage } from "./entities/CMSPage";
+import { CMSMenu } from "./entities/CMSMenu";
 
 if (
     !CONFIG.DB.DATABASE_URL &&
@@ -56,7 +58,9 @@ export const AppDataSource = new DataSource({
         CdsEvaluationPeriod,
         CdsCriterion,
         CdsEvaluation,
-        CdsEvaluationDetail
+        CdsEvaluationDetail,
+        CMSPage,
+        CMSMenu,
     ],
     migrations: [__dirname + "/migrations/*.ts"],
     subscribers: [],

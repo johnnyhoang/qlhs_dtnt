@@ -2,12 +2,13 @@ import React from 'react';
 import { Card, notification, Typography, Space } from 'antd';
 import { GoogleLogin } from '@react-oauth/google';
 import { googleLogin } from '../api/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
 
     const handleGoogleSuccess = async (credentialResponse: any) => {
         try {
@@ -18,7 +19,7 @@ const Login: React.FC = () => {
                 message: 'Đăng nhập thành công',
                 placement: 'top'
             });
-            navigate('/');
+            navigate(searchParams.get('from') || (user?.vai_tro === 'EDITOR' ? '/admin/cms' : '/admin'));
         } catch (error: any) {
             console.error('Login error:', error);
             const errorData = error.response?.data;

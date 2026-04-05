@@ -3,6 +3,7 @@ import { PhanQuyen } from "./PhanQuyen";
 
 export enum VaiTro {
     ADMIN = "ADMIN",
+    EDITOR = "EDITOR",
     USER = "USER",
     TEACHER = "TEACHER"
 }

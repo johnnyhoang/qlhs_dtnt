@@ -21,9 +21,9 @@ client.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
-            // Only redirect if not already on login page to avoid refresh wiping out error messages
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
+            if (window.location.pathname !== '/admin/login') {
+                const redirectTo = encodeURIComponent(window.location.pathname + window.location.search);
+                window.location.href = `/admin/login?from=${redirectTo}`;
             }
         }
         return Promise.reject(error);

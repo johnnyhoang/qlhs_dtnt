@@ -10,6 +10,7 @@ import nguoiDungRoutes from './nguoi-dung.routes';
 import danhMucMasterRoutes from './danh-muc-master.routes';
 import thongKeRoutes from './thong-ke.routes';
 import cdsRoutes from './cds-evaluation.routes';
+import cmsRoutes from './cms.routes';
 import { authMiddleware, adminOnly, checkModuleAccess } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -29,6 +30,7 @@ router.get('/health', (req, res) => {
 });
 
 router.use('/auth', authRoutes);
+router.use('/cms', cmsRoutes);
 
 // Protected routes
 router.use(authMiddleware);

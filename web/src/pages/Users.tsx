@@ -110,6 +110,7 @@ const Users: React.FC = () => {
                     style={{ width: 120 }}
                 >
                     <Select.Option value="ADMIN">ADMIN</Select.Option>
+                    <Select.Option value="EDITOR">EDITOR</Select.Option>
                     <Select.Option value="USER">USER</Select.Option>
                     <Select.Option value="TEACHER">TEACHER</Select.Option>
                 </Select>
@@ -189,7 +190,7 @@ const Users: React.FC = () => {
                         <div>
                             <div className="mobile-card-row">
                                 <span style={{ fontWeight: 600, fontSize: '1.1em' }}>{record.ho_ten}</span>
-                                <Tag color={record.vai_tro === 'ADMIN' ? 'red' : record.vai_tro === 'TEACHER' ? 'green' : 'blue'}>
+                                <Tag color={record.vai_tro === 'ADMIN' ? 'red' : record.vai_tro === 'EDITOR' ? 'orange' : record.vai_tro === 'TEACHER' ? 'green' : 'blue'}>
                                     {record.vai_tro}
                                 </Tag>
                             </div>

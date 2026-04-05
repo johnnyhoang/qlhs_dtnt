@@ -7,7 +7,9 @@
     "dev": "nodemon src/index.ts",
     "start": "ts-node src/index.ts",
     "build": "tsc",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "typeorm": "typeorm-ts-node-commonjs",
+    "test": "vitest run tests --environment node --globals --pool threads --testTimeout 15000",
+    "test:watch": "vitest tests --environment node --globals --pool threads --testTimeout 15000"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +26,7 @@
     "multer": "^2.0.2",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
+    "sanitize-html": "^2.17.2",
     "typeorm": "^0.3.28",
     "zod": "^4.3.6"
   },
@@ -34,8 +37,12 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^25.2.0",
+    "@types/sanitize-html": "^2.16.1",
+    "@types/supertest": "^7.2.0",
     "nodemon": "^3.1.11",
+    "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
   }
 }

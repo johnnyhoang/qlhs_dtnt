@@ -6,6 +6,7 @@ import routes from './routes';
 import { seedCdsCriteria } from './utils/cds-seeder';
 
 const app = express();
+let dataSourceInitPromise: Promise<void> | null = null;
 
 const isAllowedOrigin = (origin: string) => {
   if (CONFIG.CORS_ORIGINS.includes(origin)) {
@@ -29,16 +30,51 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Database initialization middleware
-app.use(async (req, res, next) => {
+const ensureDataSourceReady = async () => {
   if (AppDataSource.isInitialized) {
-    return next();
+    return;
   }
-  
+
+  if (!dataSourceInitPromise) {
+    dataSourceInitPromise = (async () => {
+      console.log("Initializing Data Source...");
+      await AppDataSource.initialize();
+      await seedCdsCriteria();
+      console.log("Data Source has been initialized!");
+      lastDbError = null;
+    })().catch((err) => {
+      lastDbError = err;
+      dataSourceInitPromise = null;
+      throw err;
+    });
+  }
+
+  await dataSourceInitPromise;
+};
+
+app.get('/api/health', async (_req, res) => {
   try {
-    console.log("Database not initialized, initializing now...");
-    await AppDataSource.initialize();
-    await seedCdsCriteria();
+    await ensureDataSourceReady();
+    res.json({
+      ok: true,
+      database: 'ready',
+      environment: CONFIG.NODE_ENV,
+    });
+  } catch (err) {
+    console.error("Health check failed:", err);
+    res.status(500).json({
+      ok: false,
+      database: 'error',
+      environment: CONFIG.NODE_ENV,
+      error: CONFIG.NODE_ENV === 'development' ? err : undefined,
+    });
+  }
+});
+
+// Database initialization middleware
+app.use(async (_req, res, next) => {
+  try {
+    await ensureDataSourceReady();
     next();
   } catch (err) {
     console.error("Database initialization failed in middleware:", err);
@@ -59,11 +95,7 @@ export let lastDbError: any = null;
 
 const startServer = async () => {
   try {
-    console.log("Initializing Data Source...");
-    await AppDataSource.initialize();
-    await seedCdsCriteria();
-    console.log("Data Source has been initialized!");
-    lastDbError = null;
+    await ensureDataSourceReady();
   } catch (err) {
     console.error("Error during Data Source initialization:", err);
     lastDbError = err;

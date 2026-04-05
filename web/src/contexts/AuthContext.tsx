@@ -4,7 +4,7 @@ interface User {
     id: number;
     username: string;
     ho_ten: string;
-    vai_tro: 'ADMIN' | 'USER' | 'TEACHER';
+    vai_tro: 'ADMIN' | 'EDITOR' | 'USER' | 'TEACHER';
     lop_phu_trach?: string[];
     danh_sach_quyen?: any[];
 }

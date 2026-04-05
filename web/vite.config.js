@@ -1,11 +1,9 @@
-import { defineConfig, loadEnv } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  
-  // Strict check for production build
+
   if (mode === 'production') {
     if (!env.VITE_API_URL) {
       throw new Error('VITE_API_URL is missing in production build environment');
@@ -20,6 +18,6 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       host: true,
-    }
-  }
-})
+    },
+  };
+});

@@ -1,4 +1,4 @@
-# Deployment Guide
+﻿# Deployment Guide
 
 This project uses:
 - PostgreSQL on Supabase
@@ -10,7 +10,7 @@ This project uses:
 
 ### Server
 - `NODE_ENV=production`
-- `PORT=8080` on Cloud Run, or `3500` for local development
+- `PORT=3500` for local development. On Vercel the platform injects its own runtime port.
 - `DATABASE_URL=postgresql://...`
 - `JWT_SECRET=...`
 - `GOOGLE_CLIENT_ID=...`
@@ -29,51 +29,59 @@ The same Google OAuth Web Client ID must be configured in:
 
 In Google Cloud Console, add every frontend origin that can open the login page to `Authorized JavaScript origins`, for example:
 - `http://localhost:5173`
-- `https://qlhs-web-311534268252.asia-southeast1.run.app`
 - `https://qlhs-web.vercel.app`
 - Any custom production domain you use
 
-## Deploy to Cloud Run
+## Health Check
 
-Use [cloudbuild.yaml](/d/hieu/qlhs_dtnt/cloudbuild.yaml) to build and deploy both services.
+Backend health endpoint:
+- `GET /api/health`
 
-Important substitutions:
-- `_DATABASE_URL`
-- `_JWT_SECRET`
-- `_GOOGLE_CLIENT_ID`
-- `_VITE_API_URL`
-- `_CORS_ORIGINS`
-- `_ALLOW_VERCEL_PREVIEWS`
-
-Backend and frontend are deployed as separate Cloud Run services:
-- `qlhs-server`
-- `qlhs-web`
+Expected healthy response:
+```json
+{
+  "ok": true,
+  "database": "ready",
+  "environment": "production"
+}
+```
 
 ## Deploy to Vercel
 
 ### Server
 - Root directory: `server`
-- Build preset: Node.js / `@vercel/node`
+- Config: [server/vercel.json](/d:/hieu/qlhs_dtnt/server/vercel.json)
+- Runtime entry: `src/index.ts`
 - Required env:
   - `DATABASE_URL`
   - `JWT_SECRET`
   - `GOOGLE_CLIENT_ID`
   - `CORS_ORIGINS`
-  - `ALLOW_VERCEL_PREVIEWS=true` if you want preview deployments to call the API
+  - `ALLOW_VERCEL_PREVIEWS=true` if preview deployments should call the API
 
 ### Web
 - Root directory: `web`
+- Config: [web/vercel.json](/d:/hieu/qlhs_dtnt/web/vercel.json)
 - Build command: `npm run build`
 - Output directory: `dist`
 - Required env:
   - `VITE_API_URL`
   - `VITE_GOOGLE_CLIENT_ID`
 
+## Production Checklist
+- Deploy `server`
+- Open `https://<server-domain>/api/health` and confirm `ok: true`
+- Deploy `web` with `VITE_API_URL=https://<server-domain>/api`
+- Add the web domain to Google `Authorized JavaScript origins`
+- Ensure `CORS_ORIGINS` includes the deployed web domain
+- Verify login on `/admin/login`
+- Verify a public CMS page and a PDF page render correctly
+
 ## Local Development
 
 Create:
-- [server/.env.example](/d/hieu/qlhs_dtnt/server/.env.example) -> `server/.env`
-- [web/.env.example](/d/hieu/qlhs_dtnt/web/.env.example) -> `web/.env`
+- [server/.env.example](/d:/hieu/qlhs_dtnt/server/.env.example) -> `server/.env`
+- [web/.env.example](/d:/hieu/qlhs_dtnt/web/.env.example) -> `web/.env`
 
 Then run:
 
