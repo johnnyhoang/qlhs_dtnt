@@ -48,5 +48,7 @@ export const CONFIG = {
   JWT_SECRET: requireEnv('JWT_SECRET'),
   GOOGLE_CLIENT_ID: requireEnv('GOOGLE_CLIENT_ID'),
   CORS_ORIGINS: parseCorsOrigins(),
-  ALLOW_VERCEL_PREVIEWS: process.env.ALLOW_VERCEL_PREVIEWS === 'true',
+  ALLOW_VERCEL_PREVIEWS:
+    process.env.ALLOW_VERCEL_PREVIEWS === 'true' ||
+    (process.env.VERCEL === '1' && process.env.ALLOW_VERCEL_PREVIEWS !== 'false'),
 };

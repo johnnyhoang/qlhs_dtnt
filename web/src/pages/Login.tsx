@@ -24,6 +24,7 @@ const Login: React.FC = () => {
             const errorData = error.response?.data;
             const status = error.response?.status;
             const apiUrl = error.config?.url;
+            const apiBaseUrl = error.config?.baseURL;
             const errorMsg = errorData?.details || errorData?.message || error.message || 'Lỗi không xác định';
 
             notification.error({
@@ -32,6 +33,7 @@ const Login: React.FC = () => {
                     <div style={{ fontSize: '12px' }}>
                         <p><strong>Lỗi:</strong> {errorMsg}</p>
                         {status && <p><strong>Status:</strong> {status}</p>}
+                        {apiBaseUrl && <p><strong>Base URL:</strong> {apiBaseUrl}</p>}
                         {apiUrl && <p><strong>API:</strong> {apiUrl}</p>}
                         <p style={{ marginTop: '8px', color: '#888' }}>Mở Console (F12) để xem chi tiết Object.</p>
                     </div>
