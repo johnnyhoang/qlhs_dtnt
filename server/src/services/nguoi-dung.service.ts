@@ -3,6 +3,14 @@ import { NguoiDung, VaiTro } from "../entities/NguoiDung";
 import { PhanQuyen } from "../entities/PhanQuyen";
 
 export class NguoiDungService {
+    private static readonly DEFAULT_NEW_USER_PERMISSIONS = [
+        {
+            ma_module: "cds",
+            co_quyen_xem: true,
+            co_quyen_sua: true,
+        },
+    ];
+
     private static getUserRepository() {
         return AppDataSource.getRepository(NguoiDung);
     }
@@ -13,6 +21,7 @@ export class NguoiDungService {
 
     static async findOrCreateByEmail(email: string, ho_ten: string, anh_dai_dien?: string) {
         const repo = this.getUserRepository();
+        const permissionRepo = this.getPermissionRepository();
         let user = await repo.findOne({ 
             where: { email },
             relations: ["danh_sach_quyen"]
@@ -28,6 +37,15 @@ export class NguoiDungService {
                 kich_hoat: true
             });
             await repo.save(user);
+
+            const defaultPermissions = this.DEFAULT_NEW_USER_PERMISSIONS.map((permission) =>
+                permissionRepo.create({
+                    nguoi_dung_id: user!.id,
+                    ...permission,
+                })
+            );
+
+            user.danh_sach_quyen = await permissionRepo.save(defaultPermissions);
         }
 
         return user;

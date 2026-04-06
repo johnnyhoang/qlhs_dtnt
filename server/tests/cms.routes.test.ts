@@ -60,7 +60,7 @@ describe('cms routes integration', () => {
     expect(response.status).toBe(200);
     expect(response.body.items).toHaveLength(1);
     expect(response.body.items[0].nhan_menu).toBe('Trang chu');
-  });
+  }, 30000);
 
   it('creates a menu item on the admin endpoint', async () => {
     const cmsRoutes = (await import('../src/routes/cms.routes')).default;

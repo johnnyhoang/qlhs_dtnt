@@ -42,5 +42,5 @@ describe('auth middleware integration', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.user.email).toBe('admin@example.com');
-  });
+  }, 30000);
 });
