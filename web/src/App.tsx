@@ -1,32 +1,46 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { ConfigProvider } from 'antd';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Students from './pages/Students';
-import Meals from './pages/Meals';
-import Transport from './pages/Transport';
-import Insurance from './pages/Insurance';
-import Payments from './pages/Payments';
-import Users from './pages/Users';
-import MasterData from './pages/MasterData';
-import MainLayout from './layouts/MainLayout';
-import PublicLayout from './layouts/PublicLayout';
-import CdsDashboard from './pages/cds/CdsDashboard';
-import CdsEvaluations from './pages/cds/CdsEvaluations';
-import CdsEvaluationForm from './pages/cds/CdsEvaluationForm';
-import CdsAdminPeriods from './pages/cds/CdsAdminPeriods';
-import CdsEvaluationPrint from './pages/cds/CdsEvaluationPrint';
-import CdsPeriodPrint from './pages/cds/CdsPeriodPrint';
-import CmsAdminPage from './pages/CmsAdminPage';
-import PublicHomePage from './pages/public/PublicHomePage';
-import PublicCmsPage from './pages/public/PublicCmsPage';
+import { ConfigProvider, Spin } from 'antd';
 import { AuthProvider } from './contexts/AuthContext';
 import { WEB_ENV } from './config/env';
 
+const Login = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Students = lazy(() => import('./pages/Students'));
+const Meals = lazy(() => import('./pages/Meals'));
+const Transport = lazy(() => import('./pages/Transport'));
+const Insurance = lazy(() => import('./pages/Insurance'));
+const Payments = lazy(() => import('./pages/Payments'));
+const Users = lazy(() => import('./pages/Users'));
+const MasterData = lazy(() => import('./pages/MasterData'));
+const MainLayout = lazy(() => import('./layouts/MainLayout'));
+const PublicLayout = lazy(() => import('./layouts/PublicLayout'));
+const CdsDashboard = lazy(() => import('./pages/cds/CdsDashboard'));
+const CdsEvaluations = lazy(() => import('./pages/cds/CdsEvaluations'));
+const CdsEvaluationForm = lazy(() => import('./pages/cds/CdsEvaluationForm'));
+const CdsAdminPeriods = lazy(() => import('./pages/cds/CdsAdminPeriods'));
+const CdsEvaluationPrint = lazy(() => import('./pages/cds/CdsEvaluationPrint'));
+const CdsPeriodPrint = lazy(() => import('./pages/cds/CdsPeriodPrint'));
+const CmsAdminPage = lazy(() => import('./pages/CmsAdminPage'));
+const PublicHomePage = lazy(() => import('./pages/public/PublicHomePage'));
+const PublicCmsPage = lazy(() => import('./pages/public/PublicCmsPage'));
+
 const queryClient = new QueryClient();
+
+const RouteFallback: React.FC = () => (
+  <div
+    style={{
+      minHeight: '40vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    <Spin size="large" />
+  </div>
+);
 
 const buildLoginPath = () => {
   const redirectTo = encodeURIComponent(window.location.pathname + window.location.search);
@@ -128,39 +142,41 @@ const App: React.FC = () => {
             }}
           >
             <BrowserRouter>
-              <Routes>
-                <Route path="/login" element={<Navigate to="/admin/login" replace />} />
-                <Route path="/admin/login" element={<Login />} />
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute>
-                      <MainLayout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route index element={<Dashboard />} />
-                  <Route path="hoc-sinh" element={<ProtectedRoute module="hoc-sinh"><Students /></ProtectedRoute>} />
-                  <Route path="suat-an" element={<ProtectedRoute module="suat-an"><Meals /></ProtectedRoute>} />
-                  <Route path="dinh-muc-xe" element={<ProtectedRoute module="dinh-muc-xe"><Transport /></ProtectedRoute>} />
-                  <Route path="bao-hiem" element={<ProtectedRoute module="bao-hiem"><Insurance /></ProtectedRoute>} />
-                  <Route path="thanh-toan" element={<ProtectedRoute module="thanh-toan"><Payments /></ProtectedRoute>} />
-                  <Route path="cms" element={<CmsRoute><CmsAdminPage /></CmsRoute>} />
-                  <Route path="danh-muc-master" element={<AdminRoute><MasterData /></AdminRoute>} />
-                  <Route path="nguoi-dung" element={<AdminRoute><Users /></AdminRoute>} />
-                  <Route path="cds/dashboard" element={<ProtectedRoute module="cds"><CdsDashboard /></ProtectedRoute>} />
-                  <Route path="cds/evaluations" element={<ProtectedRoute module="cds"><CdsEvaluations /></ProtectedRoute>} />
-                  <Route path="cds/evaluations/new" element={<ProtectedRoute module="cds"><CdsEvaluationForm /></ProtectedRoute>} />
-                  <Route path="cds/evaluations/:id" element={<ProtectedRoute module="cds"><CdsEvaluationForm /></ProtectedRoute>} />
-                  <Route path="cds/evaluations/print/:id" element={<ProtectedRoute module="cds"><CdsEvaluationPrint /></ProtectedRoute>} />
-                  <Route path="cds/admin/periods" element={<AdminRoute><CdsAdminPeriods /></AdminRoute>} />
-                  <Route path="cds/admin/periods/print/:id" element={<AdminRoute><CdsPeriodPrint /></AdminRoute>} />
-                </Route>
-                <Route path="/" element={<PublicLayout />}>
-                  <Route index element={<PublicHomePage />} />
-                  <Route path="*" element={<PublicCmsPage />} />
-                </Route>
-              </Routes>
+              <Suspense fallback={<RouteFallback />}>
+                <Routes>
+                  <Route path="/login" element={<Navigate to="/admin/login" replace />} />
+                  <Route path="/admin/login" element={<Login />} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute>
+                        <MainLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route index element={<Dashboard />} />
+                    <Route path="hoc-sinh" element={<ProtectedRoute module="hoc-sinh"><Students /></ProtectedRoute>} />
+                    <Route path="suat-an" element={<ProtectedRoute module="suat-an"><Meals /></ProtectedRoute>} />
+                    <Route path="dinh-muc-xe" element={<ProtectedRoute module="dinh-muc-xe"><Transport /></ProtectedRoute>} />
+                    <Route path="bao-hiem" element={<ProtectedRoute module="bao-hiem"><Insurance /></ProtectedRoute>} />
+                    <Route path="thanh-toan" element={<ProtectedRoute module="thanh-toan"><Payments /></ProtectedRoute>} />
+                    <Route path="cms" element={<CmsRoute><CmsAdminPage /></CmsRoute>} />
+                    <Route path="danh-muc-master" element={<AdminRoute><MasterData /></AdminRoute>} />
+                    <Route path="nguoi-dung" element={<AdminRoute><Users /></AdminRoute>} />
+                    <Route path="cds/dashboard" element={<ProtectedRoute module="cds"><CdsDashboard /></ProtectedRoute>} />
+                    <Route path="cds/evaluations" element={<ProtectedRoute module="cds"><CdsEvaluations /></ProtectedRoute>} />
+                    <Route path="cds/evaluations/new" element={<ProtectedRoute module="cds"><CdsEvaluationForm /></ProtectedRoute>} />
+                    <Route path="cds/evaluations/:id" element={<ProtectedRoute module="cds"><CdsEvaluationForm /></ProtectedRoute>} />
+                    <Route path="cds/evaluations/print/:id" element={<ProtectedRoute module="cds"><CdsEvaluationPrint /></ProtectedRoute>} />
+                    <Route path="cds/admin/periods" element={<AdminRoute><CdsAdminPeriods /></AdminRoute>} />
+                    <Route path="cds/admin/periods/print/:id" element={<AdminRoute><CdsPeriodPrint /></AdminRoute>} />
+                  </Route>
+                  <Route path="/" element={<PublicLayout />}>
+                    <Route index element={<PublicHomePage />} />
+                    <Route path="*" element={<PublicCmsPage />} />
+                  </Route>
+                </Routes>
+              </Suspense>
             </BrowserRouter>
           </ConfigProvider>
         </AuthProvider>

@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { Table, Button, Input, Space, Card, Tag, Popconfirm, message, Tooltip, Statistic, Row, Col } from 'antd';
 import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, FileTextOutlined, UserOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layDanhSachHocSinh, taoHocSinh, capNhatHocSinh, xoaHocSinh } from '../api/hoc-sinh';
 import { TrangThaiHocSinh, GioiTinh } from '../types/hoc-sinh';
 import type { HocSinh } from '../types/hoc-sinh';
-import StudentModal from '../components/StudentModal';
-import ImportModal from '../components/ImportModal';
 import MobileList from '../components/MobileList';
 import SkeletonLoader from '../components/SkeletonLoader';
 import dayjs from 'dayjs';
 import ClassSelect from '../components/ClassSelect';
 import ExportButton from '../components/ExportButton';
+
+const StudentModal = lazy(() => import('../components/StudentModal'));
+const ImportModal = lazy(() => import('../components/ImportModal'));
 
 const Students: React.FC = () => {
     const [page, setPage] = useState(1);
@@ -346,23 +347,29 @@ const Students: React.FC = () => {
                 )
             }
 
-            <StudentModal
-                visible={isModalVisible}
-                student={editingStudent}
-                onCancel={() => setIsModalVisible(false)}
-                onSuccess={() => setIsModalVisible(false)}
-                onSave={handleSave}
-                loading={createMutation.isPending || updateMutation.isPending}
-            />
+            <Suspense fallback={null}>
+                {(isModalVisible || editingStudent) && (
+                    <StudentModal
+                        visible={isModalVisible}
+                        student={editingStudent}
+                        onCancel={() => setIsModalVisible(false)}
+                        onSuccess={() => setIsModalVisible(false)}
+                        onSave={handleSave}
+                        loading={createMutation.isPending || updateMutation.isPending}
+                    />
+                )}
 
-            <ImportModal
-                visible={isImportModalVisible}
-                onCancel={() => setIsImportModalVisible(false)}
-                onSuccess={() => {
-                    queryClient.invalidateQueries({ queryKey: ['hoc-sinh'] });
-                    setIsImportModalVisible(false);
-                }}
-            />
+                {isImportModalVisible && (
+                    <ImportModal
+                        visible={isImportModalVisible}
+                        onCancel={() => setIsImportModalVisible(false)}
+                        onSuccess={() => {
+                            queryClient.invalidateQueries({ queryKey: ['hoc-sinh'] });
+                            setIsImportModalVisible(false);
+                        }}
+                    />
+                )}
+            </Suspense>
         </Space >
     );
 };

@@ -19,5 +19,30 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       host: true,
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) {
+              return undefined;
+            }
+
+            if (id.includes('@tanstack/react-query') || id.includes('axios')) {
+              return 'vendor-data';
+            }
+
+            if (id.includes('recharts') || id.includes('d3-')) {
+              return 'vendor-charts';
+            }
+
+            if (id.includes('@react-oauth/google')) {
+              return 'vendor-google';
+            }
+            
+            return undefined;
+          },
+        },
+      },
+    },
   };
 });

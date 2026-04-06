@@ -9,7 +9,22 @@ import { GioiTinh, TrangThaiHocSinh } from '../types/hoc-sinh';
 import type { HocSinh, CreateHocSinhRequest } from '../types/hoc-sinh';
 
 import AuditFooter from './AuditFooter';
-import vietnamData from '../assets/vietnam-data.json';
+
+interface WardNode {
+    Name: string;
+}
+
+interface DistrictNode {
+    Name: string;
+    Id: string;
+    Wards: WardNode[];
+}
+
+interface ProvinceNode {
+    Name: string;
+    Id: string;
+    Districts: DistrictNode[];
+}
 
 interface StudentModalProps {
     visible: boolean;
@@ -31,23 +46,45 @@ const StudentModal: React.FC<StudentModalProps> = ({
     const [form] = Form.useForm();
     const [selectedProvince, setSelectedProvince] = React.useState<string | undefined>();
     const [selectedDistrict, setSelectedDistrict] = React.useState<string | undefined>();
+    const [vietnamData, setVietnamData] = React.useState<ProvinceNode[]>([]);
     const screens = Grid.useBreakpoint();
 
+    useEffect(() => {
+        if (!visible || vietnamData.length > 0) {
+            return;
+        }
+
+        let cancelled = false;
+
+        void import('../assets/vietnam-data.json').then((module) => {
+            if (!cancelled) {
+                setVietnamData(module.default as ProvinceNode[]);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [visible, vietnamData.length]);
+
     // Derived location data
-    const provinceOptions = useMemo(() => vietnamData.map((p: any) => ({ label: p.Name, value: p.Name, id: p.Id })), []);
+    const provinceOptions = useMemo(
+        () => vietnamData.map((province) => ({ label: province.Name, value: province.Name, id: province.Id })),
+        [vietnamData],
+    );
 
     const districtOptions = useMemo(() => {
         if (!selectedProvince) return [];
-        const province = vietnamData.find((p: any) => p.Name === selectedProvince);
-        return province?.Districts.map((d: any) => ({ label: d.Name, value: d.Name, id: d.Id })) || [];
-    }, [selectedProvince]);
+        const province = vietnamData.find((item) => item.Name === selectedProvince);
+        return province?.Districts.map((district) => ({ label: district.Name, value: district.Name, id: district.Id })) || [];
+    }, [selectedProvince, vietnamData]);
 
     const wardOptions = useMemo(() => {
         if (!selectedProvince || !selectedDistrict) return [];
-        const province = vietnamData.find((p: any) => p.Name === selectedProvince);
-        const district = province?.Districts.find((d: any) => d.Name === selectedDistrict);
-        return district?.Wards.map((w: any) => ({ label: w.Name, value: w.Name })) || [];
-    }, [selectedProvince, selectedDistrict]);
+        const province = vietnamData.find((item) => item.Name === selectedProvince);
+        const district = province?.Districts.find((item) => item.Name === selectedDistrict);
+        return district?.Wards.map((ward) => ({ label: ward.Name, value: ward.Name })) || [];
+    }, [selectedProvince, selectedDistrict, vietnamData]);
 
     // Fetch Master Data
     const { data: categories } = useQuery({
