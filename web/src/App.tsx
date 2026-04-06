@@ -30,14 +30,7 @@ const PublicCmsPage = lazy(() => import('./pages/public/PublicCmsPage'));
 const queryClient = new QueryClient();
 
 const RouteFallback: React.FC = () => (
-  <div
-    style={{
-      minHeight: '40vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
+  <div className="page-loading">
     <Spin size="large" />
   </div>
 );
@@ -131,12 +124,42 @@ const App: React.FC = () => {
           <ConfigProvider
             theme={{
               token: {
-                fontSize: 13,
-                borderRadius: 4,
+                colorPrimary: '#198f38',
+                colorInfo: '#198f38',
+                colorSuccess: '#2a9d4b',
+                colorWarning: '#d7a830',
+                colorError: '#c54833',
+                colorTextBase: '#183625',
+                colorBgBase: '#f4f8f1',
+                fontSize: 14,
+                fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
+                borderRadius: 18,
+                borderRadiusLG: 24,
+                boxShadowSecondary: '0 24px 60px rgba(19, 62, 31, 0.12)',
               },
               components: {
+                Layout: {
+                  headerBg: '#ffffff',
+                  bodyBg: '#f4f8f1',
+                  footerBg: '#ffffff',
+                },
+                Card: {
+                  borderRadiusLG: 24,
+                },
+                Button: {
+                  controlHeight: 42,
+                },
                 Table: {
                   paddingContentVerticalLG: 8,
+                },
+                Menu: {
+                  itemBorderRadius: 14,
+                  itemSelectedBg: '#e8f6eb',
+                  itemSelectedColor: '#106b28',
+                  itemHoverColor: '#106b28',
+                  horizontalItemSelectedColor: '#106b28',
+                  horizontalItemHoverColor: '#106b28',
+                  horizontalItemBorderRadius: 14,
                 },
               },
             }}
@@ -145,7 +168,6 @@ const App: React.FC = () => {
               <Suspense fallback={<RouteFallback />}>
                 <Routes>
                   <Route path="/login" element={<Navigate to="/admin/login" replace />} />
-                  <Route path="/admin/login" element={<Login />} />
                   <Route
                     path="/admin"
                     element={
@@ -173,6 +195,7 @@ const App: React.FC = () => {
                   </Route>
                   <Route path="/" element={<PublicLayout />}>
                     <Route index element={<PublicHomePage />} />
+                    <Route path="admin/login" element={<Login />} />
                     <Route path="*" element={<PublicCmsPage />} />
                   </Route>
                 </Routes>

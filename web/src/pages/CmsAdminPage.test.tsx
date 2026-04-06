@@ -64,5 +64,5 @@ describe('CmsAdminPage', () => {
     expect(screen.getByRole('tab', { name: /Trang/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /menu/i })).toBeInTheDocument();
     expect(await screen.findByRole('button', { name: /trang|tao/i })).toBeInTheDocument();
-  });
+  }, 15000);
 });

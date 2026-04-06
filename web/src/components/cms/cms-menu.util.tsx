@@ -2,8 +2,8 @@
 import type { CMSMenuItem } from '../../types/cms';
 
 const FIXED_TOOL_ITEMS: ItemType[] = [
-  { key: '/admin/hoc-sinh', label: 'Quan ly hoc sinh' },
-  { key: '/admin/cds/dashboard', label: 'Chuyen doi so' },
+  { key: '/admin/hoc-sinh', label: 'Qu\u1ea3n l\u00fd h\u1ecdc sinh' },
+  { key: '/admin/cds/dashboard', label: 'Chuy\u1ec3n \u0111\u1ed5i s\u1ed1' },
 ];
 
 const mapCmsMenuItem = (item: CMSMenuItem): ItemType => ({

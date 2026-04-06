@@ -20,7 +20,7 @@ const PublicCmsPage: React.FC = () => {
   }
 
   if (isError || !data) {
-    return <Alert type="error" message="Khong tim thay trang noi dung." />;
+    return <Alert type="error" message={"Kh\u00f4ng t\u00ecm th\u1ea5y trang n\u1ed9i dung."} />;
   }
 
   return <CmsPageContent page={data} />;
