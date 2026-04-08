@@ -324,6 +324,44 @@ p {
   padding: 0 16px;
 }
 
+.app-shell--admin .top-nav {
+  top: 76px;
+}
+
+.backoffice-group-nav {
+  position: sticky;
+  top: 0;
+  z-index: 31;
+  padding: 0 16px 10px;
+}
+
+.backoffice-group-nav__inner {
+  width: min(100%, 1360px);
+  margin: 0 auto;
+}
+
+.backoffice-group-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 20px;
+  background: rgba(248, 252, 246, 0.88);
+  border: 1px solid rgba(216, 232, 216, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 22px rgba(16, 91, 31, 0.08);
+}
+
+.backoffice-group-nav__button {
+  min-width: 96px;
+  font-weight: 700;
+}
+
+.backoffice-group-nav__button--active {
+  background: linear-gradient(135deg, var(--brand-green-800), var(--brand-green-600)) !important;
+  border-color: transparent !important;
+}
+
 .top-nav__inner {
   width: min(100%, 1360px);
   margin: 0 auto;
@@ -694,8 +732,26 @@ p {
     padding-inline: 10px;
   }
 
+  .backoffice-group-nav {
+    padding-inline: 10px;
+  }
+
+  .backoffice-group-nav__list {
+    gap: 8px;
+    border-radius: 18px;
+  }
+
+  .backoffice-group-nav__button {
+    min-width: 0;
+    flex: 1 1 calc(50% - 8px);
+  }
+
   .top-nav {
     padding-inline: 10px;
+  }
+
+  .app-shell--admin .top-nav {
+    top: 124px;
   }
 
   .top-nav__inner {
