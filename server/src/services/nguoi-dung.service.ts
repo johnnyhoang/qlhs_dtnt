@@ -19,9 +19,37 @@ export class NguoiDungService {
         return AppDataSource.getRepository(PhanQuyen);
     }
 
+    private static async ensureDefaultPermissions(user: NguoiDung) {
+        const permissionRepo = this.getPermissionRepository();
+        const existingPermissions = user.danh_sach_quyen || [];
+        const missingPermissions = this.DEFAULT_NEW_USER_PERMISSIONS.filter(
+            (defaultPermission) => !existingPermissions.some((permission) => permission.ma_module === defaultPermission.ma_module)
+        );
+
+        if (missingPermissions.length === 0) {
+            return user;
+        }
+
+        const createdPermissions = await permissionRepo.save(
+            missingPermissions.map((permission) =>
+                (typeof permissionRepo.create === "function"
+                    ? permissionRepo.create({
+                        nguoi_dung_id: user.id,
+                        ...permission,
+                    })
+                    : {
+                    nguoi_dung_id: user.id,
+                    ...permission,
+                })
+            )
+        );
+
+        user.danh_sach_quyen = [...existingPermissions, ...createdPermissions];
+        return user;
+    }
+
     static async findOrCreateByEmail(email: string, ho_ten: string, anh_dai_dien?: string) {
         const repo = this.getUserRepository();
-        const permissionRepo = this.getPermissionRepository();
         let user = await repo.findOne({ 
             where: { email },
             relations: ["danh_sach_quyen"]
@@ -37,18 +65,9 @@ export class NguoiDungService {
                 kich_hoat: true
             });
             await repo.save(user);
-
-            const defaultPermissions = this.DEFAULT_NEW_USER_PERMISSIONS.map((permission) =>
-                permissionRepo.create({
-                    nguoi_dung_id: user!.id,
-                    ...permission,
-                })
-            );
-
-            user.danh_sach_quyen = await permissionRepo.save(defaultPermissions);
         }
 
-        return user;
+        return this.ensureDefaultPermissions(user);
     }
 
     static async getUserWithPermissions(userId: number) {

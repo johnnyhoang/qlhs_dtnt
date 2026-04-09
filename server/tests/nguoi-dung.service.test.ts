@@ -94,7 +94,7 @@ describe('NguoiDungService.findOrCreateByEmail', () => {
     ]);
   });
 
-  it('returns existing users without creating duplicate default permissions', async () => {
+  it('backfills default CDS permissions for existing users when they are missing', async () => {
     const existingUser = {
       id: 5,
       email: 'existing@example.com',
@@ -105,17 +105,44 @@ describe('NguoiDungService.findOrCreateByEmail', () => {
     };
 
     findOneMock.mockResolvedValue(existingUser);
+    createPermissionMock.mockImplementation((value) => value);
+    savePermissionsMock.mockResolvedValue([
+      {
+        id: 88,
+        nguoi_dung_id: 5,
+        ma_module: 'cds',
+        co_quyen_xem: true,
+        co_quyen_sua: true,
+      },
+    ]);
 
-    getRepositoryMock.mockReturnValue({
-      findOne: findOneMock,
-    });
+    getRepositoryMock
+      .mockReturnValueOnce({
+        findOne: findOneMock,
+      })
+      .mockReturnValueOnce({
+        create: createPermissionMock,
+        save: savePermissionsMock,
+      });
 
     const { NguoiDungService } = await import('../src/services/nguoi-dung.service');
 
     const result = await NguoiDungService.findOrCreateByEmail('existing@example.com', 'Existing User');
 
     expect(result).toBe(existingUser);
-    expect(createPermissionMock).not.toHaveBeenCalled();
-    expect(savePermissionsMock).not.toHaveBeenCalled();
+    expect(createPermissionMock).toHaveBeenCalledWith({
+      nguoi_dung_id: 5,
+      ma_module: 'cds',
+      co_quyen_xem: true,
+      co_quyen_sua: true,
+    });
+    expect(savePermissionsMock).toHaveBeenCalledOnce();
+    expect(result.danh_sach_quyen).toEqual([
+      expect.objectContaining({
+        ma_module: 'cds',
+        co_quyen_xem: true,
+        co_quyen_sua: true,
+      }),
+    ]);
   });
 });

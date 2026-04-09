@@ -8,8 +8,8 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { getAdminMenus } from '../api/cms';
-import { buildAdminNavigationItems, resolveNavigationSelectedKey } from '../components/cms/cms-menu.util';
+import { getPublishedMenus } from '../api/cms';
+import { buildPublicMenuItems, resolveNavigationSelectedKey } from '../components/cms/cms-menu.util';
 import SiteHero from '../components/chrome/SiteHero';
 import TopNavigation from '../components/chrome/TopNavigation';
 import BackofficeHelpDrawer from '../components/help/BackofficeHelpDrawer';
@@ -25,9 +25,9 @@ const MainLayout: React.FC = () => {
   const user = userJson ? JSON.parse(userJson) : null;
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
 
-  const { data: adminMenus = [] } = useQuery({
-    queryKey: ['cms', 'admin', 'menus'],
-    queryFn: getAdminMenus,
+  const { data: publicMenus = [] } = useQuery({
+    queryKey: ['cms', 'menus'],
+    queryFn: getPublishedMenus,
     retry: false,
   });
 
@@ -37,7 +37,7 @@ const MainLayout: React.FC = () => {
     navigate('/admin/login');
   };
 
-  const items = buildAdminNavigationItems(adminMenus);
+  const items = buildPublicMenuItems(publicMenus);
 
   const onClick: MenuProps['onClick'] = ({ key }) => {
     navigate(String(key));
@@ -89,7 +89,7 @@ const MainLayout: React.FC = () => {
         </div>
       </Content>
       <Footer className="app-shell__footer">
-        He thong quan tri noi bo - Quan ly hoc sinh - Chuyen doi so - CMS
+        He thong quan tri noi bo - Quan ly hoc sinh - Chuyen doi so - CMS - So 02 Huyen Tran Cong Chua, P4, Da Lat, Lam Dong - 02633 822 160
       </Footer>
       <BackofficeHelpDrawer open={isHelpOpen} onClose={() => setIsHelpOpen(false)} entry={helpEntry} />
     </Layout>

@@ -61,7 +61,7 @@ const PublicLayout: React.FC = () => {
         </div>
       </Content>
       <Footer className="app-shell__footer">
-        Truong Pho thong Dan toc Noi tru THCS-THPT tinh Lam Dong - Cong thong tin dien tu va he thong quan tri
+        Truong Pho thong Dan toc Noi tru THCS-THPT tinh Lam Dong - Cong thong tin dien tu va he thong quan tri - So 02 Huyen Tran Cong Chua, P4, Da Lat, Lam Dong - 02633 822 160
       </Footer>
     </Layout>
   );

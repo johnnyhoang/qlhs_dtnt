@@ -39,10 +39,7 @@ const SiteHero: React.FC<SiteHeroProps> = ({ compact = false, navigation }) => {
         <div className="site-hero__campus" aria-hidden="true">
           <div className="site-hero__campus-card" />
         </div>
-      </div>
-      {navigation ? <div className="site-hero__nav-slot">{navigation}</div> : null}
-      <div className="site-hero__bottom">
-        So 02 Huyen Tran Cong Chua, P4, Da Lat, Lam Dong - 02633 822 160
+        {navigation ? <div className="site-hero__navigation">{navigation}</div> : null}
       </div>
     </div>
   );
