@@ -542,6 +542,13 @@ p {
   margin-bottom: 14px;
 }
 
+.cms-page-card__headline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
 .cms-page-card__frame {
   width: 100%;
   min-height: 80vh;
@@ -771,6 +778,10 @@ p {
   .login-card,
   .app-admin-panel {
     padding: 16px;
+  }
+
+  .cms-page-card__headline {
+    flex-direction: column;
   }
 
   .cms-page-card__frame {

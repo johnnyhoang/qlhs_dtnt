@@ -26,6 +26,7 @@ const CmsPageContent: React.FC<CmsPageContentProps> = ({ page }) => {
   const mediaItems = Array.isArray(page.metadata?.media_items)
     ? page.metadata.media_items.filter((item): item is CMSMediaItem => Boolean(item && typeof item === 'object'))
     : [];
+  const metadataEntries = Object.entries(page.metadata || {}).filter(([key]) => key !== 'media_items');
 
   const handleDownloadPdf = () => {
     if (page.loai_noi_dung === 'PDF') {
@@ -134,7 +135,7 @@ const CmsPageContent: React.FC<CmsPageContentProps> = ({ page }) => {
           </div>
         )}
 
-        {page.metadata && Object.keys(page.metadata).length > 0 ? (
+        {metadataEntries.length > 0 ? (
           <Collapse
             size="small"
             ghost
@@ -145,7 +146,7 @@ const CmsPageContent: React.FC<CmsPageContentProps> = ({ page }) => {
                 label: 'Thông tin bổ sung',
                 children: (
                   <Descriptions bordered size="small" column={1} className="cms-page-card__meta">
-                    {Object.entries(page.metadata).map(([key, value]) => (
+                    {metadataEntries.map(([key, value]) => (
                       <Descriptions.Item key={key} label={metadataLabels[key] || key}>
                         {String(value)}
                       </Descriptions.Item>
