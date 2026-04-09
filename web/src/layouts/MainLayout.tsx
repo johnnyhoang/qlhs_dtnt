@@ -37,7 +37,7 @@ const MainLayout: React.FC = () => {
     navigate('/admin/login');
   };
 
-  const items = buildPublicMenuItems(publicMenus);
+  const items = buildPublicMenuItems(publicMenus, true, user);
 
   const onClick: MenuProps['onClick'] = ({ key }) => {
     navigate(String(key));

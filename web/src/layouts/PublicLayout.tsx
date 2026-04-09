@@ -16,6 +16,7 @@ const PublicLayout: React.FC = () => {
   const location = useLocation();
   const isLoginPage = location.pathname === '/admin/login';
   const userJson = localStorage.getItem('user');
+  const user = userJson ? JSON.parse(userJson) : null;
 
   const { data, isLoading } = useQuery({
     queryKey: ['cms', 'menus'],
@@ -23,7 +24,7 @@ const PublicLayout: React.FC = () => {
     retry: false,
   });
 
-  const items = buildPublicMenuItems(data || []);
+  const items = buildPublicMenuItems(data || [], true, user);
 
   const onClick: MenuProps['onClick'] = ({ key }) => {
     navigate(String(key));
