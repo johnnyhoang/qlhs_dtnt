@@ -25,77 +25,77 @@ const HELP_ENTRIES: Array<{
 }> = [
   {
     match: (pathname) => pathname === '/admin',
-    title: 'QLHS Overview Help',
+    title: 'Huong dan tong quan QLHS',
     loader: loadHelpFile('qlhs-dashboard'),
   },
   {
     match: (pathname) => pathname === '/admin/hoc-sinh',
-    title: 'Student Management Help',
+    title: 'Huong dan quan ly hoc sinh',
     loader: loadHelpFile('students'),
   },
   {
     match: (pathname) => pathname === '/admin/suat-an',
-    title: 'Meal Cut-off Help',
+    title: 'Huong dan suat an',
     loader: loadHelpFile('meals'),
   },
   {
     match: (pathname) => pathname === '/admin/dinh-muc-xe',
-    title: 'Transport Support Help',
+    title: 'Huong dan dinh muc xe',
     loader: loadHelpFile('transport'),
   },
   {
     match: (pathname) => pathname === '/admin/bao-hiem',
-    title: 'Insurance Profile Help',
+    title: 'Huong dan bao hiem',
     loader: loadHelpFile('insurance'),
   },
   {
     match: (pathname) => pathname === '/admin/thanh-toan',
-    title: 'Payment Batch Help',
+    title: 'Huong dan thanh toan',
     loader: loadHelpFile('payments'),
   },
   {
     match: (pathname) => pathname === '/admin/cms',
-    title: 'CMS Workspace Help',
+    title: 'Huong dan CMS',
     loader: loadHelpFile('cms'),
   },
   {
     match: (pathname) => pathname === '/admin/danh-muc-master',
-    title: 'Master Data Help',
+    title: 'Huong dan danh muc',
     loader: loadHelpFile('master-data'),
   },
   {
     match: (pathname) => pathname === '/admin/nguoi-dung',
-    title: 'User Permission Help',
+    title: 'Huong dan nguoi dung',
     loader: loadHelpFile('users'),
   },
   {
     match: (pathname) => pathname === '/admin/cds/dashboard',
-    title: 'CDS Dashboard Help',
+    title: 'Huong dan dashboard CDS',
     loader: loadHelpFile('cds-dashboard'),
   },
   {
     match: (pathname) => pathname === '/admin/cds/evaluations',
-    title: 'CDS Evaluation List Help',
+    title: 'Huong dan danh sach phieu CDS',
     loader: loadHelpFile('cds-evaluations'),
   },
   {
     match: (pathname) => pathname === '/admin/cds/evaluations/new' || /^\/admin\/cds\/evaluations\/\d+$/.test(pathname),
-    title: 'CDS Evaluation Form Help',
+    title: 'Huong dan phieu danh gia CDS',
     loader: loadHelpFile('cds-evaluation-form'),
   },
   {
     match: (pathname) => /^\/admin\/cds\/evaluations\/print\/\d+$/.test(pathname),
-    title: 'CDS Evaluation Print Help',
+    title: 'Huong dan in phieu CDS',
     loader: loadHelpFile('cds-evaluation-print'),
   },
   {
     match: (pathname) => pathname === '/admin/cds/admin/periods',
-    title: 'CDS Period Management Help',
+    title: 'Huong dan ky danh gia CDS',
     loader: loadHelpFile('cds-periods'),
   },
   {
     match: (pathname) => /^\/admin\/cds\/admin\/periods\/print\/\d+$/.test(pathname),
-    title: 'CDS Period Report Print Help',
+    title: 'Huong dan in bao cao ky CDS',
     loader: loadHelpFile('cds-period-print'),
   },
 ];

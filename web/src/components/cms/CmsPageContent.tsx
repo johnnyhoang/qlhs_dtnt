@@ -1,5 +1,6 @@
 import React from 'react';
-import { Alert, Card, Collapse, Descriptions, Empty } from 'antd';
+import { Alert, Button, Card, Collapse, Descriptions, Empty, Space } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 import { WEB_ENV } from '../../config/env';
 import type { CMSMediaItem, CMSPage } from '../../types/cms';
 
@@ -26,12 +27,71 @@ const CmsPageContent: React.FC<CmsPageContentProps> = ({ page }) => {
     ? page.metadata.media_items.filter((item): item is CMSMediaItem => Boolean(item && typeof item === 'object'))
     : [];
 
+  const handleDownloadPdf = () => {
+    if (page.loai_noi_dung === 'PDF') {
+      window.open(`${WEB_ENV.API_URL}/cms/pages/pdf?slug=${page.slug}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    const printableContent = document.querySelector('.cms-page-card__inner')?.innerHTML;
+    if (!printableContent) {
+      return;
+    }
+
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=960,height=720');
+    if (!printWindow) {
+      return;
+    }
+
+    printWindow.document.write(`
+      <!doctype html>
+      <html lang="vi">
+        <head>
+          <meta charset="utf-8" />
+          <title>${page.tieu_de}</title>
+          <style>
+            body { font-family: "Noto Sans", "Segoe UI", sans-serif; margin: 24px; color: #183625; }
+            .page-title { font-size: 28px; margin-bottom: 12px; color: #0d5a1d; }
+            .page-description { color: #647067; margin-bottom: 20px; }
+            .cms-html-content { line-height: 1.7; }
+            .cms-html-content img, .cms-html-content iframe, .cms-media-card__asset img, .cms-media-card__asset iframe, table { max-width: 100%; }
+            .cms-media-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+            .cms-media-card { border: 1px solid #d8e8d8; border-radius: 16px; overflow: hidden; break-inside: avoid; }
+            .cms-media-card__asset { aspect-ratio: 4 / 3; background: #f3f8f2; }
+            .cms-media-card__asset img, .cms-media-card__asset iframe { width: 100%; height: 100%; object-fit: cover; border: 0; }
+            .cms-media-card__caption { padding: 10px 12px 12px; font-size: 14px; }
+            .cms-page-card__meta-collapse, button { display: none !important; }
+            @page { size: A4; margin: 14mm; }
+          </style>
+        </head>
+        <body>
+          ${printableContent}
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <Card className="page-section-card cms-page-card" variant="borderless">
       <div className="cms-page-card__inner">
         <div className="cms-page-card__header">
-          {page.la_trang_chu ? <span className="page-kicker">Trang chu</span> : null}
-          <h1 className="page-title">{page.tieu_de}</h1>
+          <div className="cms-page-card__headline">
+            <div>
+              {page.la_trang_chu ? <span className="page-kicker">Trang chu</span> : null}
+              <h1 className="page-title">{page.tieu_de}</h1>
+            </div>
+            <Space>
+              <Button icon={<DownloadOutlined />} onClick={handleDownloadPdf}>
+                Tai PDF
+              </Button>
+            </Space>
+          </div>
         </div>
 
         {page.mo_ta ? <p className="page-description">{page.mo_ta}</p> : null}

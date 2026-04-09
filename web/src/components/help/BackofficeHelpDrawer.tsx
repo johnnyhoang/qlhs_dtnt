@@ -41,7 +41,7 @@ const BackofficeHelpDrawer: React.FC<BackofficeHelpDrawerProps> = ({ open, onClo
         if (!active) {
           return;
         }
-        setError('Unable to load the help content for this page.');
+        setError('Khong tai duoc noi dung huong dan cho trang nay.');
       })
       .finally(() => {
         if (active) {
@@ -64,7 +64,7 @@ const BackofficeHelpDrawer: React.FC<BackofficeHelpDrawerProps> = ({ open, onClo
       className="backoffice-help-drawer"
     >
       {!entry ? (
-        <Empty description="No help file is configured for this page." />
+        <Empty description="Chua co noi dung huong dan cho trang nay." />
       ) : loading ? (
         <div className="page-loading">
           <Spin size="large" />
@@ -73,9 +73,9 @@ const BackofficeHelpDrawer: React.FC<BackofficeHelpDrawerProps> = ({ open, onClo
         <Alert type="error" message={error} />
       ) : (
         <div className="backoffice-help">
-          <Title level={4}>Page guide</Title>
+          <Title level={4}>Huong dan su dung</Title>
           <Paragraph type="secondary">
-            This panel explains the purpose of the current screen, the important controls, and the normal workflow.
+            Bang nay mo ta muc dich cua man hinh hien tai, cac thao tac quan trong, va quy trinh su dung thong thuong.
           </Paragraph>
           <div className="backoffice-help__content" dangerouslySetInnerHTML={{ __html: html }} />
         </div>

@@ -441,7 +441,17 @@ const CmsPageManager: React.FC = () => {
                       type="info"
                       showIcon
                       style={{ marginBottom: 16 }}
-                      message="Trang media ho tro danh sach nhieu anh va video bang URL, moi muc co ghi chu rieng."
+                      message="Trang media ho tro nhieu anh va video bang URL, moi muc co ghi chu rieng."
+                      description={(
+                        <div>
+                          <div>Cách dùng:</div>
+                          <div>1. Chon `Anh` hoac `Video`.</div>
+                          <div>2. Dan URL truy cap truc tiep vao o `URL media`.</div>
+                          <div>3. Nhap `Ghi chu` neu muon hien mo ta ben duoi media.</div>
+                          <div>4. Bam `Them media` de chen tiep nhieu muc.</div>
+                          <div>5. Xuat ban khi danh sach media da day du.</div>
+                        </div>
+                      )}
                     />
                     <Form.List name="media_items">
                       {(fields, { add, remove }) => (
