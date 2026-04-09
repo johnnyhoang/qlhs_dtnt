@@ -102,7 +102,7 @@ const CdsEvaluations: React.FC = () => {
                                 type="primary" 
                                 shape="circle"
                                 icon={record.status === 'DRAFT' ? <EditOutlined /> : <FileSearchOutlined />} 
-                                onClick={() => navigate(`/cds/evaluations/${record.id}`)}
+                                onClick={() => navigate(`/admin/cds/evaluations/${record.id}`)}
                             />
                         </Tooltip>
                         
@@ -111,7 +111,7 @@ const CdsEvaluations: React.FC = () => {
                                 type="default"
                                 shape="circle"
                                 icon={<PrinterOutlined />}
-                                onClick={() => window.open(`/cds/evaluations/print/${record.id}`, '_blank')}
+                                onClick={() => window.open(`/admin/cds/evaluations/print/${record.id}`, '_blank')}
                             />
                         </Tooltip>
 
@@ -133,7 +133,7 @@ const CdsEvaluations: React.FC = () => {
             size="small" 
             title={<Title level={4} style={{ margin: 0, padding: '8px 0' }}>Danh sách Phiếu đánh giá Chuyển đổi số</Title>}
             extra={
-                <Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => navigate('/cds/evaluations/new')} style={{ borderRadius: '8px' }}>
+                <Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => navigate('/admin/cds/evaluations/new')} style={{ borderRadius: '8px' }}>
                     Tạo đánh giá mới
                 </Button>
             }

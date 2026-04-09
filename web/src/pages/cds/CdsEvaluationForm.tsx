@@ -62,7 +62,7 @@ const CdsEvaluationForm: React.FC = () => {
         onSuccess: () => {
             message.success('Đã lưu Phiếu đánh giá thành công');
             queryClient.invalidateQueries({ queryKey: ['cds-evaluations'] });
-            navigate('/cds/evaluations');
+            navigate('/admin/cds/evaluations');
         },
         onError: (err: any) => {
             message.error(err?.response?.data?.message || 'Có lỗi xảy ra khi lưu form');
@@ -164,7 +164,7 @@ const CdsEvaluationForm: React.FC = () => {
             <Space direction="vertical" style={{ width: '100%' }} size="large">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
                     <Space size="middle">
-                        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/cds/evaluations')} style={{ borderRadius: 8 }}>Quay lại</Button>
+                        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/admin/cds/evaluations')} style={{ borderRadius: 8 }}>Quay lại</Button>
                         <Title level={4} style={{ margin: 0 }}>
                             {isEdit ? 'Chi tiết Phiếu Tự Đánh Giá' : 'Điền Phiếu Đánh Giá Mới'}
                         </Title>
