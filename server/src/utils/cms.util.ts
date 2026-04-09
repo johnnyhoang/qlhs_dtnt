@@ -46,4 +46,8 @@ export const validateCmsUpload = (
     if (contentType === CMSContentType.PDF && file && file.mimetype !== "application/pdf") {
         throw new Error("PDF pages only accept .pdf uploads.");
     }
+
+    if (contentType === CMSContentType.MEDIA && file) {
+        throw new Error("Media pages do not accept single file uploads.");
+    }
 };

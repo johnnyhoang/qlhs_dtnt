@@ -10,7 +10,7 @@ const CmsAdminPage: React.FC = () => {
     <Card variant="borderless">
       <Title level={3} style={{ marginTop: 0 }}>Quan tri CMS</Title>
       <Paragraph type="secondary">
-        Tao trang public, quan ly menu nhieu cap, va xuat ban noi dung HTML hoac PDF truc tiep tu khu quan tri.
+        Tao trang public, quan ly menu nhieu cap, va xuat ban noi dung HTML, PDF hoac media truc tiep tu khu quan tri.
       </Paragraph>
       <Tabs
         items={[

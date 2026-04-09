@@ -1,6 +1,12 @@
 import type { DataNode } from 'antd/es/tree';
 import type { CMSAdminMenu } from '../../../types/cms';
 
+type CmsMediaFormItem = {
+  loai: 'IMAGE' | 'VIDEO';
+  duong_dan: string;
+  ghi_chu: string;
+};
+
 export interface CMSAdminTreeNode extends CMSAdminMenu {
   key: string;
   title: string;
@@ -164,15 +170,37 @@ export const parseMetadataFormValues = (values: {
   so_hieu?: string;
   don_vi_ban_hanh?: string;
   ngay_ban_hanh?: string;
-}): Record<string, string> => {
+  media_items?: CmsMediaFormItem[];
+}): Record<string, unknown> => {
   return Object.fromEntries(
-    Object.entries(values).filter(([, value]) => Boolean(value && value.trim())),
+    Object.entries(values).filter(([, value]) => {
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+
+      return Boolean(typeof value === 'string' ? value.trim() : value);
+    }),
   );
 };
 
-export const extractMetadataFormValues = (metadata?: Record<string, string | number | boolean | null>) => ({
+export const extractMetadataFormValues = (metadata?: Record<string, unknown>): {
+  loai_van_ban: string;
+  so_hieu: string;
+  don_vi_ban_hanh: string;
+  ngay_ban_hanh: string;
+  media_items: CmsMediaFormItem[];
+} => ({
   loai_van_ban: typeof metadata?.loai_van_ban === 'string' ? metadata.loai_van_ban : '',
   so_hieu: typeof metadata?.so_hieu === 'string' ? metadata.so_hieu : '',
   don_vi_ban_hanh: typeof metadata?.don_vi_ban_hanh === 'string' ? metadata.don_vi_ban_hanh : '',
   ngay_ban_hanh: typeof metadata?.ngay_ban_hanh === 'string' ? metadata.ngay_ban_hanh : '',
+  media_items: Array.isArray(metadata?.media_items)
+    ? metadata.media_items
+      .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
+      .map((item) => ({
+        loai: item.loai === 'VIDEO' ? 'VIDEO' : 'IMAGE',
+        duong_dan: typeof item.duong_dan === 'string' ? item.duong_dan : '',
+        ghi_chu: typeof item.ghi_chu === 'string' ? item.ghi_chu : '',
+      }))
+    : [],
 });

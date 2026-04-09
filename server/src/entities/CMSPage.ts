@@ -14,6 +14,7 @@ export enum CMSPageStatus {
 export enum CMSContentType {
     HTML = "HTML",
     PDF = "PDF",
+    MEDIA = "MEDIA",
 }
 
 @Entity("cms_pages")
@@ -49,7 +50,7 @@ export class CMSPage {
     mime_type?: string;
 
     @Column("simple-json", { nullable: true })
-    metadata?: Record<string, string | number | boolean | null>;
+    metadata?: Record<string, unknown>;
 
     @Column({
         type: "enum",

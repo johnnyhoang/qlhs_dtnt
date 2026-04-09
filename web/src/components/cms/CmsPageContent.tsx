@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alert, Card, Collapse, Descriptions, Empty } from 'antd';
 import { WEB_ENV } from '../../config/env';
-import type { CMSPage } from '../../types/cms';
+import type { CMSMediaItem, CMSPage } from '../../types/cms';
 
 interface CmsPageContentProps {
   page?: CMSPage | null;
@@ -22,11 +22,15 @@ const CmsPageContent: React.FC<CmsPageContentProps> = ({ page }) => {
     return <Empty description={"N\u1ed9i dung ch\u01b0a \u0111\u01b0\u1ee3c c\u1ea5u h\u00ecnh"} />;
   }
 
+  const mediaItems = Array.isArray(page.metadata?.media_items)
+    ? page.metadata.media_items.filter((item): item is CMSMediaItem => Boolean(item && typeof item === 'object'))
+    : [];
+
   return (
     <Card className="page-section-card cms-page-card" variant="borderless">
       <div className="cms-page-card__inner">
         <div className="cms-page-card__header">
-          <span className="page-kicker">{page.la_trang_chu ? 'Trang ch\u1ee7' : 'N\u1ed9i dung CMS'}</span>
+          {page.la_trang_chu ? <span className="page-kicker">Trang chu</span> : null}
           <h1 className="page-title">{page.tieu_de}</h1>
         </div>
 
@@ -34,7 +38,7 @@ const CmsPageContent: React.FC<CmsPageContentProps> = ({ page }) => {
 
         {page.loai_noi_dung === 'HTML' ? (
           <div className="cms-html-content" data-testid="cms-html-content" dangerouslySetInnerHTML={{ __html: page.noi_dung_html || '' }} />
-        ) : (
+        ) : page.loai_noi_dung === 'PDF' ? (
           <>
             <Alert
               type="info"
@@ -48,6 +52,26 @@ const CmsPageContent: React.FC<CmsPageContentProps> = ({ page }) => {
               className="cms-page-card__frame"
             />
           </>
+        ) : (
+          <div className="cms-media-grid" data-testid="cms-media-content">
+            {mediaItems.map((item, index) => (
+              <figure key={item.id || `${item.loai}-${index}`} className="cms-media-card">
+                <div className="cms-media-card__asset">
+                  {item.loai === 'VIDEO' ? (
+                    <iframe
+                      title={item.ghi_chu || `Video ${index + 1}`}
+                      src={item.duong_dan}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <img src={item.duong_dan} alt={item.ghi_chu || page.tieu_de} loading="lazy" />
+                  )}
+                </div>
+                {item.ghi_chu ? <figcaption className="cms-media-card__caption">{item.ghi_chu}</figcaption> : null}
+              </figure>
+            ))}
+          </div>
         )}
 
         {page.metadata && Object.keys(page.metadata).length > 0 ? (

@@ -1,6 +1,13 @@
-export type CMSContentType = 'HTML' | 'PDF';
+export type CMSContentType = 'HTML' | 'PDF' | 'MEDIA';
 export type CMSPageStatus = 'DRAFT' | 'PUBLISHED';
 export type CMSMenuTargetType = 'PAGE' | 'TOOL';
+
+export interface CMSMediaItem {
+  id?: string;
+  loai: 'IMAGE' | 'VIDEO';
+  duong_dan: string;
+  ghi_chu?: string;
+}
 
 export interface CMSPage {
   id: number;
@@ -9,7 +16,7 @@ export interface CMSPage {
   mo_ta?: string;
   loai_noi_dung: CMSContentType;
   noi_dung_html?: string;
-  metadata?: Record<string, string | number | boolean | null>;
+  metadata?: Record<string, unknown>;
   la_trang_chu: boolean;
   trang_thai: CMSPageStatus;
   ten_tep_goc?: string;
@@ -24,7 +31,7 @@ export interface CMSPageInput {
   mo_ta?: string;
   loai_noi_dung: CMSContentType;
   noi_dung_html?: string;
-  metadata?: Record<string, string | number | boolean | null>;
+  metadata?: Record<string, unknown>;
   la_trang_chu?: boolean;
   tep_noi_dung?: File | null;
 }
@@ -35,6 +42,7 @@ export interface CMSMenuItem {
   loai_dich: CMSMenuTargetType;
   duong_dan?: string;
   khoa_he_thong?: string;
+  khoa_he_thong_bat_buoc?: boolean;
   full_path?: string | null;
   page_id?: number | null;
   children: CMSMenuItem[];
@@ -46,6 +54,7 @@ export interface CMSAdminMenu {
   loai_dich: CMSMenuTargetType;
   duong_dan?: string;
   khoa_he_thong?: string;
+  khoa_he_thong_bat_buoc?: boolean;
   parent_id?: number | null;
   page_id?: number | null;
   thu_tu: number;

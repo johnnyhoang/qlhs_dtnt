@@ -138,6 +138,8 @@ const CmsMenuManager: React.FC = () => {
     return [editingMenu.id, ...collectCmsAdminDescendantIds(treeNode)];
   }, [editingMenu, treeState]);
 
+  const isSystemMenu = editingMenu?.loai_dich === 'TOOL';
+
   const openCreateModal = () => {
     setEditingMenu(null);
     form.resetFields();
@@ -161,10 +163,11 @@ const CmsMenuManager: React.FC = () => {
     const values = await form.validateFields();
     const payload: CMSMenuInput = {
       nhan_menu: values.nhan_menu,
-      loai_dich: 'PAGE',
-      duong_dan: values.duong_dan,
+      loai_dich: editingMenu?.loai_dich || 'PAGE',
+      duong_dan: isSystemMenu ? undefined : values.duong_dan,
+      khoa_he_thong: editingMenu?.khoa_he_thong,
       parent_id: values.parent_id ?? null,
-      page_id: values.page_id ?? null,
+      page_id: isSystemMenu ? null : values.page_id ?? null,
       hien_thi: values.hien_thi,
       thu_tu: editingMenu?.thu_tu ?? menus.length,
     };
@@ -243,14 +246,19 @@ const CmsMenuManager: React.FC = () => {
                         <MenuOutlined />
                         <span>{menu.nhan_menu}</span>
                         {menu.page && <Tag>{menu.page.slug}</Tag>}
+                        {menu.khoa_he_thong_bat_buoc && <Tag color="gold">He thong</Tag>}
                         {!menu.hien_thi && <Tag color="default">An</Tag>}
                       </Space>
-                      <Button type="link" icon={<EditOutlined />} onClick={() => openEditModal(menu)}>
-                        Sua
-                      </Button>
-                      <Button type="link" danger onClick={() => handleDelete(menu)}>
-                        Xoa
-                      </Button>
+                      <Space size={4}>
+                        <Button type="link" icon={<EditOutlined />} onClick={() => openEditModal(menu)}>
+                          Sua
+                        </Button>
+                        {!menu.khoa_he_thong_bat_buoc ? (
+                          <Button type="link" danger onClick={() => handleDelete(menu)}>
+                            Xoa
+                          </Button>
+                        ) : null}
+                      </Space>
                     </div>
                   );
                 }}
@@ -261,9 +269,9 @@ const CmsMenuManager: React.FC = () => {
         <Col xs={24} lg={10}>
           <Card title="Nguyen tac dieu huong">
             <Space direction="vertical" size={12}>
-              <Text>Hai menu top-level co dinh Quan ly hoc sinh va Chuyen doi so duoc ghim ngoai CMS.</Text>
-              <Text>Khoi nay chi quan ly phan menu noi dung public do admin/editor tao them.</Text>
-              <Text>Duong dan public se duoc ghep theo cay menu: menu cha + menu con.</Text>
+              <Text>Ba menu he thong Quan ly hoc sinh, Chuyen doi so va Admin luon ton tai trong cay menu.</Text>
+              <Text>Ban co the keo tha, doi cap cha con, doi ten hoac an hien nhu menu thuong.</Text>
+              <Text>Cac menu he thong khong cho phep xoa khoi he thong.</Text>
             </Space>
           </Card>
         </Col>
@@ -281,18 +289,29 @@ const CmsMenuManager: React.FC = () => {
           <Form.Item name="nhan_menu" label="Nhan menu" rules={[{ required: true, message: 'Nhap ten menu.' }]}>
             <Input placeholder="Vi du: Van ban" />
           </Form.Item>
-          <Form.Item name="duong_dan" label="Slug menu" rules={[{ required: true, message: 'Nhap duong dan menu.' }]}>
-            <Input placeholder="van-ban" />
-          </Form.Item>
-          <Form.Item name="page_id" label="Trang noi dung gan voi menu" rules={[{ required: true, message: 'Chon mot trang noi dung.' }]}>
-            <Select
-              allowClear
-              showSearch
-              placeholder="Chon trang CMS"
-              options={pageOptions}
-              optionFilterProp="label"
+          {!isSystemMenu ? (
+            <>
+              <Form.Item name="duong_dan" label="Slug menu" rules={[{ required: true, message: 'Nhap duong dan menu.' }]}>
+                <Input placeholder="van-ban" />
+              </Form.Item>
+              <Form.Item name="page_id" label="Trang noi dung gan voi menu" rules={[{ required: true, message: 'Chon mot trang noi dung.' }]}>
+                <Select
+                  allowClear
+                  showSearch
+                  placeholder="Chon trang CMS"
+                  options={pageOptions}
+                  optionFilterProp="label"
+                />
+              </Form.Item>
+            </>
+          ) : (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message="Menu he thong giu nguyen route noi bo. Ban chi can doi ten, cap cha hoac an hien."
             />
-          </Form.Item>
+          )}
           <Form.Item name="parent_id" label="Menu cha">
             <Select
               allowClear

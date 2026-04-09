@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Col,
+  Divider,
   Form,
   Input,
   List,
@@ -18,7 +19,7 @@ import {
   Typography,
   Upload,
 } from 'antd';
-import { FilePdfOutlined, FileTextOutlined, PlusOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
+import { DeleteOutlined, FileImageOutlined, FilePdfOutlined, FileTextOutlined, PlusOutlined, SaveOutlined, UploadOutlined } from '@ant-design/icons';
 import {
   createAdminPage,
   deleteAdminPage,
@@ -45,6 +46,11 @@ interface CMSPageFormValues {
   so_hieu?: string;
   don_vi_ban_hanh?: string;
   ngay_ban_hanh?: string;
+  media_items?: Array<{
+    loai: 'IMAGE' | 'VIDEO';
+    duong_dan: string;
+    ghi_chu?: string;
+  }>;
 }
 
 const CmsPageManager: React.FC = () => {
@@ -207,6 +213,13 @@ const CmsPageManager: React.FC = () => {
       so_hieu: values.so_hieu,
       don_vi_ban_hanh: values.don_vi_ban_hanh,
       ngay_ban_hanh: values.ngay_ban_hanh,
+      media_items: (values.media_items || [])
+        .filter((item) => item.duong_dan?.trim())
+        .map((item) => ({
+          loai: item.loai as 'IMAGE' | 'VIDEO',
+          duong_dan: item.duong_dan.trim(),
+          ghi_chu: item.ghi_chu?.trim() || '',
+        })),
     }),
     tep_noi_dung: selectedFile,
   });
@@ -297,7 +310,7 @@ const CmsPageManager: React.FC = () => {
                   onClick={() => setSelectedPageId(page.id)}
                 >
                   <List.Item.Meta
-                    avatar={page.loai_noi_dung === 'PDF' ? <FilePdfOutlined /> : <FileTextOutlined />}
+                    avatar={page.loai_noi_dung === 'PDF' ? <FilePdfOutlined /> : page.loai_noi_dung === 'MEDIA' ? <FileImageOutlined /> : <FileTextOutlined />}
                     title={
                       <Space wrap>
                         <span>{page.tieu_de}</span>
@@ -363,6 +376,7 @@ const CmsPageManager: React.FC = () => {
                         options={[
                           { value: 'HTML', label: 'HTML' },
                           { value: 'PDF', label: 'PDF' },
+                          { value: 'MEDIA', label: 'Media' },
                         ]}
                       />
                     </Form.Item>
@@ -400,7 +414,7 @@ const CmsPageManager: React.FC = () => {
                       </Upload>
                     </Form.Item>
                   </>
-                ) : (
+                ) : selectedContentType === 'PDF' ? (
                   <Form.Item
                     label="Tep PDF (toi da 2MB)"
                     extra={selectedPage?.ten_tep_goc ? `Tep hien tai: ${selectedPage.ten_tep_goc}` : 'PDF se duoc hien thi bang embedded viewer o trang public.'}
@@ -421,8 +435,71 @@ const CmsPageManager: React.FC = () => {
                       <Button icon={<UploadOutlined />}>Chon file PDF</Button>
                     </Upload>
                   </Form.Item>
+                ) : (
+                  <>
+                    <Alert
+                      type="info"
+                      showIcon
+                      style={{ marginBottom: 16 }}
+                      message="Trang media ho tro danh sach nhieu anh va video bang URL, moi muc co ghi chu rieng."
+                    />
+                    <Form.List name="media_items">
+                      {(fields, { add, remove }) => (
+                        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                          {fields.map((field, index) => (
+                            <Card
+                              key={field.key}
+                              size="small"
+                              title={`Media ${index + 1}`}
+                              extra={
+                                <Button
+                                  type="text"
+                                  danger
+                                  icon={<DeleteOutlined />}
+                                  onClick={() => remove(field.name)}
+                                />
+                              }
+                            >
+                              <Row gutter={16}>
+                                <Col xs={24} md={8}>
+                                  <Form.Item
+                                    name={[field.name, 'loai']}
+                                    label="Loai"
+                                    rules={[{ required: true, message: 'Chon loai media.' }]}
+                                  >
+                                    <Select
+                                      options={[
+                                        { value: 'IMAGE', label: 'Anh' },
+                                        { value: 'VIDEO', label: 'Video' },
+                                      ]}
+                                    />
+                                  </Form.Item>
+                                </Col>
+                                <Col xs={24} md={16}>
+                                  <Form.Item
+                                    name={[field.name, 'duong_dan']}
+                                    label="URL media"
+                                    rules={[{ required: true, message: 'Nhap duong dan media.' }]}
+                                  >
+                                    <Input placeholder="https://..." />
+                                  </Form.Item>
+                                </Col>
+                              </Row>
+                              <Form.Item name={[field.name, 'ghi_chu']} label="Ghi chu">
+                                <Input.TextArea rows={2} placeholder="Mo ta ngan cho media nay" />
+                              </Form.Item>
+                            </Card>
+                          ))}
+                          <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ loai: 'IMAGE' })}>
+                            Them media
+                          </Button>
+                        </Space>
+                      )}
+                    </Form.List>
+                  </>
                 )}
 
+                <Divider />
                 <Title level={5}>Metadata van ban</Title>
                 <Row gutter={16}>
                   <Col xs={24} md={12}>

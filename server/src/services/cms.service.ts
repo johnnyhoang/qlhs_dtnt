@@ -9,8 +9,15 @@ type PageInput = {
     mo_ta?: string;
     loai_noi_dung: CMSContentType;
     noi_dung_html?: string;
-    metadata?: Record<string, string | number | boolean | null>;
+    metadata?: Record<string, unknown>;
     la_trang_chu?: boolean;
+};
+
+type CMSMediaItem = {
+    id?: string;
+    loai: "IMAGE" | "VIDEO";
+    duong_dan: string;
+    ghi_chu?: string;
 };
 
 type MenuInput = {
@@ -29,6 +36,12 @@ type CMSMenuNode = CMSMenu & {
     full_path: string | null;
 };
 
+const SYSTEM_MENU_DEFINITIONS: Array<Pick<MenuInput, "nhan_menu" | "khoa_he_thong" | "thu_tu">> = [
+    { nhan_menu: "Quan ly hoc sinh", khoa_he_thong: "qlhs", thu_tu: 0 },
+    { nhan_menu: "Chuyen doi so", khoa_he_thong: "cds", thu_tu: 1 },
+    { nhan_menu: "Admin", khoa_he_thong: "admin", thu_tu: 2 },
+];
+
 export class CMSService {
     private static getPageRepository() {
         return AppDataSource.getRepository(CMSPage);
@@ -39,6 +52,7 @@ export class CMSService {
     }
 
     static async listPublishedMenus() {
+        await this.ensureSystemMenus();
         const menus = await this.getMenuRepository().find({
             where: { hien_thi: true },
             relations: ["page"],
@@ -47,6 +61,10 @@ export class CMSService {
 
         return menus.filter((menu) => {
             if (menu.loai_dich === CMSMenuTargetType.TOOL) {
+                return true;
+            }
+
+            if (!menu.page_id) {
                 return true;
             }
 
@@ -60,6 +78,7 @@ export class CMSService {
     }
 
     static async listAdminMenus() {
+        await this.ensureSystemMenus();
         return this.getMenuRepository().find({
             relations: ["page"],
             order: { thu_tu: "ASC", id: "ASC" },
@@ -128,9 +147,9 @@ export class CMSService {
             loai_noi_dung: input.loai_noi_dung,
             noi_dung_html: this.resolveHtmlContent(input, file) ?? undefined,
             tep_pdf: input.loai_noi_dung === CMSContentType.PDF ? file?.buffer : undefined,
-            ten_tep_goc: file?.originalname ?? undefined,
-            mime_type: file?.mimetype ?? undefined,
-            metadata: input.metadata,
+            ten_tep_goc: input.loai_noi_dung === CMSContentType.PDF ? file?.originalname ?? undefined : undefined,
+            mime_type: input.loai_noi_dung === CMSContentType.PDF ? file?.mimetype ?? undefined : undefined,
+            metadata: this.normalizeMetadata(input),
             la_trang_chu: Boolean(input.la_trang_chu),
             created_by_id: actorId,
             updated_by_id: actorId,
@@ -165,20 +184,25 @@ export class CMSService {
         page.tieu_de = input.tieu_de;
         page.mo_ta = input.mo_ta;
         page.loai_noi_dung = input.loai_noi_dung;
-        page.metadata = input.metadata;
+        page.metadata = this.normalizeMetadata(input);
         page.la_trang_chu = Boolean(input.la_trang_chu);
         page.updated_by_id = actorId;
 
         if (page.loai_noi_dung === CMSContentType.HTML) {
             page.noi_dung_html = this.resolveHtmlContent(input, file) ?? undefined;
             page.tep_pdf = undefined;
-            page.ten_tep_goc = file?.originalname ?? undefined;
-            page.mime_type = file?.mimetype ?? undefined;
-        } else {
+            page.ten_tep_goc = undefined;
+            page.mime_type = undefined;
+        } else if (page.loai_noi_dung === CMSContentType.PDF) {
             page.noi_dung_html = undefined;
             page.tep_pdf = file?.buffer ?? page.tep_pdf;
             page.ten_tep_goc = file?.originalname ?? page.ten_tep_goc;
             page.mime_type = file?.mimetype ?? page.mime_type;
+        } else {
+            page.noi_dung_html = undefined;
+            page.tep_pdf = undefined;
+            page.ten_tep_goc = undefined;
+            page.mime_type = undefined;
         }
 
         if (page.la_trang_chu) {
@@ -213,6 +237,10 @@ export class CMSService {
 
         if (page.loai_noi_dung === CMSContentType.PDF && !page.tep_pdf) {
             throw new Error("PDF page cannot be published without an uploaded PDF.");
+        }
+
+        if (page.loai_noi_dung === CMSContentType.MEDIA && !this.hasMediaItems(page.metadata)) {
+            throw new Error("Media page cannot be published without at least one media item.");
         }
 
         page.trang_thai = CMSPageStatus.PUBLISHED;
@@ -335,6 +363,92 @@ export class CMSService {
 
         const rawHtml = file?.buffer?.toString("utf-8") || input.noi_dung_html || "";
         return sanitizeCmsHtml(rawHtml);
+    }
+
+    private static normalizeMetadata(input: PageInput) {
+        if (input.loai_noi_dung !== CMSContentType.MEDIA) {
+            return input.metadata;
+        }
+
+        const mediaItems = this.extractMediaItems(input.metadata);
+        return {
+            ...(input.metadata || {}),
+            media_items: mediaItems,
+        };
+    }
+
+    private static extractMediaItems(metadata?: Record<string, unknown>) {
+        const rawMediaItems = metadata?.media_items;
+        if (!rawMediaItems) {
+            return [];
+        }
+
+        const parsedItems = Array.isArray(rawMediaItems)
+            ? rawMediaItems
+            : typeof rawMediaItems === "string"
+                ? JSON.parse(rawMediaItems)
+                : [];
+
+        if (!Array.isArray(parsedItems)) {
+            return [];
+        }
+
+        return parsedItems
+            .map((item) => {
+                if (!item || typeof item !== "object") {
+                    return null;
+                }
+
+                const mediaItem = item as CMSMediaItem;
+                const loai = mediaItem.loai === "VIDEO" ? "VIDEO" : "IMAGE";
+                const duongDan = String(mediaItem.duong_dan || "").trim();
+                const ghiChu = typeof mediaItem.ghi_chu === "string" ? mediaItem.ghi_chu.trim() : "";
+
+                if (!duongDan) {
+                    return null;
+                }
+
+                return {
+                    id: typeof mediaItem.id === "string" && mediaItem.id.trim() ? mediaItem.id.trim() : `${loai.toLowerCase()}-${Math.random().toString(36).slice(2, 10)}`,
+                    loai: loai as "IMAGE" | "VIDEO",
+                    duong_dan: duongDan,
+                    ghi_chu: ghiChu || undefined,
+                };
+            })
+            .filter((item) => item !== null);
+    }
+
+    private static hasMediaItems(metadata?: Record<string, unknown>) {
+        return this.extractMediaItems(metadata).length > 0;
+    }
+
+    private static async ensureSystemMenus() {
+        const repo = this.getMenuRepository();
+        const existingMenus = await repo.find();
+
+        for (const definition of SYSTEM_MENU_DEFINITIONS) {
+            const existingMenu = existingMenus.find((item) => item.khoa_he_thong === definition.khoa_he_thong);
+            if (!existingMenu) {
+                const createdMenu = repo.create({
+                    nhan_menu: definition.nhan_menu,
+                    loai_dich: CMSMenuTargetType.TOOL,
+                    khoa_he_thong: definition.khoa_he_thong,
+                    thu_tu: definition.thu_tu,
+                    hien_thi: true,
+                    khoa_he_thong_bat_buoc: true,
+                    parent_id: null,
+                    page_id: null,
+                });
+                await repo.save(createdMenu);
+                existingMenus.push(createdMenu);
+                continue;
+            }
+
+            if (!existingMenu.khoa_he_thong_bat_buoc) {
+                existingMenu.khoa_he_thong_bat_buoc = true;
+                await repo.save(existingMenu);
+            }
+        }
     }
 
     private static buildMenuTree(menus: CMSMenu[], parentId: number | null = null, parentPath = ""): CMSMenuNode[] {

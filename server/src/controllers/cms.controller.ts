@@ -33,7 +33,7 @@ const parseMetadata = (value: unknown) => {
         return JSON.parse(value);
     }
 
-    return value as Record<string, string | number | boolean | null>;
+    return value as Record<string, unknown>;
 };
 
 const parsePageBody = (body: Record<string, unknown>) => ({
