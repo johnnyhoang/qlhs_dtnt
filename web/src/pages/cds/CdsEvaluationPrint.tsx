@@ -131,7 +131,7 @@ const CdsEvaluationPrint: React.FC = () => {
             <tr style={{ backgroundColor: '#f0f0f0' }}>
               <th style={{ ...baseCellStyle, width: '45%' }}>Tiêu chí</th>
               <th style={{ ...baseCellStyle, width: '10%', textAlign: 'center' }}>Điểm<br />Tối đa</th>
-              <th style={{ ...baseCellStyle, width: '15%', textAlign: 'center' }}>Trường<br />Đánh giá</th>
+              <th style={{ ...baseCellStyle, width: '15%', textAlign: 'center' }}>Tự<br />Đánh giá</th>
               <th style={{ ...baseCellStyle, width: '30%' }}>Hồ sơ / Minh chứng</th>
             </tr>
           </thead>

@@ -56,7 +56,7 @@ const BackofficeHelpDrawer: React.FC<BackofficeHelpDrawerProps> = ({ open, onClo
 
   return (
     <Drawer
-      title={entry?.title || 'Page Help'}
+      title={entry?.title || 'Huong dan trang'}
       placement="right"
       width={440}
       onClose={onClose}

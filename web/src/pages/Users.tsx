@@ -181,28 +181,6 @@ const Users: React.FC = () => {
                     })}
                 />
             </div>
-            <div className="mobile-only">
-                <MobileList
-                    dataSource={filteredUsers}
-                    loading={isLoading}
-                    onRowClick={(record) => record.vai_tro !== 'ADMIN' ? handleOpenPermissions(record) : undefined}
-                    renderItem={(record) => (
-                        <div>
-                            <div className="mobile-card-row">
-                                <span style={{ fontWeight: 600, fontSize: '1.1em' }}>{record.ho_ten}</span>
-                                <Tag color={record.vai_tro === 'ADMIN' ? 'red' : record.vai_tro === 'EDITOR' ? 'orange' : record.vai_tro === 'TEACHER' ? 'green' : 'blue'}>
-                                    {record.vai_tro}
-                                </Tag>
-                            </div>
-                            <div className="mobile-card-row">
-                                <span className="mobile-card-label">Email:</span>
-                                <span className="mobile-card-value">{record.email || '-'}</span>
-                            </div>
-                        </div>
-                    )}
-                />
-            </div>
-
             <Modal
                 title={`Phân quyền module: ${permissionModal.user?.ho_ten}`}
                 open={permissionModal.visible}

@@ -82,16 +82,9 @@ const CmsPageContent: React.FC<CmsPageContentProps> = ({ page }) => {
     <Card className="page-section-card cms-page-card" variant="borderless">
       <div className="cms-page-card__inner">
         <div className="cms-page-card__header">
-          <div className="cms-page-card__headline">
-            <div>
-              {page.la_trang_chu ? <span className="page-kicker">Trang chu</span> : null}
-              <h1 className="page-title">{page.tieu_de}</h1>
-            </div>
-            <Space>
-              <Button icon={<DownloadOutlined />} onClick={handleDownloadPdf}>
-                Tai PDF
-              </Button>
-            </Space>
+          <div>
+            {page.la_trang_chu ? <span className="page-kicker">Trang chu</span> : null}
+            <h1 className="page-title">{page.tieu_de}</h1>
           </div>
         </div>
 
@@ -134,6 +127,14 @@ const CmsPageContent: React.FC<CmsPageContentProps> = ({ page }) => {
             ))}
           </div>
         )}
+
+        <div className="cms-page-card__download">
+          <Space>
+            <Button icon={<DownloadOutlined />} onClick={handleDownloadPdf}>
+              Tai PDF
+            </Button>
+          </Space>
+        </div>
 
         {metadataEntries.length > 0 ? (
           <Collapse

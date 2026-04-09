@@ -160,10 +160,10 @@ const CmsPageManager: React.FC = () => {
       if (selectedPageId) {
         await queryClient.invalidateQueries({ queryKey: ['cms', 'admin', 'page', selectedPageId] });
       }
-      messageApi.success('Da chuyen trang ve nhap.');
+      messageApi.success('Da go trang khoi khu vuc cong khai va chuyen ve nhap.');
     },
     onError: (error: any) => {
-      messageApi.error(error?.response?.data?.message || 'Khong go public duoc trang.');
+      messageApi.error(error?.response?.data?.message || 'Khong go duoc trang khoi khu vuc cong khai.');
     },
   });
 
