@@ -9,11 +9,12 @@ const app = express();
 let dataSourceInitPromise: Promise<void> | null = null;
 
 const isAllowedOrigin = (origin: string) => {
-  if (CONFIG.CORS_ORIGINS.includes(origin)) {
+  if (!origin) return true;
+  if (CONFIG.CORS_ORIGINS.includes('*') || CONFIG.CORS_ORIGINS.includes(origin)) {
     return true;
   }
 
-  return CONFIG.ALLOW_VERCEL_PREVIEWS && origin.endsWith('.vercel.app');
+  return origin.endsWith('.vercel.app') || origin.includes('localhost') || origin.includes('127.0.0.1');
 };
 
 // CORS configuration for production
@@ -24,7 +25,7 @@ app.use(cors({
       return;
     }
 
-    callback(new Error(`CORS blocked for origin: ${origin}`));
+    callback(null, false);
   },
   credentials: true
 }));
