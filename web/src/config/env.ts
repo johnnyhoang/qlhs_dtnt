@@ -7,6 +7,6 @@ const requireEnv = (value: string | undefined, name: string) => {
 };
 
 export const WEB_ENV = {
-  API_URL: requireEnv(import.meta.env.VITE_API_URL, 'VITE_API_URL'),
+  API_URL: requireEnv(import.meta.env.VITE_API_URL, 'VITE_API_URL').replace(/\/+$/, ''),
   GOOGLE_CLIENT_ID: requireEnv(import.meta.env.VITE_GOOGLE_CLIENT_ID, 'VITE_GOOGLE_CLIENT_ID'),
 };
