@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
-import { Table, Card, Switch, Select, Button, Modal, Checkbox, message, Tag, Input, Space } from 'antd';
+import { Table, Card, Switch, Select, Button, Modal, Checkbox, message, Input, Space } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import MobileList from '../components/MobileList';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { layDanhSachNguoiDung, capNhatTrangThaiNguoiDung, capNhatPhanQuyen, capNhatLopPhuTrach } from '../api/nguoi-dung';
 import { layDanhMucTheoLoai } from '../api/danh-muc-master';
