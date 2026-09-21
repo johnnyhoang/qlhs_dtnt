@@ -159,7 +159,7 @@ export const ThongKeService = {
         // Get all meal cut records for the month
         let cutRecords: SuatAn[] = [];
         const mealQuery = saRepo.createQueryBuilder("suat_an")
-            .innerJoin("hoc_sinh", "hs", "hs.id = suat_an.hoc_sinh_id")
+            .innerJoin(HocSinh, "hs", "hs.id = suat_an.hoc_sinh_id")
             .where("suat_an.ngay BETWEEN :startDate AND :endDate", { startDate, endDate })
             .andWhere("suat_an.bao_cat = :bao_cat", { bao_cat: true });
 

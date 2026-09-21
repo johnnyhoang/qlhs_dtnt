@@ -29,6 +29,7 @@ if (
 
 export const AppDataSource = new DataSource({
     type: "postgres",
+    entityPrefix: "qlhs_",
     ...(CONFIG.DB.DATABASE_URL ? {
         url: CONFIG.DB.DATABASE_URL,
         ssl: CONFIG.DB.DATABASE_URL.includes("supabase.com") || CONFIG.DB.SSL
