@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDat
 import { HocSinh } from "./HocSinh";
 import { NguoiDung } from "./NguoiDung";
 
-@Entity("dinh_muc_xe")
+@Entity("dtnt_dinh_muc_xe")
 export class DinhMucXe {
     @PrimaryGeneratedColumn()
     id!: number;

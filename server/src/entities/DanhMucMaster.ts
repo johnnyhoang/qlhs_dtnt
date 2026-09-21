@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, Index } from "typeorm";
 import { NguoiDung } from "./NguoiDung";
 
-@Entity("danh_muc_master")
+@Entity("dtnt_danh_muc_master")
 @Index(["loai_danh_muc", "kich_hoat"])
 export class DanhMucMaster {
     @PrimaryGeneratedColumn("uuid")

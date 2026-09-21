@@ -17,7 +17,7 @@ export enum CMSContentType {
     MEDIA = "MEDIA",
 }
 
-@Entity("cms_pages")
+@Entity("dtnt_cms_pages")
 export class CMSPage {
     @PrimaryGeneratedColumn()
     id!: number;

@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
-@Entity("cds_criteria")
+@Entity("dtnt_cds_criteria")
 export class CdsCriterion {
     @PrimaryGeneratedColumn()
     id!: number;

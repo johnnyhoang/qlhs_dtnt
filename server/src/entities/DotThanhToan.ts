@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from "typeorm";
 import { KhoanThanhToan } from "./KhoanThanhToan";
 
-@Entity("dot_thanh_toan")
+@Entity("dtnt_dot_thanh_toan")
 export class DotThanhToan {
     @PrimaryGeneratedColumn()
     id!: number;

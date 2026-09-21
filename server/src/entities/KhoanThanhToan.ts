@@ -8,7 +8,7 @@ export enum TrangThaiThanhToan {
     DA_THANH_TOAN = "DA_THANH_TOAN"
 }
 
-@Entity("khoan_thanh_toan")
+@Entity("dtnt_khoan_thanh_toan")
 @Index(["dot_thanh_toan_id", "hoc_sinh_id"], { unique: true })
 export class KhoanThanhToan {
     @PrimaryGeneratedColumn()

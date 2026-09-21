@@ -8,7 +8,7 @@ export enum VaiTro {
     TEACHER = "TEACHER"
 }
 
-@Entity("nguoi_dung")
+@Entity("dtnt_nguoi_dung")
 export class NguoiDung {
     @PrimaryGeneratedColumn()
     id!: number;

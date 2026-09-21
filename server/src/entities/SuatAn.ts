@@ -8,7 +8,7 @@ export enum LoaiSuatAn {
     TOI = "TOI"
 }
 
-@Entity("suat_an")
+@Entity("dtnt_suat_an")
 @Index(["hoc_sinh_id", "ngay", "loai_suat_an"], { unique: true })
 export class SuatAn {
     @PrimaryGeneratedColumn()

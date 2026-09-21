@@ -15,7 +15,7 @@ export enum CMSMenuTargetType {
     TOOL = "TOOL",
 }
 
-@Entity("cms_menus")
+@Entity("dtnt_cms_menus")
 export class CMSMenu {
     @PrimaryGeneratedColumn()
     id!: number;

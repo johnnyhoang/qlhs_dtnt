@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { CdsEvaluation } from "./CdsEvaluation";
 import { CdsCriterion } from "./CdsCriterion";
 
-@Entity("cds_evaluation_details")
+@Entity("dtnt_cds_evaluation_details")
 export class CdsEvaluationDetail {
     @PrimaryGeneratedColumn()
     id!: number;

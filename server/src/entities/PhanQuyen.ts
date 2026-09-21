@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
 import { NguoiDung } from "./NguoiDung";
 
-@Entity("phan_quyen")
+@Entity("dtnt_phan_quyen")
 export class PhanQuyen {
     @PrimaryGeneratedColumn()
     id!: number;

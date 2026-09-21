@@ -3,7 +3,7 @@ import { NguoiDung } from "./NguoiDung";
 import { CdsEvaluationPeriod } from "./CdsEvaluationPeriod";
 import { CdsEvaluationDetail } from "./CdsEvaluationDetail";
 
-@Entity("cds_evaluations")
+@Entity("dtnt_cds_evaluations")
 export class CdsEvaluation {
     @PrimaryGeneratedColumn()
     id!: number;

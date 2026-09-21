@@ -12,7 +12,7 @@ export enum TrangThaiHocSinh {
     DA_NGHI = "DA_NGHI"
 }
 
-@Entity("hoc_sinh")
+@Entity("dtnt_hoc_sinh")
 export class HocSinh {
     @PrimaryGeneratedColumn("uuid")
     id!: string;

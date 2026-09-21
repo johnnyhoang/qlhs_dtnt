@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, CreateDat
 import { HocSinh } from "./HocSinh";
 import { NguoiDung } from "./NguoiDung";
 
-@Entity("bao_hiem")
+@Entity("dtnt_bao_hiem")
 export class BaoHiem {
     @PrimaryGeneratedColumn()
     id!: number;
