@@ -46,7 +46,7 @@ export const CONFIG = {
     SSL: process.env.DB_SSL === 'true',
   },
   JWT_SECRET: requireEnv('JWT_SECRET'),
-  GOOGLE_CLIENT_ID: requireEnv('GOOGLE_CLIENT_ID'),
+  GOOGLE_CLIENT_ID: optionalEnv('GOOGLE_CLIENT_ID') || '',
   CORS_ORIGINS: parseCorsOrigins(),
   ALLOW_VERCEL_PREVIEWS:
     process.env.ALLOW_VERCEL_PREVIEWS === 'true' ||

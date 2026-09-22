@@ -8,8 +8,11 @@ export default defineConfig(({ mode }) => {
     if (!env.VITE_API_URL) {
       throw new Error('VITE_API_URL is missing in production build environment');
     }
-    if (!env.VITE_GOOGLE_CLIENT_ID) {
-      throw new Error('VITE_GOOGLE_CLIENT_ID is missing in production build environment');
+    if (!env.VITE_SUPABASE_URL) {
+      throw new Error('VITE_SUPABASE_URL is missing in production build environment');
+    }
+    if (!env.VITE_SUPABASE_ANON_KEY) {
+      throw new Error('VITE_SUPABASE_ANON_KEY is missing in production build environment');
     }
   }
 
@@ -36,8 +39,8 @@ export default defineConfig(({ mode }) => {
               return 'vendor-charts';
             }
 
-            if (id.includes('@react-oauth/google')) {
-              return 'vendor-google';
+            if (id.includes('@supabase/')) {
+              return 'vendor-supabase';
             }
             
             return undefined;

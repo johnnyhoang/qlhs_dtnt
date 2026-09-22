@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { supabase } from '../utils/supabase';
 
 interface User {
     id: number;
@@ -40,7 +41,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(userData);
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await supabase.auth.signOut();
+        } catch (error) {
+            console.warn("Failed to sign out from Supabase", error);
+        }
         localStorage.removeItem('user');
         localStorage.removeItem('token');
         setUser(null);

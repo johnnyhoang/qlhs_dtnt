@@ -24,6 +24,11 @@ export const googleLogin = async (idToken: string) => {
     return response.data;
 };
 
+export const supabaseLogin = async (accessToken?: string, profile?: { email: string; name?: string; avatar?: string }) => {
+    const response = await client.post('/auth/supabase-login', { accessToken, profile });
+    return response.data;
+};
+
 export const getMe = async () => {
     const response = await client.get('/auth/me');
     return response.data;
