@@ -7,6 +7,7 @@
     "dev:server": "cd server && npm run dev",
     "dev:web": "cd web && npm run dev",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
+    "build": "npm --prefix web run build && npm --prefix server run build",
     "test:server": "npm --prefix server test",
     "test:web": "npm --prefix web test",
     "test:e2e": "playwright test",
