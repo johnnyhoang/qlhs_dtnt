@@ -33,11 +33,15 @@ const parseCorsOrigins = () => {
     .filter(Boolean);
 };
 
+const DEFAULT_DB_URL =
+  'postgresql://postgres.czngbleeeiljsrpbaksg:B1gh13u1977dtnt@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres';
+const DEFAULT_JWT_SECRET = 'dtnt_jwt_secret_minkoi_2026_super_secure_key';
+
 export const CONFIG = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseNumber(process.env.PORT, 8080),
   DB: {
-    DATABASE_URL: optionalEnv('DATABASE_URL'),
+    DATABASE_URL: optionalEnv('DATABASE_URL') || DEFAULT_DB_URL,
     HOST: optionalEnv('DB_HOST'),
     PORT: parseNumber(process.env.DB_PORT, 5432),
     USERNAME: optionalEnv('DB_USER'),
@@ -45,7 +49,7 @@ export const CONFIG = {
     NAME: optionalEnv('DB_NAME'),
     SSL: process.env.DB_SSL === 'true',
   },
-  JWT_SECRET: requireEnv('JWT_SECRET'),
+  JWT_SECRET: process.env.JWT_SECRET?.trim() || DEFAULT_JWT_SECRET,
   GOOGLE_CLIENT_ID: optionalEnv('GOOGLE_CLIENT_ID') || '',
   CORS_ORIGINS: parseCorsOrigins(),
   ALLOW_VERCEL_PREVIEWS:

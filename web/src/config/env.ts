@@ -2,7 +2,7 @@ const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 export const WEB_ENV = {
-  API_URL: (import.meta.env.VITE_API_URL || 'https://dtnt.minkoi.org/api').replace(/\/+$/, ''),
+  API_URL: (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, ''),
   SUPABASE_URL: rawUrl.trim() || 'https://msozshwatonyxnkaqjfs.supabase.co',
   SUPABASE_ANON_KEY:
     rawKey.trim() ||

@@ -18,14 +18,9 @@ import { CdsEvaluationDetail } from "./entities/CdsEvaluationDetail";
 import { CMSPage } from "./entities/CMSPage";
 import { CMSMenu } from "./entities/CMSMenu";
 
-if (
-    !CONFIG.DB.DATABASE_URL &&
-    (!CONFIG.DB.HOST || !CONFIG.DB.USERNAME || !CONFIG.DB.PASSWORD || !CONFIG.DB.NAME)
-) {
-    throw new Error(
-        "Database configuration is incomplete. Set DATABASE_URL or DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME."
-    );
-}
+const fallbackUrl =
+  CONFIG.DB.DATABASE_URL ||
+  'postgresql://postgres.czngbleeeiljsrpbaksg:B1gh13u1977dtnt@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres';
 
 export const AppDataSource = new DataSource({
     type: "postgres",
