@@ -7,9 +7,9 @@ export const layThongKeSuatAnCatTheoLopVaNgay = async (
     endDate: string, 
     classes: string[] = []
 ): Promise<MealCutoffWeeklyReport> => {
-    const params = new URLSearchParams({ startDate, endDate });
+    const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
     if (classes.length > 0) params.append('classes', classes.join(','));
-    const response = await axiosClient.get<MealCutoffWeeklyReport>(`/thong-ke/suat-an-cat-lop-ngay?${params.toString()}`);
+    const response = await axiosClient.get<MealCutoffWeeklyReport>(`/thong-ke/suat-an/cat-theo-lop-va-ngay?${params.toString()}`);
     return response.data;
 };
 
@@ -21,7 +21,7 @@ export const layThongKeSuatAnTheoThang = async (
 ): Promise<MonthlyMealStats> => {
     const params = new URLSearchParams({ month: String(month), year: String(year) });
     if (classes.length > 0) params.append('classes', classes.join(','));
-    const response = await axiosClient.get<MonthlyMealStats>(`/thong-ke/suat-an-thang?${params.toString()}`);
+    const response = await axiosClient.get<MonthlyMealStats>(`/thong-ke/suat-an/thang?${params.toString()}`);
     return response.data;
 };
 
@@ -36,6 +36,6 @@ export const layThongKeVanChuyenTheoLop = async (
     if (endDate) params.append('endDate', endDate);
     if (classes.length > 0) params.append('classes', classes.join(','));
     
-    const response = await axiosClient.get<TransportStatsReport>(`/thong-ke/van-chuyen-lop?${params.toString()}`);
+    const response = await axiosClient.get<TransportStatsReport>(`/thong-ke/van-chuyen/theo-lop?${params.toString()}`);
     return response.data;
 };
