@@ -33,15 +33,13 @@ const parseCorsOrigins = () => {
     .filter(Boolean);
 };
 
-const DEFAULT_DB_URL =
-  'postgresql://postgres.czngbleeeiljsrpbaksg:B1gh13u1977dtnt@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres';
 const DEFAULT_JWT_SECRET = 'dtnt_jwt_secret_minkoi_2026_super_secure_key';
 
 export const CONFIG = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseNumber(process.env.PORT, 8080),
   DB: {
-    DATABASE_URL: optionalEnv('DATABASE_URL') || DEFAULT_DB_URL,
+    DATABASE_URL: optionalEnv('DATABASE_URL'),
     HOST: optionalEnv('DB_HOST'),
     PORT: parseNumber(process.env.DB_PORT, 5432),
     USERNAME: optionalEnv('DB_USER'),

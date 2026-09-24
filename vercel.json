@@ -19,11 +19,12 @@
       "dest": "server/src/index.ts"
     },
     {
-      "handle": "filesystem"
+      "src": "/(.*\\.[a-zA-Z0-9]+)$",
+      "dest": "web/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "web/dist/index.html"
+      "dest": "web/index.html"
     }
   ]
 }

@@ -66,33 +66,28 @@ export const googleLogin = async (req: Request, res: Response) => {
     }
 };
 
+// Public URL + anon key of Supabase "Data 02" (the project dtnt web signs in with).
+const WEB_SUPABASE = {
+    URL: 'https://czngbleeeiljsrpbaksg.supabase.co',
+    ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6bmdibGVlZWlsanNycGJha3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MDQ5NjAsImV4cCI6MjA4ODI4MDk2MH0.31agxcZHEkcymaL_Ox5wOfB4zwivv961QHrn6E4tErM',
+};
+
 export const supabaseLogin = async (req: Request, res: Response) => {
-    const { accessToken, profile } = req.body;
+    const { accessToken } = req.body;
 
     try {
-        let email: string | undefined = profile?.email;
-        let name: string = profile?.name || '';
-        let picture: string | undefined = profile?.avatar;
-
-        if (accessToken) {
-            try {
-                const parts = accessToken.split('.');
-                if (parts.length === 3) {
-                    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
-                    if (payload.email) {
-                        email = payload.email;
-                        name = payload.user_metadata?.full_name || payload.user_metadata?.name || name;
-                        picture = payload.user_metadata?.avatar_url || picture;
-                    }
-                }
-            } catch (e) {
-                console.warn('Could not decode Supabase accessToken:', e);
-            }
+        // Trust only what Supabase says about the token, never a client-supplied email.
+        const sbRes = await fetch(`${WEB_SUPABASE.URL}/auth/v1/user`, {
+            headers: { apikey: WEB_SUPABASE.ANON_KEY, Authorization: `Bearer ${accessToken}` },
+        });
+        const sbUser: any = sbRes.ok ? await sbRes.json() : null;
+        if (!sbUser?.email) {
+            return res.status(401).json({ message: 'Invalid Supabase session' });
         }
-
-        if (!email) {
-            return res.status(400).json({ message: 'Email is required for authentication' });
-        }
+        const meta = sbUser.user_metadata || {};
+        const email: string = sbUser.email;
+        const name: string = meta.full_name || meta.name || '';
+        const picture: string | undefined = meta.avatar_url || meta.picture;
 
         const user = await NguoiDungService.findOrCreateByEmail(
             email,

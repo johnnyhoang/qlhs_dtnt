@@ -1,10 +1,8 @@
-const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
 export const WEB_ENV = {
   API_URL: (import.meta.env.VITE_API_URL || '/api').replace(/\/+$/, ''),
-  SUPABASE_URL: rawUrl.trim() || 'https://msozshwatonyxnkaqjfs.supabase.co',
+  // Public URL + anon key of Supabase "Data 02" (same project as the API's DB/auth).
+  // One pair on purpose: env URL + fallback key from another project broke login.
+  SUPABASE_URL: 'https://czngbleeeiljsrpbaksg.supabase.co',
   SUPABASE_ANON_KEY:
-    rawKey.trim() ||
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zb3pzaHdhdG9ueXhua2FxamZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2MjU5MzYsImV4cCI6MjA4ODIwMTkzNn0.lbfHxn4YxXNLHB0uVBDInrHh8wsCbusDr1_SroACHgk',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6bmdibGVlZWlsanNycGJha3NnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MDQ5NjAsImV4cCI6MjA4ODI4MDk2MH0.31agxcZHEkcymaL_Ox5wOfB4zwivv961QHrn6E4tErM',
 };
